@@ -1,0 +1,2 @@
+Tesseract.js (Apache-2.0), tesseract.js-core (Apache-2.0), Tesseract OCR traineddata (tessdata_fast, Apache-2.0).
+이미지 분석(OCR)은 이 기기 안에서만 실행되며 이미지는 어디로도 전송되지 않습니다.

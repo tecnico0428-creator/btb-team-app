@@ -1,4 +1,4 @@
-const C='btb-team-v6';const F=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-512.png'];
+const C='btb-team-v7';const F=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-512.png','./logo-main.png','./logo-small.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp));return r}).catch(()=>caches.match(e.request)))});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{if(r&&r.status===200&&e.request.url.indexOf('ocr-')<0&&e.request.url.indexOf('traineddata')<0){const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp)).catch(()=>{});}return r}).catch(()=>caches.match(e.request)))});
