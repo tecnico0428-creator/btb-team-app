@@ -166,8 +166,9 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     <div class="row"><button id="btnCam" class="grow">사진 찍기</button><button id="btnPic" class="grow sec">이미지 가져오기</button><button id="btnXls" class="grow sec">엑셀·CSV 파일</button></div>
     <input type="file" id="fileCam" accept="image/*" capture="environment" class="hide">
     <input type="file" id="filePic" accept="image/*" class="hide">
-    <input type="file" id="fileXls" accept=".xlsx,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hide">
+    <input type="file" id="fileXls" class="hide">
     <div id="impStatus" class="small" style="margin-top:8px"></div>
+    <div id="sheetPick" class="hide" style="margin-top:8px"><div class="lbl">읽을 시트 선택</div><select id="sheetSel"></select></div>
     <div id="impPrev"></div>
   </div>
   <div class="card">
@@ -663,32 +664,45 @@ async function readXlsx(buf) {
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eo = i; break; }
   if (eo < 0) throw new Error('엑셀(.xlsx) 파일이 아닙니다');
   const n = dv.getUint16(eo + 10, true); let p = dv.getUint32(eo + 16, true); const ents = {};
-  for (let i = 0; i < n; i++) { const method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true); ents[new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl))] = { method, csz, lo }; p += 46 + nl + el + cl; }
+  for (let i = 0; i < n; i++) { const method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), usz = dv.getUint32(p + 24, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true); ents[new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl))] = { method, csz, usz, lo }; p += 46 + nl + el + cl; }
   const get = async (name) => { const e = ents[name]; if (!e) return null; const nl = dv.getUint16(e.lo + 26, true), el = dv.getUint16(e.lo + 28, true); const s = e.lo + 30 + nl + el; const data = u8.subarray(s, s + e.csz); if (e.method === 0) return new TextDecoder().decode(data); return new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); };
   const ssx = await get('xl/sharedStrings.xml');
   const sst = ssx ? [...ssx.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => unx([...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''))) : [];
-  const sheets = Object.keys(ents).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort((a, b) => parseInt(a.match(/(\d+)/)[1]) - parseInt(b.match(/(\d+)/)[1]));
-  if (!sheets.length) throw new Error('시트를 찾지 못했습니다');
-  const xml = await get(sheets[0]); const rows = {};
-  const colN = (s) => s.split('').reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
-  for (const m of xml.matchAll(/<c r="([A-Z]+)(\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
-    const inner = m[4] || ''; const t = (m[3].match(/ t="(\w+)"/) || [])[1]; let v = (inner.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
-    if (t === 's' && v !== undefined) v = sst[+v]; else if (t === 'inlineStr') v = unx([...inner.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(a => a[1]).join('')); else if (v !== undefined) v = unx(v);
-    if (v === undefined) continue; (rows[+m[2]] = rows[+m[2]] || [])[colN(m[1])] = String(v).trim();
+  // 시트 이름·순서·파일 위치
+  let list = [];
+  const wb = await get('xl/workbook.xml'), rel = await get('xl/_rels/workbook.xml.rels');
+  if (wb && rel) {
+    const relMap = {}; for (const m of rel.matchAll(/<Relationship\b[^>]*>/g)) { const id = (m[0].match(/\bId="([^"]+)"/) || [])[1], tg = (m[0].match(/\bTarget="([^"]+)"/) || [])[1]; if (id && tg) relMap[id] = tg.charAt(0) === '/' ? tg.slice(1) : 'xl/' + tg; }
+    list = [...wb.matchAll(/<sheet\b[^>]*>/g)].map(m => ({ name: unx((m[0].match(/\bname="([^"]*)"/) || [])[1] || ''), path: relMap[(m[0].match(/\br:id="([^"]+)"/) || [])[1]], hidden: /state="(hidden|veryHidden)"/.test(m[0]) })).filter(s => s.path);
   }
-  return Object.keys(rows).map(Number).sort((a, b) => a - b).map(r => Array.from(rows[r], x => x == null ? '' : x));
+  if (!list.length) list = Object.keys(ents).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort((a, b) => parseInt(a.match(/(\d+)/)[1]) - parseInt(b.match(/(\d+)/)[1])).map((k, i) => ({ name: '시트' + (i + 1), path: k, hidden: false }));
+  if (!list.length) throw new Error('시트를 찾지 못했습니다');
+  const colN = (s) => s.split('').reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+  const out = [], skipped = [];
+  for (const sh of list) {
+    const e = ents[sh.path]; if (!e) continue;
+    if (e.usz > 6e6) { skipped.push(sh.name); continue; }
+    const xml = await get(sh.path); const rows = {};
+    for (const m of xml.matchAll(/<c r="([A-Z]+)(\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+      const inner = m[4] || ''; const t = (m[3].match(/ t="(\w+)"/) || [])[1]; let v = (inner.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+      if (t === 's' && v !== undefined) v = sst[+v]; else if (t === 'inlineStr') v = unx([...inner.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(a => a[1]).join('')); else if (v !== undefined) v = unx(v);
+      if (v === undefined) continue; (rows[+m[2]] = rows[+m[2]] || [])[colN(m[1])] = String(v).trim();
+    }
+    out.push({ name: sh.name, hidden: sh.hidden, rows: Object.keys(rows).map(Number).sort((a, b) => a - b).map(r => Array.from(rows[r], x => x == null ? '' : x)) });
+  }
+  return { sheets: out, skipped };
 }
 const gOf = (s) => /^(여|f|female|woman)/i.test(String(s || '').trim()) ? 'F' : /^(남|m|male|man)/i.test(String(s || '').trim()) ? 'M' : '';
 function tableToRows(t) {
   t = t.filter(r => r.some(x => String(x).trim()));
   if (!t.length) return [];
-  let hi = t.findIndex(r => r.some(x => /이름|성명|name/i.test(x)) && r.length > 1); let map = {};
-  if (hi >= 0) { t[hi].forEach((h, i) => { h = String(h); if (/이름|성명|name/i.test(h) && map.name == null) map.name = i; else if (/성별|남녀|gender/i.test(h)) map.g = i; else if (/에버|평균|avg|average/i.test(h) && map.avg == null) map.avg = i; else if (/시드|seed|등급/i.test(h)) map.seed = i; else if (/별명|닉네임|nick/i.test(h)) map.nick = i; else if (/구분|회원|게스트|kind/i.test(h)) map.kind = i; }); t = t.slice(hi + 1); }
+  const isHead = (r) => r.some(x => /이름|성명|name/i.test(x)) && r.some(x => /에버|평균|avg|성별|시드|seed|별명|nick|구분/i.test(x));
+  let hi = t.findIndex(isHead); let map = {};
+  if (hi >= 0) { t[hi].forEach((h, i) => { h = String(h); if (/이름|성명|name/i.test(h) && map.name == null) map.name = i; else if (/성별|남녀|gender/i.test(h) && map.g == null) map.g = i; else if (/에버|평균|avg|average/i.test(h) && map.avg == null) map.avg = i; else if (/시드|seed|등급/i.test(h) && map.seed == null) map.seed = i; else if (/별명|닉네임|nick/i.test(h) && map.nick == null) map.nick = i; else if (/구분|게스트|kind/i.test(h) && map.kind == null) map.kind = i; }); t = t.slice(hi + 1); }
   else { const f = t[0]; map = { name: 0 }; const second = String(f[1] || ''); if (gOf(second)) { map.g = 1; map.avg = 2; map.nick = 3; map.seed = 4; map.kind = 5; } else { map.avg = 1; map.nick = 2; map.seed = 3; } }
-  return t.map(r => { const name = String(r[map.name] || '').trim(); if (!name) return null; let avg = map.avg != null ? parseFloat(String(r[map.avg]).replace(/[^\d.]/g, '')) : NaN; const sd = map.seed != null ? String(r[map.seed] || '').trim().toUpperCase().slice(0, 1) : ''; const kd = map.kind != null ? String(r[map.kind] || '') : ''; return { name, nick: map.nick != null ? String(r[map.nick] || '').trim() : '', gender: map.g != null ? gOf(r[map.g]) : '', avg: isFinite(avg) ? avg : '', seed: /[ABCD]/.test(sd) ? sd : '', guest: /게스트|guest|손님/i.test(kd), kindSet: map.kind != null }; }).filter(Boolean);
+  return t.map(r => { const name = String(r[map.name] || '').trim(); if (!name || name.length > 14 || /^[\d.\s]+$/.test(name)) return null; let avg = map.avg != null ? parseFloat(String(r[map.avg]).replace(/[^\d.]/g, '')) : NaN; if (isFinite(avg) && (avg < 1 || avg > 300)) avg = NaN; const sd = map.seed != null ? String(r[map.seed] || '').trim().toUpperCase().slice(0, 1) : ''; const kd = map.kind != null ? String(r[map.kind] || '') : ''; return { name, nick: map.nick != null ? String(r[map.nick] || '').trim() : '', gender: map.g != null ? gOf(r[map.g]) : '', avg: isFinite(avg) ? avg : '', seed: /[ABCD]/.test(sd) ? sd : '', guest: /게스트|guest|손님/i.test(kd), kindSet: map.kind != null }; }).filter(Boolean);
 }
 function parseTextTable(text) { return tableToRows(text.split(/\r?\n/).map(l => l.split(/[,\t]/).map(s => s.trim()))); }
-// 이름 비슷한지 (글자 차이 개수)
 function lev(a, b) { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let p = Array.from({ length: n + 1 }, (_, i) => i); for (let i = 1; i <= m; i++) { const q = [i]; for (let j = 1; j <= n; j++) q[j] = Math.min(p[j] + 1, q[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = q; } return p[n]; }
 function matchKnown(name, nick, known) {
   let best = null, bd = 9;
@@ -700,8 +714,9 @@ function matchKnown(name, nick, known) {
   return bd <= 1.5 ? best : null;
 }
 function parseOcrText(text, known) {
-  const out = new Map(), skip = /^(게임수|미달|에버|총점|기준|시드|하한선|적용|올라간|참가횟수|부족|포함|되어있|팀전|제외한|개인|모든|게임에|등급은|떨어져도|내려가지|않습니다|합니다)/;
-  for (const line of text.split(/\r?\n/)) {
+  const out = new Map(), skip = /^(게임수|미달|에버|총점|기준|시드|하한선|적용|올라간|참가횟수|부족|포함|되어있|팀전|제외한|개인|모든|게임에|등급은|떨어져도|내려가지|않습니다|합니다|개월)/;
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, li) => {
     const names = [];
     [...line.matchAll(/[가-힣]+/g)].forEach(t => { const prev = line[t.index - 1]; if (prev === '(' || prev === '（') { if (names.length) names[names.length - 1].nick = t[0]; return; } names.push({ s: t[0], i: t.index, end: t.index + t[0].length, nick: '' }); });
     names.forEach((nm, k) => {
@@ -714,15 +729,19 @@ function parseOcrText(text, known) {
       const avg = nums.find(v => v >= 100) != null ? nums.find(v => v >= 100) : nums[0]; if (avg == null) return;
       nick = (nick || '').replace(/[^가-힣0-9A-Za-z]/g, '');
       const kn = matchKnown(name, nick, known);
-      const key = kn ? kn.id : name; if (out.has(key)) return;
-      out.set(key, kn ? { name: kn.name, nick: kn.nick || nick, gender: kn.gender === 'F' ? 'F' : 'M', avg, seed: kn.seed || '', guest: !!kn.guest, matchId: kn.id, status: '기존 팀원' + (String(kn.avg) !== String(avg) ? ' · 에버 ' + kn.avg + ' → ' + avg : ' · 변동 없음') } : { name, nick, gender: '', avg, seed: '', guest: false, status: '신규 · 성별 확인' });
+      const key = kn ? kn.id : name; const rank = k * 100000 + li;
+      const prev = out.get(key); if (prev && prev.rank <= rank) return;
+      out.set(key, { rank, row: kn ? { name: kn.name, nick: kn.nick || nick, gender: kn.gender === 'F' ? 'F' : 'M', avg, seed: kn.seed || '', guest: !!kn.guest, matchId: kn.id, status: '기존 팀원' + (String(kn.avg) !== String(avg) ? ' · 에버 ' + kn.avg + ' → ' + avg : ' · 변동 없음') } : { name, nick, gender: '', avg, seed: '', guest: false, status: '신규 · 성별 확인' } });
     });
-  }
-  return [...out.values()];
+  });
+  return [...out.values()].sort((a, b) => a.rank - b.rank).map(x => x.row);
 }
-function sortImp() {
-  const c = C(); const rank = (r) => { const ex = r.matchId ? c.members.find(x => x.id === r.matchId) : c.members.find(x => x.name === r.name); if (!ex) { r.flag = '확인 필요 · 새 이름(글자가 틀렸을 수 있음)'; return 0; } const d = r.avg === '' || ex.avg === '' ? 0 : Math.abs(+r.avg - +ex.avg); if (d >= 15) { r.flag = '확인 필요 · 에버가 ' + d + '점 달라졌습니다(' + ex.avg + ' → ' + r.avg + ')'; return 1; } r.flag = ''; return d > 0 ? 2 : 3; };
-  const ord = impRows.map((r, i) => [rank(r), i, r]); ord.sort((a, b) => a[0] - b[0] || a[1] - b[1]); impRows = ord.map(x => x[2]);
+function linkKnown(rows) {
+  const c = C(); rows.forEach(r => { let k = c.members.find(m => m.name === r.name); if (!k) { const s = matchKnown(r.name, r.nick || '', c.members); if (s) { k = s; r.status = '이름이 비슷한 기존 팀원 "' + s.name + '"과 같은 사람으로 보고 합칩니다(다른 사람이면 이름을 고치세요)'; } } if (k) r.matchId = k.id; });
+}
+function sortImp(ocr) {
+  const c = C(); const rank = (r) => { const ex = r.matchId ? c.members.find(x => x.id === r.matchId) : c.members.find(x => x.name === r.name); if (!ex) { r.flag = ocr ? '확인 필요 · 새 이름(글자가 틀렸을 수 있음)' : ''; return 0; } const d = r.avg === '' || ex.avg === '' ? 0 : Math.abs(+r.avg - +ex.avg); if (d >= 15) { r.flag = '확인 필요 · 에버가 ' + d + '점 달라졌습니다(' + ex.avg + ' → ' + r.avg + ')'; return 1; } r.flag = ''; return d > 0 ? 2 : 3; };
+  const ord = impRows.map((r, i) => [rank(r), i, r]); ord.sort((x, y) => x[0] - y[0] || x[1] - y[1]); impRows = ord.map(x => x[2]);
 }
 function renderPrev() {
   const c = C();
@@ -746,11 +765,15 @@ function applyImport() {
   save(); impRows = []; renderPrev(); renderMem(); $('impStatus').textContent = '등록했습니다: 새 팀원 ' + add + '명, 수정 ' + upd + '명';
 }
 function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('분석 도구를 불러오지 못했습니다')); document.head.appendChild(s); }); }
-async function prepImage(file) {
-  const url = URL.createObjectURL(file); const img = await loadImg(url); URL.revokeObjectURL(url);
-  const scale = Math.max(1, Math.min(3, 2600 / img.width)); let w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+async function fileToCanvas(file, maxSide) {
+  const url = URL.createObjectURL(file); let img; try { img = await loadImg(url); } finally { URL.revokeObjectURL(url); }
+  const k = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight)); const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h); return cv;
+}
+function binarize(src) {
+  const scale = Math.max(1, Math.min(3, 2600 / src.width)); let w = Math.round(src.width * scale), h = Math.round(src.height * scale);
   if (w * h > 14e6) { const k = Math.sqrt(14e6 / (w * h)); w = Math.round(w * k); h = Math.round(h * k); }
-  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, w, h);
   const id = g.getImageData(0, 0, w, h), d = id.data; const hist = new Array(256).fill(0);
   for (let i = 0; i < d.length; i += 4) { const y = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]); d[i] = y; hist[y]++; }
   const total = w * h; let sum = 0; for (let t = 0; t < 256; t++) sum += t * hist[t]; let sumB = 0, wB = 0, best = 0, thr = 128;
@@ -760,37 +783,64 @@ async function prepImage(file) {
   g.putImageData(id, 0, 0); return cv;
 }
 let ocrBusy = false;
+async function ocrWithTesseract(file, bar) {
+  bar(0.05, '보조 분석 도구로 읽는 중...');
+  const cv = binarize(await fileToCanvas(file, 3000));
+  if (typeof Tesseract === 'undefined') await loadScript('ocr-tesseract.min.js');
+  const abs = (p) => new URL(p, location.href).href;
+  const worker = await Tesseract.createWorker('kor+eng', 1, { workerPath: abs('ocr-worker.min.js'), corePath: abs('ocr-core-simd-lstm.wasm.js'), langPath: abs('.').replace(/\/$/, ''), logger: m => { if (m.status === 'recognizing text') bar(0.2 + 0.78 * m.progress, '글자를 읽는 중... ' + Math.round(m.progress * 100) + '%'); } });
+  await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
+  const r = await worker.recognize(cv); await worker.terminate(); return r.data.text || '';
+}
 async function runOcr(file) {
   if (ocrBusy) return; ocrBusy = true; const st = $('impStatus');
   const bar = (p, t) => { st.innerHTML = esc(t) + '<div class="prog"><i style="width:' + Math.round(p * 100) + '%"></i></div>'; };
   try {
-    bar(0.02, '이미지를 준비하는 중...');
-    const cv = await prepImage(file);
-    if (typeof Tesseract === 'undefined') { bar(0.05, '분석 도구를 불러오는 중...'); await loadScript('ocr-tesseract.min.js'); }
-    const abs = (p) => new URL(p, location.href).href;
-    const worker = await Tesseract.createWorker('kor+eng', 1, { workerPath: abs('ocr-worker.min.js'), corePath: abs('ocr-core-simd-lstm.wasm.js'), langPath: abs('.').replace(/\/$/, ''), logger: m => { if (m.status === 'recognizing text') bar(0.2 + 0.78 * m.progress, '글자를 읽는 중... ' + Math.round(m.progress * 100) + '%'); else if (/load|initializ/.test(m.status || '')) bar(0.08 + 0.1 * (m.progress || 0), '분석 준비 중...'); } });
-    await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
-    const r = await worker.recognize(cv); await worker.terminate();
-    impRows = parseOcrText(r.data.text || '', C().members); sortImp();
-    st.textContent = impRows.length ? '이미지에서 ' + impRows.length + '명을 읽었습니다. 사진 글자는 틀릴 수 있으니 이름·에버를 꼭 확인하세요.' : '이름과 에버를 찾지 못했습니다. 표가 또렷하게 나온 이미지로 다시 시도하거나 엑셀·CSV 파일을 써 주세요.';
+    bar(0.01, '이미지를 준비하는 중...');
+    let text = '', engine = '';
+    try {
+      const base = new URL('.', location.href).href;
+      if (!window.PPOCR) await loadScript('ocr-pp.js');
+      await PPOCR.init({ ort: base + 'ort.min.js', wasmBase: base, det: base + 'pp-det.onnx', rec: base + 'pp-rec-ko.onnx', dict: base + 'pp-ko-dict.txt' }, bar);
+      const cv = await fileToCanvas(file, 2400);
+      const r = await PPOCR.recognize(cv, bar); text = r.lines.join('\n'); engine = '정밀 분석';
+    } catch (e) { console.log('정밀 분석 실패', e); text = await ocrWithTesseract(file, bar); engine = '보조 분석'; }
+    impRows = parseOcrText(text, C().members); sortImp(true);
+    st.textContent = impRows.length ? '이미지에서 ' + impRows.length + '명을 읽었습니다(' + engine + '). 틀린 곳이 없는지 이름·에버를 확인한 뒤 등록하세요.' : '이름과 에버를 찾지 못했습니다. 표가 또렷하게 나온 이미지로 다시 시도하거나 엑셀·CSV 파일을 써 주세요.';
     renderPrev();
   } catch (e) { st.textContent = '이미지를 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
   ocrBusy = false;
 }
+let impSheets = [];
+function chooseSheet(i) {
+  const c = C(); const s = impSheets[i]; impRows = tableToRows(s.rows); linkKnown(impRows); sortImp(false);
+  $('impStatus').textContent = (impSheets.length > 1 ? '시트 "' + s.name + '"' : '엑셀') + '에서 ' + impRows.length + '명을 읽었습니다. 확인 후 등록하세요.' + (impSheets.skipped && impSheets.skipped.length ? ' (너무 큰 시트 ' + impSheets.skipped.length + '개는 건너뛰었습니다)' : '');
+  renderPrev();
+}
+async function decodeText(file) { const buf = await file.arrayBuffer(); try { return new TextDecoder('utf-8', { fatal: true }).decode(buf).replace(/^\uFEFF/, ''); } catch (e) { try { return new TextDecoder('euc-kr').decode(buf); } catch (e2) { return new TextDecoder().decode(buf); } } }
 async function handleFile(file) {
-  if (!file) return; const st = $('impStatus'); const name = file.name || '';
+  if (!file) return; const st = $('impStatus'); const name = file.name || ''; impRows = []; impSheets = []; renderPrev(); $('sheetPick').classList.add('hide');
   try {
-    if (/^image\//.test(file.type) || /\.(png|jpe?g|heic|heif|webp)$/i.test(name)) { await runOcr(file); return; }
-    if (/\.xlsx$/i.test(name)) { st.textContent = '엑셀 파일을 읽는 중...'; impRows = tableToRows(await readXlsx(await file.arrayBuffer())); }
-    else if (/\.(csv|txt)$/i.test(name) || /text\//.test(file.type)) { impRows = parseTextTable(await file.text()); }
-    else { st.textContent = '지원하지 않는 파일입니다. 이미지, .xlsx, .csv, .txt 파일을 올려 주세요.'; return; }
-    const c = C(); impRows.forEach(r => { const k = c.members.find(m => m.name === r.name); if (k) r.matchId = k.id; }); sortImp();
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer()); const is = (...b) => b.every((v, i) => head[i] === v);
+    const isImg = /^image\//.test(file.type) || /\.(png|jpe?g|heic|heif|webp|gif|bmp)$/i.test(name) || is(0xFF, 0xD8, 0xFF) || is(0x89, 0x50, 0x4E, 0x47) || (head[4] === 0x66 && head[5] === 0x74 && head[6] === 0x79 && head[7] === 0x70);
+    if (isImg) { await runOcr(file); return; }
+    if (is(0xD0, 0xCF, 0x11, 0xE0)) { st.textContent = '예전 엑셀 형식(.xls)입니다. 엑셀에서 "다른 이름으로 저장"으로 .xlsx 또는 CSV로 저장한 뒤 올려 주세요.'; return; }
+    if (is(0x50, 0x4B, 0x03, 0x04)) {
+      st.textContent = '엑셀 파일을 읽는 중...'; const r = await readXlsx(await file.arrayBuffer());
+      const c = C(); const scored = r.sheets.map(s => { const rows = tableToRows(s.rows); return { s, n: rows.filter(x => x.avg !== '').length, all: rows.length }; });
+      impSheets = scored.filter(x => x.all > 0).sort((a, b) => b.n - a.n).map(x => x.s); impSheets.skipped = r.skipped;
+      if (!impSheets.length) { st.textContent = '읽을 수 있는 팀원이 없습니다. 첫 줄에 이름·성별·에버 같은 제목이 있는 시트인지 확인하세요.' + (r.skipped.length ? ' (너무 큰 시트 ' + r.skipped.length + '개는 건너뛰었습니다)' : ''); return; }
+      if (impSheets.length > 1) { $('sheetSel').innerHTML = impSheets.map((s, i) => '<option value="' + i + '">' + esc(s.name) + '</option>').join(''); $('sheetPick').classList.remove('hide'); }
+      chooseSheet(0); return;
+    }
+    impRows = parseTextTable(await decodeText(file)); linkKnown(impRows); sortImp(false);
     st.textContent = impRows.length ? name + ' 에서 ' + impRows.length + '명을 읽었습니다. 확인 후 등록하세요.' : '읽을 수 있는 팀원이 없습니다. 첫 줄에 이름·성별·에버 같은 제목이 있는지 확인하세요.';
     renderPrev();
   } catch (e) { st.textContent = '파일을 읽지 못했습니다: ' + (e && e.message ? e.message : e); }
 }
 $('btnCam').onclick = () => $('fileCam').click(); $('btnPic').onclick = () => $('filePic').click(); $('btnXls').onclick = () => $('fileXls').click();
 ['fileCam', 'filePic', 'fileXls'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); });
+$('sheetSel').onchange = (e) => chooseSheet(+e.target.value);
 
 // ===== 시작 =====
 (async () => {
