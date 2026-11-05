@@ -85,6 +85,13 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 .pk.on{border-color:var(--pri);background:rgba(200,16,46,.12)}
 .pk input{width:28px;height:28px;flex:none}
 .pk .badge{font-size:13px;min-width:22px;padding:1px 6px}
+.srow{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:var(--bg)}
+.shead{font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.shead .rng{margin-left:auto;font-weight:800;color:var(--pri);font-size:20px}
+.sr{display:flex;align-items:center;gap:10px;margin:4px 0 6px}
+.sr input[type=range]{flex:1;accent-color:var(--pri)}
+.sr input[type=number]{width:86px;font-size:18px;padding:7px 8px}
+.badge.ga,.badge.gb,.badge.gc,.badge.gd{white-space:nowrap}
 .prog{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
 .prog i{display:block;height:100%;width:0;background:var(--pri)}
 </style>
@@ -119,6 +126,14 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     <div class="small" style="margin-top:6px">오른쪽 에버 숫자를 눌러 바로 고칠 수 있습니다. 고친 값은 명단에도 저장됩니다.</div>
     <div class="lbl">게스트 바로 추가</div>
     <div class="row"><input type="text" id="gName" placeholder="이름" class="grow"><select id="gGender" style="width:80px"><option value="M">남</option><option value="F">여</option></select><input type="number" id="gAvg" placeholder="에버" style="width:90px" inputmode="numeric"><button id="btnGuest">추가</button></div>
+  </div>
+  <div class="card" id="seedCard">
+    <b>시드 설정</b>
+    <div class="small" style="margin:4px 0 8px">시드 이름 방식을 고르고 점수 기준(100~300)을 조정하세요. 낮은 등급의 상한을 바꾸면 그 위 등급은 그 점수 바로 위부터 시작합니다. 시드를 "자동"으로 둔 팀원은 이 기준으로 나뉩니다. 오른쪽 숫자는 지금 참가자 수입니다.</div>
+    <div class="lbl">시드 이름</div>
+    <select id="seedScheme"><option value="abcd">A · B · C · D</option><option value="names">마스터 · 에이스 · 챌린지 · 루키</option></select>
+    <div id="seedRows" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:8px"><button id="btnSeedReset" class="gray">기본값으로</button></div>
   </div>
   <div class="card">
     <label class="row"><input type="checkbox" id="pairOn" style="width:22px;height:22px"> <b>같은 편이 되면 안 되는 사람 지정</b></label>
@@ -181,7 +196,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     </div>
     <div class="row" style="margin-top:8px">
       <input type="number" id="aAvg" placeholder="에버" style="width:110px" inputmode="decimal">
-      <select id="aSeed" class="grow"><option value="">시드 자동</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+      <select id="aSeed" class="grow"></select>
     </div>
     <div class="row" style="margin-top:8px">
       <input type="text" id="aNick" placeholder="별명(선택)" class="grow">
@@ -199,7 +214,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     <div id="sheetPick" class="hide" style="margin-top:8px"><div class="lbl">읽을 시트 선택</div><select id="sheetSel"></select></div>
     <div id="impPrev"></div>
   </div>
-  <div class="card">
+    <div class="card">
     <b>성별 핸디</b>
     <div class="small" style="margin:4px 0 8px">팀 합계를 낼 때 각자의 에버에 더해지는 점수입니다. 없으면 0.</div>
     <div class="row">
@@ -220,7 +235,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
   <div class="card">
     <b>클럽 설정</b>
     <div class="lbl">클럽 이름</div><input type="text" id="clubName">
-    <label class="row" style="margin-top:8px"><input type="checkbox" id="optFloor" style="width:22px;height:22px"> 시드 하한선 적용 (A 211, B 191, C 171, D 151 아래로는 계산하지 않기)</label>
+    <label class="row" style="margin-top:8px"><input type="checkbox" id="optFloor" style="width:22px;height:22px"> <span id="floorTxt">시드 하한선 적용</span></label>
     <div class="lbl">에버를 비워 둔(또는 1~300 밖인) 회원의 기본값</div><input type="number" id="optDef" inputmode="numeric">
     <div class="lbl">기준 월 (복사 글에 표시, 예: 11월)</div><input type="text" id="optMonth" placeholder="예: 11월">
     <div class="row" style="margin-top:10px"><button id="btnDelClub" class="danger">이 클럽 삭제</button></div>
@@ -238,8 +253,20 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 
 <script>
 // ===== 규칙: 시드(등급) A 211+, B 191~210, C 171~190, D 170 이하 / 시드 하한선 =====
-const GRADE = (avg) => avg >= 211 ? 'A' : avg >= 191 ? 'B' : avg >= 171 ? 'C' : 'D';
-const FLOOR = { A: 211, B: 191, C: 171, D: 151 };
+// 시드 구분 설정(클럽마다): 낮은 등급부터 [최저점수 ~ 상한1], [상한1+1 ~ 상한2], [상한2+1 ~ 상한3], [상한3+1 ~ 300]
+const SEED_NAMES = { abcd: { A: 'A', B: 'B', C: 'C', D: 'D' }, names: { A: '마스터', B: '에이스', C: '챌린지', D: '루키' } };
+const SEED_DEFAULT = () => ({ scheme: 'abcd', min: 100, cuts: [170, 190, 210] });
+function seedCfgOf(c) {
+  const s = (c && c.seedCfg) || SEED_DEFAULT(); const cuts = (s.cuts || [170, 190, 210]).map(Number);
+  const min = Math.max(100, Math.min(297, Number(s.min) || 100)); cuts[0] = Math.max(min, Math.min(297, cuts[0])); cuts[1] = Math.max(cuts[0] + 1, Math.min(298, cuts[1])); cuts[2] = Math.max(cuts[1] + 1, Math.min(299, cuts[2]));
+  return { scheme: s.scheme === 'names' ? 'names' : 'abcd', min, cuts };
+}
+const curCfg = () => seedCfgOf(typeof C === 'function' ? C() : null);
+const GRADE = (avg) => { const k = curCfg().cuts; return avg > k[2] ? 'A' : avg > k[1] ? 'B' : avg > k[0] ? 'C' : 'D'; };
+const floorOf = (s) => { const g = curCfg(); return s === 'A' ? g.cuts[2] + 1 : s === 'B' ? g.cuts[1] + 1 : s === 'C' ? g.cuts[0] + 1 : g.min; };
+const seedLabel = (s) => SEED_NAMES[curCfg().scheme][s] || s;
+const seedFrom = (v) => { v = String(v == null ? '' : v).trim(); if (/^[A-Da-d]$/.test(v)) return v.toUpperCase(); if (/마스터|master/i.test(v)) return 'A'; if (/에이스|ace/i.test(v)) return 'B'; if (/챌린지|첼린지|challenge/i.test(v)) return 'C'; if (/루키|rookie/i.test(v)) return 'D'; return ''; };
+const seedOptions = (sel, withAuto) => (withAuto === false ? '' : '<option value="">시드 자동</option>') + ['A', 'B', 'C', 'D'].map(s => '<option value="' + s + '"' + (sel === s ? ' selected' : '') + '>' + seedLabel(s) + (curCfg().scheme === 'names' ? '' : ' 시드') + '</option>').join('');
 function makeRng(seed) { let s = (seed >>> 0) || 123456789; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; }
 
 // ===== 팀 평가: 에버(+핸디) 합계 차이(팀 크기가 다르면 큰 팀 기준 환산) + 등급 분포 + 분리 조건 위반 =====
@@ -417,6 +444,7 @@ function loadDB() {
   return { v: 2, cur: null, clubs: [] };
 }
 let DB = loadDB();
+DB.clubs.forEach(c => { if (!c.seedCfg) c.seedCfg = { scheme: 'abcd', min: 151, cuts: [170, 190, 210] }; });
 const $ = (id) => document.getElementById(id);
 const save = () => { try { localStorage.setItem(KEY2, JSON.stringify(DB)); } catch (e) { alert('저장에 실패했습니다. 사파리 개인정보 보호 모드이거나 저장 공간이 없을 수 있습니다.'); } };
 const C = () => DB.clubs.find(c => c.id === DB.cur);
@@ -425,7 +453,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
 const dn = (m) => m.nick ? m.nick : m.name;
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 const gbadge = (g) => '<span class="badge ' + (g === 'F' ? 'bf' : 'bm') + '">' + (g === 'F' ? '여' : '남') + '</span>';
-const grBadge = (g) => '<span class="badge g' + g.toLowerCase() + '">' + g + '</span>';
+const grBadge = (g) => '<span class="badge g' + g.toLowerCase() + '">' + seedLabel(g) + '</span>';
 let result = null, idx = 0, sel = null, manual = false, curTeams = null;
 
 // ===== 화면 전환 =====
@@ -449,7 +477,7 @@ $('btnBack').onclick = () => { DB.cur = null; save(); go('home'); };
 $('btnNewClub').onclick = () => {
   const n = $('newClub').value.trim(); if (!n) return alert('클럽 이름을 입력해 주세요.');
   if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 클럽이 이미 있습니다.');
-  const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts() };
+  const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() };
   DB.clubs.push(c); save(); $('newClub').value = ''; openClub(c.id);
 };
 function tab(t) {
@@ -457,7 +485,7 @@ function tab(t) {
   ['att', 'team', 'mem'].forEach(x => { $('tab-' + x).classList.toggle('hide', x !== t); });
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   window.scrollTo(0, 0);
-  if (t === 'att') { renderAtt(); syncOpts(); showPlan(); }
+  if (t === 'att') { renderSeedCfg(); renderAtt(); syncOpts(); showPlan(); }
   if (t === 'mem') renderMem();
 }
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
@@ -468,14 +496,14 @@ function setHH() { const hd = document.querySelector('header'); if (hd) document
 window.addEventListener('resize', setHH);
 function renderAtt() {
   const c = C(); const all = c.members;
-  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (c.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (c.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < FLOOR[m.seed] ? ' <span class="nick">하한 ' + FLOOR[m.seed] + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
+  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (c.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (c.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < floorOf(m.seed) ? ' <span class="nick">하한 ' + floorOf(m.seed) + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
   $('attList').innerHTML = rows || '<div class="small" style="padding:12px 0">팀원이 없습니다. 명단 탭에서 팀원을 등록해 주세요.</div>';
   const cnt = () => c.present.filter(id => all.some(m => m.id === id)).length;
   updateCounts();
   $('attList').querySelectorAll('.delg').forEach(a => a.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const id = a.dataset.id; c.members = c.members.filter(g => g.id !== id); c.present = c.present.filter(x => x !== id); c.pairs = c.pairs.filter(p => p[0] !== id && p[1] !== id); save(); renderAtt(); });
   $('attList').querySelectorAll('.avin').forEach(inp => { inp.onclick = (e) => e.stopPropagation(); inp.onchange = () => { const m = all.find(x => x.id === inp.dataset.id); if (!m) return; const v = inp.value.trim(); if (v === '') { m.avg = ''; save(); renderAtt(); return; } const x = parseFloat(v); if (!isFinite(x) || x < 1 || x > 300) { alert('에버는 1~300 사이 숫자로 넣어 주세요.'); inp.value = m.avg === '' || m.avg == null ? '' : m.avg; return; } m.avg = Math.round(x * 10) / 10; save(); renderAtt(); }; });
   $('attList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; c.present = c.present.filter(x => x !== id); if (ck.checked) c.present.push(id); save(); updateCounts(); renderPairs(); showPlan(); });
-  renderPairs();
+  renderPairs(); if ($('seedRows').children.length) refreshSeedUI();
 }
 $('btnAll').onclick = () => { const c = C(); c.present = c.members.map(m => m.id); save(); renderAtt(); showPlan(); };
 $('btnNone').onclick = () => { const c = C(); c.present = []; save(); renderAtt(); showPlan(); };
@@ -524,7 +552,7 @@ function people() {
   const list = c.members.filter(m => c.present.includes(m.id)).map(m => {
     const blank = !(m.avg !== '' && m.avg != null && +m.avg >= 1 && +m.avg <= 300);
     const seed = /^[ABCD]$/.test(m.seed || '') ? m.seed : ''; const raw = blank ? o.def : +m.avg;
-    const base = (seed && o.floor) ? Math.max(raw, FLOOR[seed]) : raw;
+    const base = (seed && o.floor) ? Math.max(raw, floorOf(seed)) : raw;
     const g = m.gender === 'F' ? 'F' : 'M'; const hd = num(g === 'F' ? o.hdF : o.hdM, 0) || 0;
     return { id: m.id, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest };
   });
@@ -662,10 +690,43 @@ $('btnImgCopy').onclick = async () => {
 function renderMem() {
   const c = C(); const o = c.opts;
   $('memCount').textContent = c.members.length;
-  $('memList').innerHTML = c.members.map(m => '<div class="mem" data-id="' + m.id + '" style="flex-wrap:wrap"><select class="kd" style="width:76px"><option value="member"' + (!m.guest ? ' selected' : '') + '>회원</option><option value="guest"' + (m.guest ? ' selected' : '') + '>게스트</option></select><input type="text" class="grow nm" value="' + esc(m.name) + '" placeholder="이름"><select class="gd" style="width:64px"><option value="M"' + (m.gender !== 'F' ? ' selected' : '') + '>남</option><option value="F"' + (m.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="av" style="width:76px" inputmode="decimal" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" placeholder="에버"><input type="text" class="nk" style="width:110px" value="' + esc(m.nick || '') + '" placeholder="별명"><select class="sd" style="width:84px"><option value="">시드 자동</option>' + ['A', 'B', 'C', 'D'].map(s => '<option value="' + s + '"' + (m.seed === s ? ' selected' : '') + '>' + s + ' 시드</option>').join('') + '</select><button class="gray del" style="padding:8px 10px">삭제</button></div>').join('') || '<div class="small" style="padding:12px 0">팀원이 없습니다. 위에서 등록하거나 파일을 올려 주세요.</div>';
+  $('memList').innerHTML = c.members.map(m => '<div class="mem" data-id="' + m.id + '" style="flex-wrap:wrap"><select class="kd" style="width:76px"><option value="member"' + (!m.guest ? ' selected' : '') + '>회원</option><option value="guest"' + (m.guest ? ' selected' : '') + '>게스트</option></select><input type="text" class="grow nm" value="' + esc(m.name) + '" placeholder="이름"><select class="gd" style="width:64px"><option value="M"' + (m.gender !== 'F' ? ' selected' : '') + '>남</option><option value="F"' + (m.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="av" style="width:76px" inputmode="decimal" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" placeholder="에버"><input type="text" class="nk" style="width:110px" value="' + esc(m.nick || '') + '" placeholder="별명"><select class="sd" style="width:96px">' + seedOptions(m.seed) + '</select><button class="gray del" style="padding:8px 10px">삭제</button></div>').join('') || '<div class="small" style="padding:12px 0">팀원이 없습니다. 위에서 등록하거나 파일을 올려 주세요.</div>';
   $('memList').querySelectorAll('.mem').forEach(row => { const m = c.members.find(x => x.id === row.dataset.id); row.querySelector('.nm').onchange = e => { m.name = e.target.value.trim(); save(); }; row.querySelector('.gd').onchange = e => { m.gender = e.target.value; save(); }; row.querySelector('.av').onchange = e => { m.avg = e.target.value === '' ? '' : num(e.target.value, ''); save(); }; row.querySelector('.nk').onchange = e => { m.nick = e.target.value.trim(); save(); }; row.querySelector('.sd').onchange = e => { m.seed = e.target.value; save(); }; row.querySelector('.kd').onchange = e => { m.guest = e.target.value === 'guest'; save(); }; row.querySelector('.del').onclick = () => { if (confirm(m.name + ' 님을 지울까요?')) { c.members = c.members.filter(x => x !== m); c.present = c.present.filter(x => x !== m.id); c.pairs = c.pairs.filter(p => p[0] !== m.id && p[1] !== m.id); save(); renderMem(); } }; });
-  $('optDef').value = o.def; $('optMonth').value = o.month || ''; $('optFloor').checked = !!o.floor; $('clubName').value = c.name; $('hdM').value = o.hdM || 0; $('hdF').value = o.hdF || 0;
+  renderSeedCfg();
+  $('aSeed').innerHTML = seedOptions($('aSeed').value || ''); $('optDef').value = o.def; $('optMonth').value = o.month || ''; $('optFloor').checked = !!o.floor; $('clubName').value = c.name; $('hdM').value = o.hdM || 0; $('hdF').value = o.hdF || 0;
 }
+// ===== 시드 구분 설정 =====
+function seedLimits(g) { return { min: [100, g.cuts[0]], cut0: [g.min, 297], cut1: [g.cuts[0] + 1, 298], cut2: [g.cuts[1] + 1, 299] }; }
+function renderSeedCfg() {
+  const c = C(); const g = seedCfgOf(c); $('seedScheme').value = g.scheme;
+  const tier = [{ s: 'A', ctl: [] }, { s: 'B', ctl: ['cut2'] }, { s: 'C', ctl: ['cut1'] }, { s: 'D', ctl: ['min', 'cut0'] }];
+  const names = { min: '최저 점수(하한)', cut0: '상한 점수', cut1: '상한 점수', cut2: '상한 점수' };
+  $('seedRows').innerHTML = tier.map(t => '<div class="srow" data-s="' + t.s + '"><div class="shead">' + grBadge(t.s) + ' <b>' + SEED_NAMES[g.scheme][t.s] + '</b> <span class="rng"></span></div>' + t.ctl.map(k => '<div class="small">' + names[k] + '</div><div class="sr"><input type="range" step="1" data-k="' + k + '"><input type="number" inputmode="numeric" data-k="' + k + '"></div>').join('') + '</div>').join('');
+  $('seedRows').querySelectorAll('input').forEach(inp => { inp.oninput = () => { if (inp.type === 'number' && inp.value === '') return; setSeedLimit(inp.dataset.k, +inp.value, inp); }; inp.onchange = () => { if (inp.type === 'number' && inp.value !== '') setSeedLimit(inp.dataset.k, +inp.value, null); else refreshSeedUI(); }; });
+  refreshSeedUI();
+}
+function refreshSeedUI(skip) {
+  const c = C(); const g = seedCfgOf(c); const k = g.cuts; const lim = seedLimits(g);
+  const ranges = { A: [k[2] + 1, 300], B: [k[1] + 1, k[2]], C: [k[0] + 1, k[1]], D: [g.min, k[0]] };
+  const cnt = { A: 0, B: 0, C: 0, D: 0 }; try { C().members.filter(m => C().present.includes(m.id)).forEach(m => { const raw = (m.avg === '' || m.avg == null || !(+m.avg >= 1 && +m.avg <= 300)) ? C().opts.def : +m.avg; const sd = /^[ABCD]$/.test(m.seed || '') ? m.seed : GRADE(raw); cnt[sd]++; }); } catch (e) {}
+  $('seedRows').querySelectorAll('.srow').forEach(row => { const r = ranges[row.dataset.s]; row.querySelector('.rng').innerHTML = r[0] + ' ~ ' + r[1] + '점 <span style="color:var(--tx);margin-left:8px">' + cnt[row.dataset.s] + '명</span>'; });
+  const val = { min: g.min, cut0: k[0], cut1: k[1], cut2: k[2] };
+  $('seedRows').querySelectorAll('input').forEach(inp => { const key = inp.dataset.k; inp.min = lim[key][0]; inp.max = lim[key][1]; if (inp !== skip) inp.value = val[key]; });
+  $('floorTxt').textContent = '시드 하한선 적용 (' + ['A', 'B', 'C', 'D'].map(s => SEED_NAMES[g.scheme][s] + ' ' + floorOf(s)).join(', ') + ' 아래로는 계산하지 않기)';
+}
+let seedTimer = null;
+function afterSeedChange() { clearTimeout(seedTimer); seedTimer = setTimeout(() => { if (!$('tab-att').classList.contains('hide')) renderAtt(); else renderMem(); }, 300); }
+function setSeedLimit(key, v, from) {
+  const c = C(); const g = seedCfgOf(c); let min = g.min, k = g.cuts.slice();
+  if (!isFinite(v)) return;
+  if (key === 'min') min = Math.max(100, Math.min(v, k[0]));
+  else if (key === 'cut0') { k[0] = Math.max(min, Math.min(297, v)); if (k[1] < k[0] + 1) k[1] = k[0] + 1; if (k[2] < k[1] + 1) k[2] = k[1] + 1; }
+  else if (key === 'cut1') { k[1] = Math.max(k[0] + 1, Math.min(298, v)); if (k[2] < k[1] + 1) k[2] = k[1] + 1; }
+  else if (key === 'cut2') { k[2] = Math.max(k[1] + 1, Math.min(299, v)); }
+  c.seedCfg = { scheme: g.scheme, min, cuts: k }; save(); refreshSeedUI(from && from.type === 'number' ? from : null); afterSeedChange();
+}
+$('seedScheme').onchange = (e) => { const c = C(); const g = seedCfgOf(c); c.seedCfg = { scheme: e.target.value, min: g.min, cuts: g.cuts }; save(); renderSeedCfg(); afterSeedChange(); };
+$('btnSeedReset').onclick = () => { const c = C(); c.seedCfg = { scheme: seedCfgOf(c).scheme, min: 100, cuts: [170, 190, 210] }; save(); renderSeedCfg(); afterSeedChange(); };
 $('btnAddMember').onclick = () => {
   const c = C(); const n = $('aName').value.trim(); if (!n) return alert('이름을 입력해 주세요.');
   if (c.members.some(m => m.name === n) && !confirm('같은 이름이 이미 있습니다. 그래도 등록할까요?')) return;
@@ -701,7 +762,7 @@ function applyRosterText(text, clubName) {
   text.split(/\r?\n/).forEach(l => { if (/^분리:/.test(l)) pl.push(l.split(':').slice(1).map(s => s.trim())); else if (l.trim()) cl.push(l); });
   const l = parseCsv(cl.join('\n')); if (!l.length) return false;
   let c = DB.cur ? C() : null;
-  if (!c) { c = DB.clubs.find(x => x.name === (clubName || '비투비')); if (!c) { c = { id: uid(), name: clubName || '비투비', members: [], present: [], pairs: [], pairOn: false, opts: defOpts() }; DB.clubs.push(c); } }
+  if (!c) { c = DB.clubs.find(x => x.name === (clubName || '비투비')); if (!c) { c = { id: uid(), name: clubName || '비투비', members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: { scheme: 'abcd', min: 151, cuts: [170, 190, 210] } }; DB.clubs.push(c); } }
   if (!confirm('"' + c.name + '" 클럽에 명단 ' + l.length + '명' + (pl.length ? ', 분리 조건 ' + pl.length + '개' : '') + '을 불러와 현재 명단을 바꿀까요?')) return false;
   const pairs = pl.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean);
   c.members = l; c.present = []; c.pairs = pairs; c.pairOn = pairs.length > 0; save();
@@ -761,7 +822,7 @@ function tableToRows(t) {
   else {
     // 제목이 없는 표: 칸의 내용을 보고 이름·에버·성별·시드 칸을 찾는다
     const cols = Math.max(...t.map(r => r.length)); const st = [];
-    for (let c = 0; c < cols; c++) { const s = { nm: 0, nu: 0, sd: 0, gd: 0, ne: 0 }; t.forEach(r => { const v = String(r[c] == null ? '' : r[c]).trim(); if (!v) return; s.ne++; if (/^(남|여|남자|여자)$/.test(v)) s.gd++; else if (/^[A-Da-d]$/.test(v)) s.sd++; else if (/^[가-힣]{2,5}\s*([(（][^)）]*[)）]?)?$/.test(v) || /^[가-힣A-Za-z]{2,12}$/.test(v)) s.nm++; if (/^\d{1,3}(\.\d+)?$/.test(v) && +v >= 50 && +v <= 300) s.nu++; }); st.push(s); }
+    for (let c = 0; c < cols; c++) { const s = { nm: 0, nu: 0, sd: 0, gd: 0, ne: 0 }; t.forEach(r => { const v = String(r[c] == null ? '' : r[c]).trim(); if (!v) return; s.ne++; if (/^(남|여|남자|여자)$/.test(v)) s.gd++; else if (/^[A-Da-d]$/.test(v) || /^(마스터|에이스|챌린지|첼린지|루키)$/.test(v)) s.sd++; else if (/^[가-힣]{2,5}\s*([(（][^)）]*[)）]?)?$/.test(v) || /^[가-힣A-Za-z]{2,12}$/.test(v)) s.nm++; if (/^\d{1,3}(\.\d+)?$/.test(v) && +v >= 50 && +v <= 300) s.nu++; }); st.push(s); }
     const best = (key, skip, min) => { let bi = -1, bv = min - 1; st.forEach((s, i) => { if (skip.includes(i)) return; if (s[key] > bv) { bv = s[key]; bi = i; } }); return bi; };
     map.name = best('nm', [], 1); if (map.name < 0) return [];
     const used = [map.name];
@@ -776,7 +837,7 @@ function tableToRows(t) {
     const pm = name.match(/^([^(（]+?)\s*[(（]([^)）]*)[)）]?\s*$/); if (pm) { name = pm[1].trim(); if (!nick) nick = pm[2].trim(); }
     if (!name || name.length > 14 || /^[\d.\s]+$/.test(name)) return null;
     let avg = map.avg != null ? parseFloat(String(r[map.avg]).replace(/[^\d.]/g, '')) : NaN; if (isFinite(avg) && (avg < 1 || avg > 300)) avg = NaN;
-    let sd = map.seed != null ? String(r[map.seed] || '').trim().toUpperCase().slice(0, 1) : ''; if (!/[ABCD]/.test(sd)) sd = ''; if (carry) { if (sd) lastSeed = sd; else sd = lastSeed; }
+    let sd = map.seed != null ? seedFrom(r[map.seed]) : ''; if (carry) { if (sd) lastSeed = sd; else sd = lastSeed; }
     const kd = map.kind != null ? String(r[map.kind] || '') : '';
     return { name, nick, gender: map.g != null ? gOf(r[map.g]) : '', avg: isFinite(avg) ? avg : '', seed: sd, guest: /게스트|guest|손님/i.test(kd), kindSet: map.kind != null };
   }).filter(Boolean);
@@ -828,7 +889,7 @@ function renderPrev() {
   $('impPrev').innerHTML = '<div class="small" style="margin:10px 0 4px">읽은 결과 ' + impRows.length + '명 · 틀린 곳을 고친 뒤 등록하세요 (체크 해제한 사람은 건너뜁니다)</div>' + impRows.map((r, i) => {
     const ex = r.matchId ? c.members.find(x => x.id === r.matchId) : c.members.find(x => x.name === r.name);
     const st = r.flag || r.status || (ex ? '기존 팀원 · 에버 ' + ex.avg + ' → ' + (r.avg === '' ? '유지' : r.avg) : '신규');
-    return '<div class="impr" data-i="' + i + '"><div class="row"><input type="checkbox" class="ck" ' + (r.ck === false ? '' : 'checked') + ' style="width:22px;height:22px"><input type="text" class="grow in-nm" value="' + esc(r.name) + '"><select class="in-g" style="width:84px"><option value="">성별?</option><option value="M"' + (r.gender === 'M' ? ' selected' : '') + '>남</option><option value="F"' + (r.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="in-av" style="width:76px" inputmode="decimal" value="' + (r.avg === '' ? '' : r.avg) + '"></div><div class="row" style="margin-top:6px"><input type="text" class="grow in-nk" placeholder="별명" value="' + esc(r.nick || '') + '"><select class="in-sd" style="width:92px"><option value="">시드 자동</option>' + ['A', 'B', 'C', 'D'].map(s => '<option' + (r.seed === s ? ' selected' : '') + '>' + s + '</option>').join('') + '</select><select class="in-kd" style="width:84px"><option value="member">회원</option><option value="guest"' + (r.guest ? ' selected' : '') + '>게스트</option></select></div><div class="small">' + esc(st) + '</div></div>';
+    return '<div class="impr" data-i="' + i + '"><div class="row"><input type="checkbox" class="ck" ' + (r.ck === false ? '' : 'checked') + ' style="width:22px;height:22px"><input type="text" class="grow in-nm" value="' + esc(r.name) + '"><select class="in-g" style="width:84px"><option value="">성별?</option><option value="M"' + (r.gender === 'M' ? ' selected' : '') + '>남</option><option value="F"' + (r.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="in-av" style="width:76px" inputmode="decimal" value="' + (r.avg === '' ? '' : r.avg) + '"></div><div class="row" style="margin-top:6px"><input type="text" class="grow in-nk" placeholder="별명" value="' + esc(r.nick || '') + '"><select class="in-sd" style="width:104px">' + seedOptions(r.seed) + '</select><select class="in-kd" style="width:84px"><option value="member">회원</option><option value="guest"' + (r.guest ? ' selected' : '') + '>게스트</option></select></div><div class="small">' + esc(st) + '</div></div>';
   }).join('') + '<div class="row" style="margin-top:10px"><button id="btnImpOk" class="grow">선택한 사람 등록</button><button id="btnImpNo" class="gray">취소</button></div>';
   $('impPrev').querySelectorAll('.impr').forEach(el => { const r = impRows[+el.dataset.i]; el.querySelector('.ck').onchange = e => { r.ck = e.target.checked; }; el.querySelector('.in-nm').onchange = e => { r.name = e.target.value.trim(); delete r.matchId; renderPrev(); }; el.querySelector('.in-g').onchange = e => { r.gender = e.target.value; }; el.querySelector('.in-av').onchange = e => { r.avg = e.target.value === '' ? '' : num(e.target.value, ''); }; el.querySelector('.in-nk').onchange = e => { r.nick = e.target.value.trim(); }; el.querySelector('.in-sd').onchange = e => { r.seed = e.target.value; }; el.querySelector('.in-kd').onchange = e => { r.guest = e.target.value === 'guest'; r.kindSet = true; }; });
   $('btnImpOk').onclick = applyImport; $('btnImpNo').onclick = () => { impRows = []; renderPrev(); $('impStatus').textContent = ''; };
