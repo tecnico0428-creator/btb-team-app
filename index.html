@@ -1392,7 +1392,7 @@ function textLineToRec(line, ctx) {
   if ((m = s.match(/최고\s*[:=]?\s*(\d{2,3})/))) { hi = +m[1]; s = s.replace(m[0], ' '); }
   s = s.replace(/(\d{1,2})[Gg](\d{2,3})/g, '$1G $2').replace(/(?:^|\s)[Gg]\s*\d{1,2}(?=\s|$)|(?:^|\s)\d{1,2}\s*[Gg](?=\s|$)|\d{1,2}\s*(?:번째|게임째)|(?:합계|총점|총|계)\s*\d{2,4}/g, ' ');
   const scores = [], words = [];
-  s.split(/[\s,;]+/).filter(Boolean).forEach(t => { if (/^\d{2,3}$/.test(t)) { if (+t >= 20 && +t <= 300) scores.push(+t); } else if (/^\d{2,3}\.\d$/.test(t)) { if (!ever && +t >= 50 && +t <= 300) ever = +t; } else if (/[가-힣A-Za-z]{2,}/.test(t) && !STOPW.test(t) && !kindOf(t)) words.push(t); });
+  s.split(/[\s,;]+/).filter(Boolean).forEach(t => { if (/^\d{2,3}$/.test(t)) { if (+t >= 20 && +t <= 300) scores.push(+t); } else if (/^\d{2,3}\.\d$/.test(t)) { if (!ever && +t >= 50 && +t <= 300) ever = +t; } else { const w = t.replace(/정모|정기|연습|대회|리그|토너먼트|토너/g, ''); if (/[가-힣A-Za-z]{2,}/.test(w) && !STOPW.test(w)) words.push(w); } });
   const alley = words.join(' ').trim(), kind = kindOf(line);
   if (!scores.length && !ever) { if (date) { ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind; } return null; }
   if (date) ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind;
