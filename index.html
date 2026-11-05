@@ -1507,7 +1507,14 @@ function detectMeta(rows) {
   const text = rows.map(r => r.texts.join(' ')).join('\n'); const meta = { date: '', kind: '', alleyId: '', hint: '' };
   const ctx = {}; rows.forEach(r => { const rec = textLineToRec(r.texts.join(' '), ctx); }); meta.date = ctx.date || ''; meta.kind = kindOf(text);
   const T = nk(text); const reg = REC.alleys.find(a => { const k = nk(a.name).replace(/볼링장|볼링센터|볼링센타|볼링클럽|볼링/g, ''); return k.length >= 3 && T.includes(k); }); if (reg) meta.alleyId = reg.id;
-  if (!reg && window.ALLEYS) { let best = null; window.ALLEYS.list.forEach(r => { const k = nk(r[0]).replace(/볼링장|볼링센터|볼링센타|볼링클럽|볼링/g, ''); if (k.length >= 3 && T.includes(k) && (!best || k.length > best.k.length)) best = { k, r }; }); if (best) meta.hint = best.r; }
+  if (!reg && window.ALLEYS) {
+    const cands = []; window.ALLEYS.list.forEach(r => {
+      const full = nk(r[0]), core = full.replace(/볼링장|볼링센터|볼링센타|볼링클럽|볼링/g, '');
+      const stems = [r[2].split(' ')[0].replace(/(특별시|광역시|시|군|구)$/, ''), r[3]].filter(x => x && x.length >= 2).map(nk); const region = stems.some(w => T.includes(w));
+      if (full.length >= 5 && T.includes(full)) cands.push({ r, len: full.length + 100, region }); else if (core.length >= 2 && region && T.includes(core)) cands.push({ r, len: core.length, region });
+    });
+    if (cands.length) { const mx = Math.max.apply(null, cands.map(c => c.len)); let top = cands.filter(c => c.len === mx); if (top.length > 1) top = top.filter(c => c.region); if (top.length === 1) meta.hint = top[0].r; else if (!top.length) { const rest = cands.filter(c => c.region); if (rest.length) { const m2 = Math.max.apply(null, rest.map(c => c.len)); const t2 = rest.filter(c => c.len === m2); if (t2.length === 1) meta.hint = t2[0].r; } } }
+  }
   return meta;
 }
 let RP = { res: null, chosen: -1, meta: null, crewId: '', busy: false };
@@ -1548,12 +1555,13 @@ function rpRender() {
     const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to;
     h += '<div class="rpmine"><div class="ttl">내 점수로 판단한 줄</div><div class="rpg">' + g.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
     const m = RP.meta || {}; const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : '') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '· 날짜는 사진에서 못 찾아 오늘로 넣습니다') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
+    if (!al && m.hint) h += '<button id="rpAl" class="sec" style="width:100%;margin-top:6px">후보 볼링장 "' + esc(m.hint[0]) + '" 등록하고 선택</button>';
     h += '<button id="rpUse" style="width:100%;margin-top:8px">이 점수 쓰기 (아래 입력칸에 채웁니다)</button>';
   } else {
     h += '<div class="rpmine"><div class="ttl">내 줄을 자동으로 정하지 못했습니다</div><div class="small">' + (res.why === 'multi' ? '내 이름과 비슷한 줄이 여러 개입니다.' : '내 이름·닉네임과 맞는 줄이 없습니다.') + ' 아래에서 내 줄을 눌러 주세요. 한 번 고르면 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</div></div>';
   }
   h += '<div class="lbl" style="margin-top:8px">사진에서 읽은 줄 (누르면 내 줄로 바꿈)</div>' + res.data.slice(0, 40).map(r => '<div class="rpr' + (r.i === RP.chosen ? ' on' : '') + (r.isMine ? ' mine' : '') + '" data-i="' + r.i + '"><b>' + esc(r.name) + '</b>' + (r.isMine ? '<span class="kbadge k2">내 이름과 비슷</span>' : '') + '<div>' + r.games.map(s => '<span class="sc">' + s + '</span>').join('') + (r.total != null ? '<span class="small"> 합계 ' + r.total + '</span>' : '') + '</div></div>').join('');
-  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; rpRender(); }); const u = $('rpUse'); if (u) u.onclick = rpApply;
+  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; rpRender(); }); const u = $('rpUse'); if (u) u.onclick = rpApply; const ab = $('rpAl'); if (ab) ab.onclick = () => { const r = RP.meta.hint; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); let a = REC.alleys.find(x => x.name === r[0] && (x.area || '') === area); if (!a) { a = { id: uid(), name: r[0], area, memo: [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · '), fav: false }; REC.alleys.push(a); saveRec(); } RP.meta.alleyId = a.id; fillAlleySel($('rcAlley'), a.id); rpRender(); };
 }
 function rpApply() {
   const res = RP.res, p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; if (!p || !p.games.length) return alert('내 줄을 먼저 골라 주세요.');
