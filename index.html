@@ -100,7 +100,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
   </div>
   <div class="card">
     <b>가져오기 / 내보내기</b>
-    <div class="small">한 줄에 한 명: 이름,성별(남/여),에버,별명,시드(A~D, 없으면 비움). 엑셀에서 5칸을 복사해 붙여 넣어도 됩니다. 시드를 비우면 에버로 자동 계산합니다.</div>
+    <div class="small">카톡으로 받은 명단 링크를 통째로 붙여 넣고 "명단 바꾸기"를 눌러도 됩니다. 직접 넣을 때는 한 줄에 한 명: 이름,성별(남/여),에버,별명,시드(A~D, 없으면 비움). 엑셀에서 5칸을 복사해 붙여 넣어도 됩니다. 시드를 비우면 에버로 자동 계산합니다.</div>
     <textarea id="csvBox" rows="5" placeholder="홍길동,남,195,길동이&#10;김영희,여,172"></textarea>
     <div class="row" style="margin-top:8px"><button id="btnImpReplace">명단 바꾸기</button><button id="btnImpAdd" class="sec">추가로 넣기</button><button id="btnExp" class="gray">현재 명단 보기</button></div>
     <div class="row" style="margin-top:8px"><button id="btnDemo" class="gray">예시 명단(가상)</button><button id="btnReset" class="danger">전부 지우기</button></div>
@@ -264,8 +264,8 @@ function parseCsv(t) {
   if (ls.length && /이름|성명|name/i.test(ls[0]) && /에버|평균|avg|성별|별명|시드/i.test(ls[0])) ls.shift();
   return ls.map(l => { const p = l.split(/[,\t]/).map(s => s.trim()); const g = /^(여|F|f|female)/.test(p[1] || '') ? 'F' : 'M'; return { id: uid(), name: p[0], gender: g, avg: p[2] === undefined || p[2] === '' ? '' : num(p[2], ''), nick: p[3] || '', seed: /^[ABCD]$/i.test(p[4] || '') ? p[4].toUpperCase() : '' }; }).filter(m => m.name);
 }
-$('btnImpReplace').onclick = () => { const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); if (!confirm('현재 명단 ' + S.members.length + '명을 지우고 ' + l.length + '명으로 바꿀까요?')) return; const oldNames = S.pairs.map(p => [(S.members.concat(S.guests).find(x => x.id === p[0]) || {}).name, (S.members.concat(S.guests).find(x => x.id === p[1]) || {}).name]); S.members = l; S.present = []; S.pairs = oldNames.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); save(); renderMem(); };
-$('btnImpAdd').onclick = () => { const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); S.members = S.members.concat(l); save(); renderMem(); };
+$('btnImpReplace').onclick = () => { if (handleRosterLink()) return; const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); if (!confirm('현재 명단 ' + S.members.length + '명을 지우고 ' + l.length + '명으로 바꿀까요?')) return; const oldNames = S.pairs.map(p => [(S.members.concat(S.guests).find(x => x.id === p[0]) || {}).name, (S.members.concat(S.guests).find(x => x.id === p[1]) || {}).name]); S.members = l; S.present = []; S.pairs = oldNames.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); save(); renderMem(); };
+$('btnImpAdd').onclick = () => { if (handleRosterLink()) return; const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); S.members = S.members.concat(l); save(); renderMem(); };
 $('btnExp').onclick = () => { $('csvBox').value = S.members.map(m => [m.name, m.gender === 'F' ? '여' : '남', m.avg, m.nick || '', m.seed || ''].join(',')).join('\n'); };
 $('btnDemo').onclick = () => { if (S.members.length && !confirm('현재 명단을 예시(가상 이름)로 바꿀까요?')) return; const names = '가온 나래 다솜 라온 마루 바다 사랑 아름 보람 소미 우진 지호 도윤 시우 하준 민준 서진 예준 현우 건우'.split(' '); S.members = names.map((n, i) => ({ id: uid(), name: n, gender: i % 9 < 4 ? 'F' : 'M', avg: 150 + ((i * 37) % 80), nick: '', seed: '' })); S.present = S.members.map(m => m.id); S.pairs = []; save(); renderMem(); };
 $('btnReset').onclick = () => { if (confirm('명단과 참석 기록을 전부 지울까요? 되돌릴 수 없습니다.')) { S = { members: [], present: [], guests: [], pairs: [], opts: S.opts }; save(); renderMem(); } };
@@ -347,6 +347,26 @@ $('btnCopy').onclick = async () => {
   const text = lines.join('\n');
   try { await navigator.clipboard.writeText(text); alert('복사했습니다. 카톡이나 밴드에 붙여 넣으세요.'); } catch (e) { prompt('아래 글을 길게 눌러 복사하세요', text); }
 };
+// 명단 링크: 주소 뒤 #r=... 에 압축한 명단이 들어 있다 (서버로 전송되지 않고 이 폰에서만 해석)
+async function decodeRoster(b64) {
+  const s = b64.replace(/-/g, '+').replace(/_/g, '/'); const bin = Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const buf = await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+  return new TextDecoder().decode(buf);
+}
+function applyRosterText(text) {
+  const pl = [], cl = [];
+  text.split(/\r?\n/).forEach(l => { if (/^분리:/.test(l)) pl.push(l.split(':').slice(1).map(s => s.trim())); else if (l.trim()) cl.push(l); });
+  const l = parseCsv(cl.join('\n')); if (!l.length) return false;
+  if (!confirm('명단 ' + l.length + '명' + (pl.length ? ', 분리 조건 ' + pl.length + '개' : '') + '을 불러와 현재 명단을 바꿀까요?')) return false;
+  const pairs = pl.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean);
+  S.members = l; S.present = []; S.pairs = pairs; save(); renderMem(); renderAtt(); return true;
+}
+function handleRosterLink() {
+  const m = $('csvBox').value.match(/#r=([A-Za-z0-9_-]+)/); if (!m) return false;
+  decodeRoster(m[1]).then(t => { if (applyRosterText(t)) $('csvBox').value = ''; }).catch(() => alert('명단 링크를 읽지 못했습니다. 링크 전체를 복사했는지 확인해 주세요.'));
+  return true;
+}
+(async () => { const m = location.hash.match(/^#r=([A-Za-z0-9_-]+)/); if (!m) return; try { const t = await decodeRoster(m[1]); applyRosterText(t); } catch (e) { alert('명단 링크를 읽지 못했습니다.'); } try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} tab('att'); })();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 renderAtt();
 </script>
