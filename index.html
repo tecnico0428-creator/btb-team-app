@@ -62,6 +62,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
   <div class="card">
     <div class="row"><b class="grow">오늘 참석 <span id="attCount">0</span>명</b><button class="sec" id="btnAll">전체 선택</button><button class="sec" id="btnNone">전체 해제</button></div>
     <div id="attList"></div>
+    <div class="small" style="margin-top:6px">오른쪽 에버 숫자를 눌러 바로 고칠 수 있습니다. 고친 값은 명단에도 저장됩니다.</div>
     <div class="lbl">게스트 추가 (이번 모임에만)</div>
     <div class="row"><input type="text" id="gName" placeholder="이름" class="grow"><select id="gGender" style="width:80px"><option value="M">남</option><option value="F">여</option></select><input type="number" id="gAvg" placeholder="에버" style="width:90px" inputmode="numeric"><button id="btnGuest">추가</button></div>
   </div>
@@ -83,7 +84,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     <div class="small" id="buildInfo"></div>
   </div>
   <div id="teamOut"></div>
-  <div class="card hide" id="copyBox"><div class="row"><label class="row grow"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사할 때 에버도 넣기</label><button id="btnCopy">결과 복사</button></div><div class="small">복사한 글을 카톡·밴드에 붙여 넣으세요. 두 사람을 차례로 누르면 자리를 바꿉니다. 같은 조합 번호와 같은 참석자면 같은 결과가 나옵니다.</div></div>
+  <div class="card hide" id="copyBox"><div class="row"><label class="row grow"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사할 때 에버도 넣기</label><button id="btnCopy">결과 복사</button></div><div class="small">복사한 글을 카톡·밴드에 붙여 넣으세요. 두 사람을 차례로 누르면 자리를 바꿉니다. 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 팀 구성을 누르세요. 같은 조합 번호와 같은 참석자면 같은 결과가 나옵니다.</div></div>
 </section>
 <section id="tab-mem" class="hide">
   <div class="card">
@@ -228,11 +229,12 @@ const grBadge = (g) => '<span class="badge g' + g.toLowerCase() + '">' + g + '</
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function renderAtt() {
   const all = S.members.concat(S.guests);
-  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (S.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<span style="width:44px;text-align:right">' + (m.avg === '' || m.avg == null ? '-' : m.avg) + '</span></label>').join('');
+  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (S.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (S.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < FLOOR[m.seed] ? ' <span class="nick">하한 ' + FLOOR[m.seed] + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
   $('attList').innerHTML = rows || '<div class="small" style="padding:12px 0">명단이 비어 있습니다. 아래 명단 탭에서 회원을 넣어 주세요.</div>';
   $('attCount').textContent = S.present.filter(id => all.some(m => m.id === id)).length;
   $('attList').querySelectorAll('.delg').forEach(a => a.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const id = a.dataset.id; S.guests = S.guests.filter(g => g.id !== id); S.present = S.present.filter(x => x !== id); save(); renderAtt(); });
-  $('attList').querySelectorAll('input').forEach(c => c.onchange = () => { const id = c.dataset.id; S.present = S.present.filter(x => x !== id); if (c.checked) S.present.push(id); save(); $('attCount').textContent = S.present.filter(i => all.some(m => m.id === i)).length; });
+  $('attList').querySelectorAll('.avin').forEach(inp => { inp.onclick = (e) => e.stopPropagation(); inp.onchange = () => { const m = all.find(x => x.id === inp.dataset.id); if (!m) return; const v = inp.value.trim(); if (v === '') { m.avg = ''; save(); renderAtt(); return; } const x = parseFloat(v); if (!isFinite(x) || x < 1 || x > 300) { alert('에버는 1~300 사이 숫자로 넣어 주세요.'); inp.value = m.avg === '' || m.avg == null ? '' : m.avg; return; } m.avg = Math.round(x * 10) / 10; save(); renderAtt(); }; });
+  $('attList').querySelectorAll('input[type=checkbox]').forEach(c => c.onchange = () => { const id = c.dataset.id; S.present = S.present.filter(x => x !== id); if (c.checked) S.present.push(id); save(); $('attCount').textContent = S.present.filter(i => all.some(m => m.id === i)).length; });
 }
 $('btnAll').onclick = () => { S.present = S.members.concat(S.guests).map(m => m.id); save(); renderAtt(); };
 $('btnNone').onclick = () => { S.present = []; save(); renderAtt(); };
