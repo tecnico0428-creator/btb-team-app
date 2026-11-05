@@ -463,6 +463,7 @@ header .hrow{padding-right:92px}
   <div class="lbl">내용</div><textarea id="rqText" rows="6" maxlength="1500" placeholder="예: 대회 기록에 레인 번호도 넣고 싶어요"></textarea>
   <div class="small" style="margin-top:4px">앱 버전과 기기 종류가 함께 들어갑니다. 내 점수나 크루 명단은 들어가지 않습니다.</div>
   <a id="rqSend" class="abtn" href="#">이메일 보내기</a>
+  <div id="rqNote" class="small warn" style="margin-top:6px"></div>
   <div class="row" style="margin-top:8px"><button id="rqCopy" class="sec grow">내용 복사</button><button id="rqBack" class="gray grow">‹ 뒤로</button></div>
   <div class="small" style="margin-top:8px">이메일 앱이 열리지 않으면 "내용 복사"를 누른 뒤 이메일이나 카톡으로 아래 주소에 보내 주세요.<br><b id="rqAddr"></b></div>
 </div></div>
@@ -1680,7 +1681,7 @@ function rpRender() {
   if (p) {
     const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
     h += '<div class="rpmine"><div class="gnum">' + g.length + '게임으로 판단했습니다</div><div class="small">게임 수 근거: ' + esc(res.ngFrom) + (g.length < res.ng ? ' · 표는 ' + res.ng + '게임인데 이 줄에서 ' + g.length + '개만 읽었습니다' : '') + '</div><div class="ttl" style="margin-top:6px">' + (p.nameless ? '이름 없이 읽은 점수' : '내 점수로 판단한 줄: ' + esc(p.name)) + '</div><div class="rpg">' + g.map((s, i) => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + (i + 1) + 'G ' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
-    const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : '') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '· 날짜는 사진에서 못 찾아 위의 날짜(오늘)를 그대로 씁니다') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
+    const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : ' wn') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '! 사진에서 날짜를 못 찾았습니다. 위 날짜(' + fmtD($('rcDate').value) + ')가 맞는지 확인하고 고쳐 주세요') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
     if (!al && m.hint) h += '<button id="rpAl" class="sec" style="width:100%;margin-top:6px">후보 볼링장 "' + esc(m.hint[0]) + '" 등록하고 선택</button>';
     h += '<div class="rpconf">읽은 결과를 사진과 비교해 맞는지 확인하세요. 아래 "판독한 점수" 칸에 이미 채워 두었고, 틀린 칸은 고칠 수 있습니다. 맞으면 맨 아래 "확인하고 저장"을 누르세요.</div>';
   } else {
@@ -1708,7 +1709,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 20, APP_DATE = '2026.11.06';
+const APP_VER = 21, APP_DATE = '2026.11.06';
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
 const GUIDE = [
@@ -1730,12 +1731,20 @@ $('hpGuide').onclick = () => { $('hpSheet').classList.add('hide'); $('gdSheet').
 $('gdBack').onclick = () => { $('gdSheet').classList.add('hide'); $('hpSheet').classList.remove('hide'); };
 $('gdSheet').onclick = (e) => { if (e.target === $('gdSheet')) $('gdBack').onclick(); };
 const RQKEY = 'btbTeams.rqdraft';
-function rqBody() { const dev = (navigator.userAgent.match(/\(([^)]*)\)/) || ['', ''])[1].slice(0, 90); return ($('rqText').value.trim()) + '\n\n----\n앱 버전: ' + APP_VER + ' (' + APP_DATE + ')\n기기: ' + dev; }
+function rqBody() { const dev = (navigator.userAgent.match(/\(([^)]*)\)/) || ['', ''])[1].slice(0, 90); return ($('rqText').value.trim()) + '\n\n----\n앱 버전: ' + APP_VER + ' (' + APP_DATE + ')\n기기(참고): ' + dev; }
 function rqLink() { const sub = '[오늘도 스트라이크] ' + $('rqKind').value; return 'mailto:' + DEV_MAIL + '?subject=' + encodeURIComponent(sub) + '&body=' + encodeURIComponent(rqBody()); }
 function rqSync() { $('rqSend').href = rqLink(); try { localStorage.setItem(RQKEY, JSON.stringify({ k: $('rqKind').value, t: $('rqText').value })); } catch (e) {} }
 $('hpReq').onclick = () => { $('hpSheet').classList.add('hide'); try { const d = JSON.parse(localStorage.getItem(RQKEY) || 'null'); if (d) { if ([...$('rqKind').options].some(o => o.value === d.k)) $('rqKind').value = d.k; $('rqText').value = d.t || ''; } } catch (e) {} $('rqAddr').textContent = DEV_MAIL; rqSync(); $('rqSheet').classList.remove('hide'); };
 $('rqText').oninput = rqSync; $('rqKind').onchange = rqSync;
-$('rqSend').onclick = (e) => { if (!$('rqText').value.trim()) { e.preventDefault(); return alert('보낼 내용을 먼저 적어 주세요.'); } rqSync(); };
+let rqTimer = null;
+$('rqSend').onclick = (e) => {
+  if (!$('rqText').value.trim()) { e.preventDefault(); return alert('보낼 내용을 먼저 적어 주세요.'); }
+  rqSync(); $('rqNote').textContent = '';
+  // 이메일 앱이 열리면 이 화면이 가려진다. 1.8초 뒤에도 그대로면 열리지 않은 것으로 보고 내용을 복사해 안내한다.
+  let copied = false; try { navigator.clipboard.writeText('[오늘도 스트라이크] ' + $('rqKind').value + '\n\n' + rqBody()).then(() => { copied = true; }, () => {}); } catch (err) {}
+  clearTimeout(rqTimer); rqTimer = setTimeout(() => { if (!document.hidden) $('rqNote').textContent = '이메일 앱이 열리지 않았습니다(이 기기에 이메일 앱이나 계정이 없을 수 있습니다). ' + (copied ? '내용은 복사해 두었으니 이메일이나 카톡에 붙여 넣어 아래 주소로 보내 주세요.' : '"내용 복사"를 눌러 이메일이나 카톡으로 아래 주소에 보내 주세요.'); }, 1800);
+};
+document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(rqTimer); $('rqNote').textContent = ''; } });
 $('rqCopy').onclick = async () => { if (!$('rqText').value.trim()) return alert('보낼 내용을 먼저 적어 주세요.'); const s = '[오늘도 스트라이크] ' + $('rqKind').value + '\n\n' + rqBody(); try { await navigator.clipboard.writeText(s); alert('내용을 복사했습니다. 이메일이나 카톡에 붙여 넣어 보내 주세요.'); } catch (e) { $('rqText').focus(); $('rqText').select(); alert('자동 복사가 안 됩니다. 칸의 글을 길게 눌러 복사해 주세요.'); } };
 $('rqBack').onclick = () => { $('rqSheet').classList.add('hide'); $('hpSheet').classList.remove('hide'); };
 $('rqSheet').onclick = (e) => { if (e.target === $('rqSheet')) $('rqBack').onclick(); };
