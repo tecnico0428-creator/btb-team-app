@@ -330,7 +330,7 @@ header .hrow{padding-right:92px}
       <div class="small" style="margin-top:10px">아래 참가자 <b id="togN">0</b>명 중 <b>두 명</b>을 체크한 뒤 "쌍 추가"를 누르세요. 한 사람을 여러 쌍에 넣을 수 있고, 이미 넣은 쌍은 막습니다.</div>
       <div id="togPick" class="pick"></div>
       <div class="row" style="margin-top:8px"><div class="grow" id="togSel" style="font-size:18px;font-weight:700">선택: 없음</div><button id="btnTog">쌍 추가</button><button id="btnTogClear" class="gray">선택 해제</button></div>
-      <label class="row" style="margin-top:8px"><input type="checkbox" id="optRelax2" style="width:22px;height:22px"> 목표 합계 차이를 못 맞추면 이 조건을 풀어서라도 더 나은 안을 보여 주기</label>
+      <div class="small" style="margin-top:8px">같은 편 지정은 목표 합계 차이를 못 맞춰도 풀지 않고 지킵니다(합계 차이가 크면 결과 위에 안내가 나옵니다).</div>
     </div>
   </div>
   <div class="card">
@@ -708,8 +708,8 @@ function computeResult(ppl, c) {
   const seedSet = c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : [];
   let used = buildAny(ppl, plan, o2, seed, pairs, seedSet);
   let relaxed = false;
-  if ((pairs.length || seedSet.length) && o.relax && used.results[0].ev.spreadAvg > o.goal + 1e-9) {
-    const free = buildAny(ppl, plan, o2, seed, [], []);
+  if ((sepPairs.length || seedSet.length) && o.relax && used.results[0].ev.spreadAvg > o.goal + 1e-9) {
+    const free = buildAny(ppl, plan, o2, seed, togPairs, []);
     if (free.results[0].ev.spreadAvg < used.results[0].ev.spreadAvg - 1e-9) { used = free; relaxed = true; }
   }
   return { plan, used, relaxed, pairs, seedSet, gm: effGm, togSkip };
@@ -819,7 +819,7 @@ function renderPairs() {
   renderTogs();
 }
 $('pairOn').onchange = (e) => { const c = C(); c.pairOn = e.target.checked; save(); renderPairs(); };
-$('optRelax').onchange = (e) => { C().opts.relax = e.target.checked; $('optRelax2').checked = e.target.checked; save(); };
+$('optRelax').onchange = (e) => { C().opts.relax = e.target.checked; save(); };
 let pickSel = [];
 function renderPickSel() { const c = C(); const nm = (id) => { const m = c.members.find(x => x.id === id); return m ? m.name : ''; }; $('pickSel').textContent = '선택: ' + (pickSel.length ? pickSel.map(nm).join(' · ') : '없음'); $('btnPair').disabled = pickSel.length !== 2; }
 function renderPairPick() { $('pairPick').querySelectorAll('.pk').forEach(l => { const ck = l.querySelector('input'); const on = pickSel.includes(ck.dataset.id); ck.checked = on; l.classList.toggle('on', on); }); renderPickSel(); }
@@ -839,7 +839,7 @@ let togSel = [];
 function renderTogs() {
   const c = C(); if (!c) return; if (!Array.isArray(c.tog)) c.tog = [];
   const present = c.members.filter(m => c.present.includes(m.id)).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-  $('togOn').checked = !!c.togOn; $('togBox').classList.toggle('hide', !c.togOn); $('optRelax2').checked = !!c.opts.relax;
+  $('togOn').checked = !!c.togOn; $('togBox').classList.toggle('hide', !c.togOn);
   togSel = togSel.filter(id => present.some(m => m.id === id)); $('togN').textContent = present.length;
   $('togPick').innerHTML = present.map(m => '<label class="pk' + (togSel.includes(m.id) ? ' on' : '') + '"><input type="checkbox" data-id="' + m.id + '"' + (togSel.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '</label>').join('') || '<div class="small" style="padding:8px 0">참가자를 먼저 체크해 주세요.</div>';
   $('togPick').querySelectorAll('input').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; togSel = togSel.filter(x => x !== id); if (ck.checked) { togSel.push(id); if (togSel.length > 2) togSel.shift(); } renderTogPick(); });
@@ -851,7 +851,6 @@ function renderTogs() {
 function renderTogSel() { const c = C(); const nm = (id) => { const m = c.members.find(x => x.id === id); return m ? m.name : ''; }; $('togSel').textContent = '선택: ' + (togSel.length ? togSel.map(nm).join(' + ') : '없음'); $('btnTog').disabled = togSel.length !== 2; }
 function renderTogPick() { $('togPick').querySelectorAll('.pk').forEach(l => { const ck = l.querySelector('input'); const on = togSel.includes(ck.dataset.id); ck.checked = on; l.classList.toggle('on', on); }); renderTogSel(); }
 $('togOn').onchange = (e) => { const c = C(); c.togOn = e.target.checked; save(); renderTogs(); };
-$('optRelax2').onchange = (e) => { C().opts.relax = e.target.checked; $('optRelax').checked = e.target.checked; save(); };
 $('btnTogClear').onclick = () => { togSel = []; renderTogPick(); };
 $('btnTog').onclick = () => {
   const c = C(); const a = togSel[0], b = togSel[1]; if (!c.tog) c.tog = [];
@@ -1709,7 +1708,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 19, APP_DATE = '2026.11.06';
+const APP_VER = 20, APP_DATE = '2026.11.06';
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
 const GUIDE = [
