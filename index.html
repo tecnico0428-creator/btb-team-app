@@ -196,6 +196,16 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .afrow.on{background:rgba(220,69,39,.16)}
 .afrow b{font-size:16px}
 .afrow .small{display:block;margin-top:1px}
+.ck{font-size:14px;margin:3px 0;color:var(--sub)}
+.ck.ok{color:var(--ok)}
+.ck.wn{color:#b45309;font-weight:700}
+.rpmine{border:2px solid var(--ink);border-radius:14px;padding:10px;background:#fffaf0;margin-top:8px}
+.rpg{margin:4px 0 6px}
+.rpg .sc{font-size:22px;min-width:56px;padding:4px 8px}
+.rpr{border:1.5px solid #cdb685;border-radius:12px;padding:6px 10px;margin:5px 0;background:#fffaf0;cursor:pointer}
+.rpr.on{border-color:var(--pri);background:rgba(220,69,39,.12)}
+.rpr.mine{border-style:dashed}
+.mecrew{border-top:1.5px dashed #cdb685;margin-top:10px;padding-top:8px}
 .rirow{border:1.5px solid #cdb685;border-radius:14px;padding:8px;margin-bottom:8px;background:var(--card)}
 .rirow.bad{border-color:var(--pri)}
 .rirow .row{margin-top:6px}
@@ -384,12 +394,13 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 </section>
 
 <section id="v-me" class="hide">
-  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"></div>
+  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"><div class="lbl">닉네임 (여러 개면 쉼표로)</div><input type="text" id="meNick" placeholder="예: 광현이, 송사장"></div>
+  <div class="card"><div class="ttl">크루별 내 이름·닉네임</div><div class="small">점수표 사진에서 내 줄을 찾을 때 씁니다. 크루마다 "나"를 명단에서 골라 두면 그 크루 명단의 이름과 닉네임으로 내 줄을 판단하고, 다른 팀원의 줄은 걸러냅니다.</div><div id="meCrews"></div></div>
   <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 13</div>
+  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 14</div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
@@ -398,10 +409,18 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 
 <div id="rcSheet" class="sheetbg hide"><div class="sheet">
   <h2 id="rcTitle">게임 기록</h2>
-  <div class="chips" id="rcMode" style="margin-bottom:8px"><button class="chip on" data-m="g">점수 입력</button><button class="chip" data-m="e">에버만 입력</button></div>
+  <div class="chips" id="rcMode" style="margin-bottom:8px"><button class="chip on" data-m="g">직접 입력</button><button class="chip" data-m="p">사진 판독</button><button class="chip" data-m="e">에버만 입력</button></div>
   <div class="g2"><div><div class="lbl">날짜</div><input type="date" id="rcDate"></div><div><div class="lbl">구분</div><select id="rcKind"><option>정모</option><option>벙개</option><option>연습</option><option>대회</option></select></div></div>
   <div class="lbl">볼링장</div>
   <div class="row"><select id="rcAlley" class="grow"></select><button class="sec" id="rcAddAlley">볼링장 등록</button></div>
+  <div id="rcP" class="hide">
+    <div class="small" style="margin:6px 0">점수표 사진에서 내 줄을 찾아 점수를 채웁니다. 내 이름, 닉네임, 크루 명단, 합계 칸 검산으로 내 줄을 판단하고 근거를 보여 줍니다.</div>
+    <div class="lbl">어느 크루의 점수표인가요?</div><select id="rpCrew"></select>
+    <div class="small" id="rpWho" style="margin:6px 0"></div>
+    <div class="row"><button id="rpCam" class="grow">사진 찍기</button><button id="rpPic" class="grow sec">사진 가져오기</button></div>
+    <input type="file" id="rpFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="rpFilePic" accept="image/*" class="hide">
+    <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div>
+  </div>
   <div id="rcG">
     <div class="lbl">게임 점수 (0~300)</div>
     <div id="rcScores"></div>
@@ -1312,7 +1331,7 @@ $('btnCrewEver').onclick = () => {
 // ----- 기록 입력 창 -----
 let RC = { id: null, mode: 'g' };
 function fillAlleySel(sel, val) { sel.innerHTML = '<option value="">볼링장 선택 안 함</option>' + REC.alleys.slice().sort(favFirst).map(a => '<option value="' + a.id + '"' + (a.id === val ? ' selected' : '') + '>' + (a.fav ? '★ ' : '') + esc(a.name) + (a.area ? ' (' + esc(a.area) + ')' : '') + '</option>').join(''); }
-function rcSetMode(m) { RC.mode = m; $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('rcG').classList.toggle('hide', m !== 'g'); $('rcE').classList.toggle('hide', m !== 'e'); }
+function rcSetMode(m) { RC.mode = m; $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('rcG').classList.toggle('hide', m !== 'g'); $('rcE').classList.toggle('hide', m !== 'e'); $('rcP').classList.toggle('hide', m !== 'p'); if (m === 'p') { rpCrewFill(); rpWhoNote(); } }
 $('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => rcSetMode(b.dataset.m));
 function rcBuild(vals) {
   const box = $('rcScores'); box.innerHTML = vals.map((v, i) => '<div class="gin"><b>' + (i + 1) + 'G</b><input type="number" inputmode="numeric" min="0" max="300" value="' + esc(v) + '" placeholder="점수"></div>').join('');
@@ -1323,7 +1342,7 @@ function rcLive() { const v = rcVals().filter(x => x !== '').map(Number).filter(
 $('rcMore').onclick = () => { const v = rcVals(); v.push(''); rcBuild(v); const ins = $('rcScores').querySelectorAll('input'); ins[ins.length - 1].focus(); };
 $('rcLess').onclick = () => { const v = rcVals(); if (v.length > 1) v.pop(); rcBuild(v); };
 function openRc(id, mode) {
-  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null;
+  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null; RC.src = ''; RP = { res: null, chosen: -1, meta: null, busy: false }; $('rpRes').innerHTML = ''; $('rpStatus').textContent = '';
   $('rcTitle').textContent = r ? '기록 고치기' : (mode === 'e' ? '에버 입력' : '게임 기록');
   rcSetMode(r ? r.k : (mode || 'g'));
   $('rcDate').value = r ? r.date : isoToday(); $('rcKind').value = r ? (r.kind || '연습') : (REC.lastKind || '정모');
@@ -1337,6 +1356,7 @@ $('rcClose').onclick = () => $('rcSheet').classList.add('hide');
 $('rcSheet').onclick = (e) => { if (e.target === $('rcSheet')) $('rcSheet').classList.add('hide'); };
 $('rcAddAlley').onclick = () => openAl(null, (id) => fillAlleySel($('rcAlley'), id));
 $('rcSave').onclick = () => {
+  if (RC.mode === 'p') return alert('먼저 "이 점수 쓰기"를 눌러 입력칸에 점수를 채운 뒤 저장해 주세요.');
   const date = $('rcDate').value || isoToday(); const alleyId = $('rcAlley').value, kind = $('rcKind').value, note = $('rcNote').value.trim(); let rec;
   if (RC.mode === 'g') {
     const raw = rcVals().filter(x => x !== ''); if (!raw.length) return alert('점수를 한 게임 이상 넣어 주세요.');
@@ -1349,7 +1369,7 @@ $('rcSave').onclick = () => {
   }
   Object.assign(rec, { date, alleyId, kind, note });
   const old = RC.id ? REC.recs.findIndex(r => r.id === RC.id) : -1;
-  if (old >= 0) { rec.id = RC.id; rec.t = REC.recs[old].t; rec.src = REC.recs[old].src || '직접'; REC.recs[old] = rec; } else { rec.id = uid(); rec.t = Date.now(); rec.src = '직접'; REC.recs.push(rec); }
+  if (old >= 0) { rec.id = RC.id; rec.t = REC.recs[old].t; rec.src = REC.recs[old].src || '직접'; REC.recs[old] = rec; } else { rec.id = uid(); rec.t = Date.now(); rec.src = RC.src || '직접'; REC.recs.push(rec); }
   REC.lastAlley = alleyId; REC.lastKind = kind; saveRec(); $('rcSheet').classList.add('hide');
   if (curView === 'home') view('rec'); else if (curView === 'rec') renderRec(); else if (curView === 'me') renderMe();
 };
@@ -1407,13 +1427,153 @@ $('afSido').onchange = () => { REC.lastSido = $('afSido').value; saveRec(); afGu
 $('afGu').onchange = afRender;
 $('afQ').oninput = afRender;
 
+
+// ===== 사진으로 내 점수 찾기(이름·닉네임·크루 명단·합계 검산으로 내 줄 판단) =====
+const nk = (s) => String(s || '').toLowerCase().replace(/[\s()（）\[\]{}·・\-_.,'"~!@#*:;]/g, '');
+const splitAlias = (s) => String(s || '').split(/[,，/\n]+/).map(x => x.trim()).filter(Boolean);
+function meIdentities(crewId) {
+  const ids = []; const add = (t, kind) => { const k = nk(t); if (k.length >= 2 && !ids.some(x => x.k === k)) ids.push({ t: String(t).trim(), k, kind }); };
+  const me = REC.me || {}; add(me.name, '이름'); splitAlias(me.nick).forEach(x => add(x, '닉네임'));
+  const crew = crewId ? DB.clubs.find(x => x.id === crewId) : null; let memId = '';
+  if (crew) {
+    const cfg = (me.crew || {})[crewId] || {}; const mem = crew.members.find(m => m.id === cfg.mid) || (me.name ? crew.members.find(m => m.name === me.name) : null);
+    if (mem) { memId = mem.id; add(mem.name, '이름(크루 명단)'); splitAlias(mem.nick).forEach(x => add(x, '닉네임(크루 명단)')); }
+    splitAlias(cfg.alias).forEach(x => add(x, '별칭'));
+  }
+  return { ids, crew, memId };
+}
+function nsim(a, b) {
+  if (!a || !b) return 0; if (a === b) return 1;
+  if (a.length >= 2 && b.length >= 2 && (a.includes(b) || b.includes(a))) { const sh = Math.min(a.length, b.length), lg = Math.max(a.length, b.length); return (sh >= 3 || lg - sh <= 1) ? 0.92 : 0.8; }
+  const d = lev(a, b), L = Math.max(a.length, b.length); if (L >= 3 && d === 1) return 0.8; if (L >= 5 && d === 2) return 0.65; return 0;
+}
+function rowOwner(rn, who) {
+  let mine = 0, mineKind = '', mineT = ''; who.ids.forEach(i => { const s = nsim(rn, i.k); if (s > mine) { mine = s; mineKind = i.kind; mineT = i.t; } });
+  let other = 0, otherName = ''; if (who.crew) who.crew.members.forEach(m => { if (m.id === who.memId) return; [m.name, m.nick].forEach(t => { const k = nk(t); if (k.length < 2) return; const s = nsim(rn, k); if (s > other) { other = s; otherName = m.name; } }); });
+  return { mine, mineKind, mineT, other, otherName };
+}
+const HDRW = /^(순위|이름|성명|닉네임|레인|합계|평균|총점|총|팀|게임|핀|점수|에버|시드|번호|no|lane|name|total|avg|game|games|score|rank|frame|g)$/i;
+const GHDR = /^(?:[1-9]\s*[Gg]|[Gg][1-9]|[1-9]\s*게임)\.?$/;
+function numTok(t) { let s = String(t).replace(/,/g, ''); if (!/\d/.test(s)) return null; s = s.replace(/[Oo]/g, '0').replace(/[lI|]/g, '1').replace(/S/g, '5').replace(/B/g, '8'); if (!/^\d+(\.\d+)?$/.test(s)) return null; return { v: parseFloat(s), dec: /\./.test(s), raw: t }; }
+function buildRows(items, lines) {
+  if (!items || !items.length) return (lines || []).map(l => ({ texts: [l] }));
+  const hs = items.map(it => it.box[3] - it.box[1]).sort((a, b) => a - b), medH = hs[Math.floor(hs.length / 2)] || 20;
+  const sorted = items.slice().sort((a, b) => (a.box[1] + a.box[3]) - (b.box[1] + b.box[3])); const rows = [];
+  sorted.forEach(it => { const yc = (it.box[1] + it.box[3]) / 2; const r = rows.find(r => Math.abs(r.yc - yc) < medH * 0.55); if (r) { r.items.push(it); r.yc = (r.yc * (r.items.length - 1) + yc) / r.items.length; } else rows.push({ yc, items: [it] }); });
+  rows.sort((a, b) => a.yc - b.yc); return rows.map(r => { const its = r.items.sort((a, b) => a.box[0] - b.box[0]); return { texts: its.map(i => i.text), confs: its.map(i => i.conf == null ? 1 : i.conf) }; });
+}
+function parseRowTokens(texts, confs) {
+  const toks = []; texts.forEach((tx, ci) => String(tx).replace(/[|｜]/g, ' ').split(/\s+/).filter(Boolean).forEach(t => toks.push({ t, c: confs && confs[ci] != null ? confs[ci] : 1 })));
+  const gh = toks.filter(x => GHDR.test(x.t)).length; let st = 0; const nm = [], vals = [];
+  toks.forEach(x => {
+    const t = x.t; if (GHDR.test(t)) return; const n = numTok(t); const nameLike = /[가-힣A-Za-z]/.test(t) && !(n && !/[가-힣]/.test(t));
+    if (nameLike) { const core = t.replace(/[^가-힣A-Za-z]/g, ''); if (!core || HDRW.test(core)) return; if (st <= 1) { nm.push(t); st = 1; } return; }
+    if (n) { if (st === 0) return; st = 2; n.c = x.c; vals.push(n); }
+  });
+  return { name: nm.join(' '), vals, gh };
+}
+const sumA = (a) => a.reduce((x, y) => x + y, 0);
+const CONF = { '0': ['8', '6', '9'], '8': ['0', '3', '6', '9'], '1': ['7'], '7': ['1'], '5': ['6', '3'], '6': ['5', '8', '0'], '3': ['8', '5'], '9': ['0', '8'], '2': ['7'] };
+function tryRepair(games, total, avg, confs) {
+  const sols = [];
+  games.forEach((g, gi) => { const s = String(g); for (let p = 0; p < s.length; p++) (CONF[s[p]] || []).forEach(c => { const ns = s.slice(0, p) + c + s.slice(p + 1); const v = +ns; if (v < 0 || v > 300 || v === g) return; const arr = games.slice(); arr[gi] = v; if (total != null ? sumA(arr) === total : (avg != null && Math.abs(sumA(arr) / arr.length - avg) <= 0.6)) sols.push({ gi, from: g, to: v }); }); });
+  const uniq = []; sols.forEach(x => { if (!uniq.some(y => y.gi === x.gi && y.to === x.to)) uniq.push(x); }); if (uniq.length > 1 && confs) { const sc = uniq.map(x => ({ x, c: confs[x.gi] == null ? 1 : confs[x.gi] })).sort((a, b) => a.c - b.c); if (sc[1].c - sc[0].c >= 0.04) { sc[0].x.lowConf = true; return sc[0].x; } }
+  return uniq.length === 1 ? uniq[0] : (uniq.length ? { alts: uniq } : null);
+}
+function analyzeScoreSheet(rows, crewId) {
+  const who = meIdentities(crewId); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs)));
+  // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
+  const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
+  let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
+  const data = P.filter(p => p.name && p.vals.filter(v => !v.dec && v.v <= 300).length >= 2);
+  if (!ng) { const ks = []; data.forEach(p => { const iv = p.vals.filter(v => !v.dec).map(v => v.v); for (let k = Math.min(iv.length - 1, 6); k >= 2; k--) { if (iv[k] === sumA(iv.slice(0, k))) { ks.push(k); break; } } }); if (ks.length >= 2) { ng = mode(ks); ngFrom = '합계 칸 검산'; } }
+  if (!ng) { ng = Math.min(6, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
+  data.forEach(p => {
+    const ivo = p.vals.filter(v => !v.dec); const iv = ivo.map(v => v.v); const decs = p.vals.filter(v => v.dec).map(v => v.v);
+    const cut = iv.findIndex(v => v > 300); const head = cut >= 0 ? iv.slice(0, cut) : iv.slice(); let games = head.slice(0, ng);
+    if (cut >= 0) { for (let k = Math.min(head.length, ng); k >= 1; k--) { if (sumA(head.slice(0, k)) === iv[cut]) { games = head.slice(0, k); break; } } }
+    p.games = games; p.gconf = ivo.slice(0, games.length).map(v => v.c); p.total = null; p.avg = null; const sum = sumA(games); const rest = iv.slice(games.length).concat(decs);
+    rest.forEach(v => { if (p.total == null && (v > 300 || v === sum)) p.total = v; else if (p.avg == null && Math.abs(v - sum / Math.max(1, games.length)) <= 1) p.avg = v; });
+    p.sumOk = p.total != null ? (p.total === sum) : null; p.avgOk = p.avg != null ? (Math.abs(p.avg - sum / Math.max(1, p.games.length)) <= 1) : null;
+    if ((p.sumOk === false || p.avgOk === false) && p.games.length) { const fx = tryRepair(p.games, p.total, p.avg, p.gconf); if (fx && fx.alts) p.alts = fx.alts; else p.fix = fx; }
+    p.short = p.games.length < ng; const own = rowOwner(nk(p.name), who); Object.assign(p, own);
+    p.isMine = own.mine >= 0.65 && own.mine > own.other; p.amb = own.mine >= 0.65 && own.mine === own.other && own.mine < 1 ? true : (own.mine >= 0.65 && own.other >= own.mine);
+  });
+  const mine = data.filter(p => p.isMine).sort((a, b) => b.mine - a.mine); let chosen = -1, why = '';
+  if (mine.length === 1) { chosen = mine[0].i; why = 'one'; } else if (mine.length > 1) { if (mine[0].mine > mine[1].mine) { chosen = mine[0].i; why = 'best'; } else why = 'multi'; }
+  return { who, ng, ngFrom, rows: P, data, mine, chosen, why };
+}
+function detectMeta(rows) {
+  const text = rows.map(r => r.texts.join(' ')).join('\n'); const meta = { date: '', kind: '', alleyId: '', hint: '' };
+  const ctx = {}; rows.forEach(r => { const rec = textLineToRec(r.texts.join(' '), ctx); }); meta.date = ctx.date || ''; meta.kind = kindOf(text);
+  const T = nk(text); const reg = REC.alleys.find(a => { const k = nk(a.name).replace(/볼링장|볼링센터|볼링센타|볼링클럽|볼링/g, ''); return k.length >= 3 && T.includes(k); }); if (reg) meta.alleyId = reg.id;
+  if (!reg && window.ALLEYS) { let best = null; window.ALLEYS.list.forEach(r => { const k = nk(r[0]).replace(/볼링장|볼링센터|볼링센타|볼링클럽|볼링/g, ''); if (k.length >= 3 && T.includes(k) && (!best || k.length > best.k.length)) best = { k, r }; }); if (best) meta.hint = best.r; }
+  return meta;
+}
+let RP = { res: null, chosen: -1, meta: null, crewId: '', busy: false };
+function rpCrewFill() { let cur = REC.lastPhotoCrew || ''; if (!DB.clubs.some(c => c.id === cur)) { const mapped = DB.clubs.find(c => ((REC.me.crew || {})[c.id] || {}).mid) || (DB.clubs.length === 1 ? DB.clubs[0] : null); cur = mapped ? mapped.id : ''; } $('rpCrew').innerHTML = '<option value="">크루 선택 안 함 (내 이름·닉네임만 사용)</option>' + DB.clubs.map(c => '<option value="' + c.id + '"' + (c.id === cur ? ' selected' : '') + '>' + esc(c.name) + '</option>').join(''); }
+function rpWhoNote() { const w = meIdentities($('rpCrew').value); $('rpWho').innerHTML = w.ids.length ? '내 줄 판단에 쓰는 이름: ' + w.ids.map(i => '<b>' + esc(i.t) + '</b>(' + esc(i.kind) + ')').join(', ') : '<span class="warn">내 이름과 닉네임이 없습니다. 마이 탭에서 먼저 넣으면 내 줄을 정확히 찾습니다. 지금은 사진에서 내 줄을 직접 눌러 고르게 됩니다.</span>'; }
+$('rpCrew').onchange = () => { REC.lastPhotoCrew = $('rpCrew').value; saveRec(); rpWhoNote(); if (RP.res) rpReanalyze(); };
+$('rpCam').onclick = () => $('rpFileCam').click(); $('rpPic').onclick = () => $('rpFilePic').click();
+['rpFileCam', 'rpFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; rpHandle(f); });
+async function rpHandle(file) {
+  if (!file || RP.busy) return; RP.busy = true; const st = $('rpStatus'); $('rpRes').innerHTML = '';
+  try {
+    try { await loadAlleyData(); } catch (e) {}
+    const o = await ocrImageText(file, st); RP.raw = { items: o.items, text: o.text, engine: o.engine };
+    RP.rows = buildRows(o.items, o.text.split(/\r?\n/)); rpReanalyze(true);
+  } catch (e) { st.textContent = '사진을 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
+  RP.busy = false;
+}
+function rpReanalyze(first) {
+  const st = $('rpStatus'); const res = analyzeScoreSheet(RP.rows, $('rpCrew').value); RP.res = res; RP.meta = detectMeta(RP.rows); RP.chosen = res.chosen;
+  st.textContent = res.data.length ? '사진에서 ' + res.data.length + '줄을 읽었습니다(' + (RP.raw.engine || '') + '). 게임 수 ' + res.ng + '게임(근거: ' + res.ngFrom + ').' : '점수 줄을 찾지 못했습니다. 점수표가 또렷하게 나오게 가까이서 다시 찍어 주세요.';
+  rpRender();
+}
+function rpChecks(p, res) {
+  const out = []; const ok = (t) => out.push('<div class="ck ok">✔ ' + t + '</div>'), wn = (t) => out.push('<div class="ck wn">! ' + t + '</div>');
+  if (p.mine >= 1) ok('이름 일치: 사진 "' + esc(p.name) + '" = ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.8) ok('이름이 거의 같음: 사진 "' + esc(p.name) + '" ~ ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.65) wn('이름이 비슷함: 사진 "' + esc(p.name) + '" ~ "' + esc(p.mineT) + '" (글자가 달라 확인이 필요합니다)'); else wn('이름 조건으로는 내 줄을 찾지 못해 직접 고른 줄입니다: "' + esc(p.name) + '"');
+  if (res.who.crew) { if (p.other >= 0.65 && p.other >= p.mine) wn('크루 명단의 다른 팀원 "' + esc(p.otherName) + '" 과(와)도 비슷합니다'); else ok('크루 명단 대조: 다른 팀원 이름과 겹치지 않음'); }
+  if (p.games.length === res.ng) ok(res.ng + '게임 모두 읽음(근거: ' + esc(res.ngFrom) + ')'); else wn('읽은 점수가 ' + p.games.length + '개입니다(표는 ' + res.ng + '게임). 빠진 점수가 있으면 직접 넣어 주세요');
+  if (p.games.some(g => g > 300)) wn('300점을 넘는 값이 있습니다'); else ok('점수 범위 0~300');
+  if (p.sumOk === true) ok('합계 ' + p.total + ' 검산 일치'); else if (p.sumOk === false) wn('합계 ' + p.total + ' 와(과) 점수 합 ' + sumA(p.games) + ' 이(가) 다릅니다' + (p.fix ? ' → ' + p.fix.from + ' 을(를) ' + p.fix.to + ' 로 고치면 맞습니다(' + (p.fix.lowConf ? '글자 확신도가 가장 낮은 칸이라 ' : '') + '자동 보정 적용)' : (p.alts ? ' (숫자를 잘못 읽었을 수 있습니다. 후보: ' + p.alts.map(a => a.from + ' → ' + a.to).join(' 또는 ') + ' 중 사진과 비교해 고쳐 주세요)' : ' (숫자를 잘못 읽었을 수 있습니다)'))); else if (p.avgOk === true) ok('평균 ' + p.avg + ' 검산 일치'); else if (p.avgOk === false) wn('평균 ' + p.avg + ' 와(과) 점수 평균이 다릅니다' + (p.fix ? ' → ' + p.fix.from + ' 을(를) ' + p.fix.to + ' 로 고치면 맞습니다(' + (p.fix.lowConf ? '글자 확신도가 가장 낮은 칸이라 ' : '') + '자동 보정 적용)' : '')); else out.push('<div class="ck">· 합계·평균 칸이 없어 검산은 못 했습니다</div>');
+  const mm = calcStats(REC.recs); if (mm.cnt >= 6 && p.games.length) { const dev = Math.max.apply(null, p.games.map(g => Math.abs(g - mm.avg))); if (dev > 80) wn('내 평소 에버(' + fmtA(mm.avg) + ')와 ' + Math.round(dev) + '점 이상 차이 나는 점수가 있습니다'); else ok('내 평소 에버(' + fmtA(mm.avg) + ')와 비슷한 범위'); }
+  const dupe = REC.recs.some(r => r.k === 'g' && RP.meta && RP.meta.date && r.date === RP.meta.date && r.scores.join(',') === p.games.join(',')); if (dupe) wn('같은 날짜에 같은 점수 기록이 이미 있습니다');
+  return out.join('');
+}
+function rpRender() {
+  const res = RP.res, box = $('rpRes'); if (!res || !res.data.length) { box.innerHTML = ''; return; }
+  const p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; let h = '';
+  if (p) {
+    const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to;
+    h += '<div class="rpmine"><div class="ttl">내 점수로 판단한 줄</div><div class="rpg">' + g.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
+    const m = RP.meta || {}; const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : '') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '· 날짜는 사진에서 못 찾아 오늘로 넣습니다') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
+    h += '<button id="rpUse" style="width:100%;margin-top:8px">이 점수 쓰기 (아래 입력칸에 채웁니다)</button>';
+  } else {
+    h += '<div class="rpmine"><div class="ttl">내 줄을 자동으로 정하지 못했습니다</div><div class="small">' + (res.why === 'multi' ? '내 이름과 비슷한 줄이 여러 개입니다.' : '내 이름·닉네임과 맞는 줄이 없습니다.') + ' 아래에서 내 줄을 눌러 주세요. 한 번 고르면 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</div></div>';
+  }
+  h += '<div class="lbl" style="margin-top:8px">사진에서 읽은 줄 (누르면 내 줄로 바꿈)</div>' + res.data.slice(0, 40).map(r => '<div class="rpr' + (r.i === RP.chosen ? ' on' : '') + (r.isMine ? ' mine' : '') + '" data-i="' + r.i + '"><b>' + esc(r.name) + '</b>' + (r.isMine ? '<span class="kbadge k2">내 이름과 비슷</span>' : '') + '<div>' + r.games.map(s => '<span class="sc">' + s + '</span>').join('') + (r.total != null ? '<span class="small"> 합계 ' + r.total + '</span>' : '') + '</div></div>').join('');
+  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; rpRender(); }); const u = $('rpUse'); if (u) u.onclick = rpApply;
+}
+function rpApply() {
+  const res = RP.res, p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; if (!p || !p.games.length) return alert('내 줄을 먼저 골라 주세요.');
+  const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
+  // 사진에 적힌 이름을 별칭으로 기억(다음부터 정확히 찾기)
+  const k = nk(p.name), cid = $('rpCrew').value; if (k.length >= 2 && !res.who.ids.some(i => i.k === k)) { REC.me.crew = REC.me.crew || {}; if (cid) { const c = REC.me.crew[cid] = REC.me.crew[cid] || { mid: '', alias: '' }; c.alias = splitAlias(c.alias).concat([p.name.trim()]).join(', '); } else { REC.me.nick = splitAlias(REC.me.nick).concat([p.name.trim()]).join(', '); } saveRec(); }
+  rcBuild(g.map(String)); if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId; RC.src = '사진'; rcSetMode('g');
+  $('rcNote').value = $('rcNote').value || '사진 판독: ' + p.name.trim(); try { $('rcG').scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
+}
+
 // ----- 마이 -----
 function renderMe() {
-  $('meName').value = REC.me.name || '';
+  $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
+  $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 광현이, 송사장"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
+  $('meCrews').querySelectorAll('.mecrew').forEach(el => { const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: el.querySelector('.mcm').value, alias: el.querySelector('.mca').value.trim() }; saveRec(); }; el.querySelector('.mcm').onchange = save1; el.querySelector('.mca').onchange = save1; });
   $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
   $('meAlleys').querySelectorAll('button[data-ed]').forEach(b => b.onclick = () => openAl(b.dataset.ed));
 }
 $('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); saveRec(); };
+$('meNick').onchange = (e) => { REC.me.nick = e.target.value.trim(); saveRec(); };
 $('btnAlNew').onclick = () => openAl(null);
 $('btnWipe').onclick = () => { if (!REC.recs.length) return alert('지울 기록이 없습니다.'); if (!confirm('내 점수 기록 ' + REC.recs.length + '건을 모두 지울까요? 되돌릴 수 없습니다. (볼링장 목록과 크루 명단은 남습니다)')) return; REC.recs = []; saveRec(); renderMe(); alert('기록을 모두 지웠습니다.'); };
 $('btnBk').onclick = async () => {
@@ -1506,7 +1666,7 @@ async function ocrImageText(file, st) {
     const base = new URL('.', location.href).href;
     if (!window.PPOCR) await loadScript('ocr-pp.js');
     await PPOCR.init({ ort: base + 'ort.min.js', wasmBase: base, det: base + 'pp-det.onnx', rec: base + 'pp-rec-ko.onnx', dict: base + 'pp-ko-dict.txt' }, bar);
-    const cv = await fileToCanvas(file, 2400); const r = await PPOCR.recognize(cv, bar); return { text: r.lines.join('\n'), engine: '정밀 분석' };
+    const cv = await fileToCanvas(file, 2400); const r = await PPOCR.recognize(cv, bar); return { text: r.lines.join('\n'), engine: '정밀 분석', items: r.items };
   } catch (e) { console.log('정밀 분석 실패', e); return { text: await ocrWithTesseract(file, bar), engine: '보조 분석' }; }
 }
 let RI = { rows: [], src: '파일', busy: false, sheets: [] };
