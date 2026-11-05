@@ -206,6 +206,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .rpr.on{border-color:var(--pri);background:rgba(220,69,39,.12)}
 .rpr.mine{border-style:dashed}
 .mecrew{border-top:1.5px dashed #cdb685;margin-top:10px;padding-top:8px}
+.mealley{border-top:1.5px dashed #cdb685;margin-top:8px;padding-top:6px}
 .rirow{border:1.5px solid #cdb685;border-radius:14px;padding:8px;margin-bottom:8px;background:var(--card)}
 .rirow.bad{border-color:var(--pri)}
 .rirow .row{margin-top:6px}
@@ -394,7 +395,8 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 </section>
 
 <section id="v-me" class="hide">
-  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"><div class="lbl">닉네임 (여러 개면 쉼표로)</div><input type="text" id="meNick" placeholder="예: 광현이, 송사장"></div>
+  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"><div class="lbl">닉네임 (여러 개면 쉼표로)</div><input type="text" id="meNick" placeholder="예: 광현이, 송사장">
+    <div class="lbl" style="margin-top:12px"><b>볼링장별 이름·닉네임</b> (그 볼링장 점수판에 다르게 나올 때)</div><div id="meAlleyIds"></div></div>
   <div class="card"><div class="ttl">크루별 내 이름·닉네임</div><div class="small">점수표 사진에서 내 줄을 찾을 때 씁니다. 크루마다 "나"를 명단에서 골라 두면 그 크루 명단의 이름과 닉네임으로 내 줄을 판단하고, 다른 팀원의 줄은 걸러냅니다.</div><div id="meCrews"></div></div>
   <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
@@ -1431,7 +1433,7 @@ $('afQ').oninput = afRender;
 // ===== 사진으로 내 점수 찾기(이름·닉네임·크루 명단·합계 검산으로 내 줄 판단) =====
 const nk = (s) => String(s || '').toLowerCase().replace(/[\s()（）\[\]{}·・\-_.,'"~!@#*:;]/g, '');
 const splitAlias = (s) => String(s || '').split(/[,，/\n]+/).map(x => x.trim()).filter(Boolean);
-function meIdentities(crewId) {
+function meIdentities(crewId, alleyIds) {
   const ids = []; const add = (t, kind) => { const k = nk(t); if (k.length >= 2 && !ids.some(x => x.k === k)) ids.push({ t: String(t).trim(), k, kind }); };
   const me = REC.me || {}; add(me.name, '이름'); splitAlias(me.nick).forEach(x => add(x, '닉네임'));
   const crew = crewId ? DB.clubs.find(x => x.id === crewId) : null; let memId = '';
@@ -1440,6 +1442,8 @@ function meIdentities(crewId) {
     if (mem) { memId = mem.id; add(mem.name, '이름(크루 명단)'); splitAlias(mem.nick).forEach(x => add(x, '닉네임(크루 명단)')); }
     splitAlias(cfg.alias).forEach(x => add(x, '별칭'));
   }
+  const sel = (alleyIds || []).filter(Boolean); const useA = sel.length ? REC.alleys.filter(a => sel.includes(a.id)) : REC.alleys;
+  useA.forEach(a => { add(a.myName, '이름(' + a.name + ')'); splitAlias(a.myNick).forEach(x => add(x, '닉네임(' + a.name + ')')); });
   return { ids, crew, memId };
 }
 function nsim(a, b) {
@@ -1480,8 +1484,8 @@ function tryRepair(games, total, avg, confs) {
   const uniq = []; sols.forEach(x => { if (!uniq.some(y => y.gi === x.gi && y.to === x.to)) uniq.push(x); }); if (uniq.length > 1 && confs) { const sc = uniq.map(x => ({ x, c: confs[x.gi] == null ? 1 : confs[x.gi] })).sort((a, b) => a.c - b.c); if (sc[1].c - sc[0].c >= 0.04) { sc[0].x.lowConf = true; return sc[0].x; } }
   return uniq.length === 1 ? uniq[0] : (uniq.length ? { alts: uniq } : null);
 }
-function analyzeScoreSheet(rows, crewId) {
-  const who = meIdentities(crewId); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs)));
+function analyzeScoreSheet(rows, crewId, alleyIds) {
+  const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs)));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
   const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
   let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
@@ -1518,8 +1522,9 @@ function detectMeta(rows) {
   return meta;
 }
 let RP = { res: null, chosen: -1, meta: null, crewId: '', busy: false };
+$('rcAlley').addEventListener('change', () => { if (RC.mode === 'p') { rpWhoNote(); if (RP.res) rpReanalyze(); } });
 function rpCrewFill() { let cur = REC.lastPhotoCrew || ''; if (!DB.clubs.some(c => c.id === cur)) { const mapped = DB.clubs.find(c => ((REC.me.crew || {})[c.id] || {}).mid) || (DB.clubs.length === 1 ? DB.clubs[0] : null); cur = mapped ? mapped.id : ''; } $('rpCrew').innerHTML = '<option value="">크루 선택 안 함 (내 이름·닉네임만 사용)</option>' + DB.clubs.map(c => '<option value="' + c.id + '"' + (c.id === cur ? ' selected' : '') + '>' + esc(c.name) + '</option>').join(''); }
-function rpWhoNote() { const w = meIdentities($('rpCrew').value); $('rpWho').innerHTML = w.ids.length ? '내 줄 판단에 쓰는 이름: ' + w.ids.map(i => '<b>' + esc(i.t) + '</b>(' + esc(i.kind) + ')').join(', ') : '<span class="warn">내 이름과 닉네임이 없습니다. 마이 탭에서 먼저 넣으면 내 줄을 정확히 찾습니다. 지금은 사진에서 내 줄을 직접 눌러 고르게 됩니다.</span>'; }
+function rpWhoNote() { const w = meIdentities($('rpCrew').value, [$('rcAlley').value, RP.meta && RP.meta.alleyId]); $('rpWho').innerHTML = w.ids.length ? '내 줄 판단에 쓰는 이름: ' + w.ids.map(i => '<b>' + esc(i.t) + '</b>(' + esc(i.kind) + ')').join(', ') : '<span class="warn">내 이름과 닉네임이 없습니다. 마이 탭에서 먼저 넣으면 내 줄을 정확히 찾습니다. 지금은 사진에서 내 줄을 직접 눌러 고르게 됩니다.</span>'; }
 $('rpCrew').onchange = () => { REC.lastPhotoCrew = $('rpCrew').value; saveRec(); rpWhoNote(); if (RP.res) rpReanalyze(); };
 $('rpCam').onclick = () => $('rpFileCam').click(); $('rpPic').onclick = () => $('rpFilePic').click();
 ['rpFileCam', 'rpFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; rpHandle(f); });
@@ -1533,7 +1538,8 @@ async function rpHandle(file) {
   RP.busy = false;
 }
 function rpReanalyze(first) {
-  const st = $('rpStatus'); const res = analyzeScoreSheet(RP.rows, $('rpCrew').value); RP.res = res; RP.meta = detectMeta(RP.rows); RP.chosen = res.chosen;
+  const st = $('rpStatus'); const meta0 = detectMeta(RP.rows); if (!RP.meta || RP.meta.alleyId !== meta0.alleyId) RP.meta = meta0; else RP.meta = Object.assign(meta0, { alleyId: RP.meta.alleyId });
+  const res = analyzeScoreSheet(RP.rows, $('rpCrew').value, [$('rcAlley').value, RP.meta.alleyId]); RP.res = res; RP.chosen = res.chosen; rpWhoNote();
   st.textContent = res.data.length ? '사진에서 ' + res.data.length + '줄을 읽었습니다(' + (RP.raw.engine || '') + '). 게임 수 ' + res.ng + '게임(근거: ' + res.ngFrom + ').' : '점수 줄을 찾지 못했습니다. 점수표가 또렷하게 나오게 가까이서 다시 찍어 주세요.';
   rpRender();
 }
@@ -1567,7 +1573,7 @@ function rpApply() {
   const res = RP.res, p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; if (!p || !p.games.length) return alert('내 줄을 먼저 골라 주세요.');
   const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
   // 사진에 적힌 이름을 별칭으로 기억(다음부터 정확히 찾기)
-  const k = nk(p.name), cid = $('rpCrew').value; if (k.length >= 2 && !res.who.ids.some(i => i.k === k)) { REC.me.crew = REC.me.crew || {}; if (cid) { const c = REC.me.crew[cid] = REC.me.crew[cid] || { mid: '', alias: '' }; c.alias = splitAlias(c.alias).concat([p.name.trim()]).join(', '); } else { REC.me.nick = splitAlias(REC.me.nick).concat([p.name.trim()]).join(', '); } saveRec(); }
+  const k = nk(p.name), cid = $('rpCrew').value, aid = m.alleyId || $('rcAlley').value; if (k.length >= 2 && !res.who.ids.some(i => i.k === k)) { REC.me.crew = REC.me.crew || {}; if (!cid && aid && REC.alleys.some(x => x.id === aid)) { const a = REC.alleys.find(x => x.id === aid); a.myNick = splitAlias(a.myNick).concat([p.name.trim()]).join(', '); } else if (cid) { const c = REC.me.crew[cid] = REC.me.crew[cid] || { mid: '', alias: '' }; c.alias = splitAlias(c.alias).concat([p.name.trim()]).join(', '); } else { REC.me.nick = splitAlias(REC.me.nick).concat([p.name.trim()]).join(', '); } saveRec(); }
   rcBuild(g.map(String)); if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId; RC.src = '사진'; rcSetMode('g');
   $('rcNote').value = $('rcNote').value || '사진 판독: ' + p.name.trim(); try { $('rcG').scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
 }
@@ -1575,6 +1581,8 @@ function rpApply() {
 // ----- 마이 -----
 function renderMe() {
   $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
+  $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
+  $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
   $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 광현이, 송사장"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
   $('meCrews').querySelectorAll('.mecrew').forEach(el => { const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: el.querySelector('.mcm').value, alias: el.querySelector('.mca').value.trim() }; saveRec(); }; el.querySelector('.mcm').onchange = save1; el.querySelector('.mca').onchange = save1; });
   $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
