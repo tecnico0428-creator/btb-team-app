@@ -207,6 +207,12 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .rpr.mine{border-style:dashed}
 .mecrew{border-top:1.5px dashed #cdb685;margin-top:10px;padding-top:8px}
 .mealley{border-top:1.5px dashed #cdb685;margin-top:8px;padding-top:6px}
+.cav{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:none;background:#fff4de;display:flex;align-items:center;justify-content:center}
+.cav img{width:100%;height:100%;object-fit:cover;display:block}
+.hav{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--ink);flex:none}
+.imgrow{display:flex;align-items:center;gap:8px;margin:6px 0 8px;flex-wrap:wrap}
+.imgprev{width:64px;height:64px;border-radius:50%;border:2px dashed var(--ink);background:#fffaf0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:28px;color:var(--sub);cursor:pointer}
+.imgprev img{width:100%;height:100%;object-fit:cover;display:block}
 .rirow{border:1.5px solid #cdb685;border-radius:14px;padding:8px;margin-bottom:8px;background:var(--card)}
 .rirow.bad{border-color:var(--pri)}
 .rirow .row{margin-top:6px}
@@ -214,7 +220,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 </head>
 <body>
 <header id="hdr" class="hide">
-  <div class="hrow"><button class="back hide" id="btnBack">‹ 크루</button>
+  <div class="hrow"><button class="back hide" id="btnBack">‹ 크루</button><img id="hAv" class="hav hide" alt="">
   <div class="grow"><h1 id="hTitle">크루</h1><small id="sub"></small></div></div>
   <nav class="subtabs hide" id="tabs"><button data-t="att" class="on">참석</button><button data-t="team">팀 구성</button><button data-t="mem">명단</button></nav>
 </header>
@@ -262,6 +268,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
   <div class="card">
     <b>새 크루 등록</b>
     <div class="small" style="margin-bottom:8px">크루 이름을 넣고 등록하면 팀원 등록 화면으로 넘어갑니다.</div>
+    <div class="imgrow"><div class="imgprev" id="ncPrev">+</div><button class="sec" id="ncCam">사진 찍기</button><button class="sec" id="ncPic">앨범에서</button><button class="gray hide" id="ncDel">지우기</button><span class="small">크루 이미지(선택)</span></div><input type="file" id="ncFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="ncFilePic" accept="image/*" class="hide">
     <div class="row"><input type="text" id="newClub" placeholder="크루 이름" class="grow"><button id="btnNewClub">등록</button></div>
   </div>
   <div class="small" style="text-align:center;margin:10px 0">명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
@@ -384,6 +391,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
   </div>
   <div class="card">
     <b>크루 설정</b>
+    <div class="lbl">크루 이미지</div><div class="imgrow"><div class="imgprev" id="ciPrev">+</div><button class="sec" id="ciCam">사진 찍기</button><button class="sec" id="ciPic">앨범에서</button><button class="gray hide" id="ciDel">지우기</button></div><input type="file" id="ciFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="ciFilePic" accept="image/*" class="hide">
     <div class="lbl">크루 이름</div><input type="text" id="clubName">
     <label class="row" style="margin-top:8px"><input type="checkbox" id="optFloor" style="width:22px;height:22px"> <span id="floorTxt">시드 하한선 적용</span></label>
     <div class="lbl">에버를 비워 둔(또는 1~300 밖인) 회원의 기본값</div><input type="number" id="optDef" inputmode="numeric">
@@ -395,14 +403,14 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 </section>
 
 <section id="v-me" class="hide">
-  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"><div class="lbl">닉네임 (여러 개면 쉼표로)</div><input type="text" id="meNick" placeholder="예: 광현이, 송사장">
+  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"><div class="lbl">닉네임 (여러 개면 쉼표로)</div><input type="text" id="meNick" placeholder="예: 햄토리, 서현이">
     <div class="lbl" style="margin-top:12px"><b>볼링장별 이름·닉네임</b> (그 볼링장 점수판에 다르게 나올 때)</div><div id="meAlleyIds"></div></div>
   <div class="card"><div class="ttl">크루별 내 이름·닉네임</div><div class="small">점수표 사진에서 내 줄을 찾을 때 씁니다. 크루마다 "나"를 명단에서 골라 두면 그 크루 명단의 이름과 닉네임으로 내 줄을 판단하고, 다른 팀원의 줄은 걸러냅니다.</div><div id="meCrews"></div></div>
   <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 15</div>
+  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 16</div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
@@ -686,7 +694,7 @@ function go(scr) {
   window.scrollTo(0, 0);
 }
 function renderHome() {
-  $('clubList').innerHTML = DB.clubs.map(c => '<div class="clubrow"><button class="clubbtn" data-id="' + c.id + '"><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button><button class="clubdel" data-del="' + c.id + '" aria-label="' + esc(c.name) + ' 삭제"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span>삭제</span></button></div>').join('') || '<div class="small">등록된 크루가 없습니다. 아래에서 새 크루를 등록하세요.</div>';
+  $('clubList').innerHTML = DB.clubs.map(c => '<div class="clubrow"><button class="clubbtn" data-id="' + c.id + '"><span class="cav">' + (c.img ? '<img src="' + c.img + '" alt="">' : '<span class="ballmark"></span>') + '</span><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button><button class="clubdel" data-del="' + c.id + '" aria-label="' + esc(c.name) + ' 삭제"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span>삭제</span></button></div>').join('') || '<div class="small">등록된 크루가 없습니다. 아래에서 새 크루를 등록하세요.</div>';
   $('clubList').querySelectorAll('.clubbtn').forEach(b => b.onclick = () => openClub(b.dataset.id));
   $('clubList').querySelectorAll('.clubdel').forEach(b => b.onclick = () => delClub(b.dataset.del));
 }
@@ -700,12 +708,12 @@ function openClub(id) {
   const c = C(); view('crew');
   tab(c.members.length ? 'att' : 'mem');
 }
-$('btnBack').onclick = () => { DB.cur = null; save(); go('home'); };
+$('btnBack').onclick = () => { DB.cur = null; save(); go('home'); setHeadAv(); };
 $('btnNewClub').onclick = () => {
   const n = $('newClub').value.trim(); if (!n) return alert('크루 이름을 입력해 주세요.');
   if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 크루가 이미 있습니다.');
-  const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() };
-  DB.clubs.push(c); save(); $('newClub').value = ''; openClub(c.id);
+  const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() }; if (NCIMG) c.img = NCIMG;
+  DB.clubs.push(c); save(); $('newClub').value = ''; NCIMG = ''; ncRender(); openClub(c.id);
 };
 function tab(t) {
   setHH();
@@ -873,7 +881,7 @@ async function makeImage() {
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   g.fillStyle = '#f2f4f8'; g.fillRect(0, 0, W, H);
   g.fillStyle = '#231e20'; g.fillRect(0, 0, W, HEAD); g.fillStyle = '#c8102e'; g.fillRect(0, HEAD - 6, W, 6);
-  try { const lg = await loadImg(/비투비|btb|back\s*to\s*back/i.test(c.name) ? 'logo-small.png' : 'logo-emblem.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } catch (e) {}
+  try { if (c.img) { const lg = await loadImg(c.img); g.save(); g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.clip(); g.drawImage(lg, P, 38, 150, 150); g.restore(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.stroke(); } else { const lg = await loadImg(/비투비|btb|back\s*to\s*back/i.test(c.name) ? 'logo-small.png' : 'logo-emblem.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } } catch (e) {}
   g.textBaseline = 'alphabetic'; g.textAlign = 'right'; g.fillStyle = '#ffffff';
   g.font = '700 46px ' + FONT; g.fillText(todayStr(), W - P, 78);
   g.font = '700 40px ' + FONT; g.fillStyle = '#ffd7dc'; g.fillText(c.name + ' 팀 편성', W - P, 134);
@@ -915,6 +923,7 @@ $('btnImgCopy').onclick = async () => {
 
 // ===== 명단 =====
 function renderMem() {
+  ciRender();
   const c = C(); const o = c.opts;
   $('memCount').textContent = c.members.length;
   $('memList').innerHTML = c.members.map(m => '<div class="mem" data-id="' + m.id + '" style="flex-wrap:wrap"><select class="kd" style="width:76px"><option value="member"' + (!m.guest ? ' selected' : '') + '>회원</option><option value="guest"' + (m.guest ? ' selected' : '') + '>게스트</option></select><input type="text" class="grow nm" value="' + esc(m.name) + '" placeholder="이름"><select class="gd" style="width:64px"><option value="M"' + (m.gender !== 'F' ? ' selected' : '') + '>남</option><option value="F"' + (m.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="av" style="width:76px" inputmode="decimal" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" placeholder="에버"><input type="text" class="nk" style="width:110px" value="' + esc(m.nick || '') + '" placeholder="별명"><select class="sd" style="width:96px">' + seedOptions(m.seed) + '</select><button class="gray del" style="padding:8px 10px">삭제</button></div>').join('') || '<div class="small" style="padding:12px 0">팀원이 없습니다. 위에서 등록하거나 파일을 올려 주세요.</div>';
@@ -1224,7 +1233,7 @@ function view(v) {
   if (v === 'rec') { $('hTitle').textContent = '기록'; $('sub').textContent = '점수와 에버를 기간별로 봅니다'; renderRec(); }
   if (v === 'me') { $('hTitle').textContent = '마이'; $('sub').textContent = '내 정보, 볼링장, 백업'; renderMe(); }
   if (v === 'crew') { const c = DB.cur ? C() : null; if (c) { go('club'); $('hTitle').textContent = c.name; $('sub').textContent = '참석을 체크하고 팀을 만드세요'; } else { DB.cur = null; go('home'); } }
-  setHH(); if (v !== 'crew') window.scrollTo(0, 0);
+  setHeadAv(); setHH(); if (v !== 'crew') window.scrollTo(0, 0);
 }
 document.querySelectorAll('#bnav button').forEach(b => b.onclick = () => view(b.dataset.v));
 
@@ -1583,7 +1592,7 @@ function renderMe() {
   $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
   $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
   $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
-  $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 광현이, 송사장"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
+  $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 햄토리, 서현이"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
   $('meCrews').querySelectorAll('.mecrew').forEach(el => { const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: el.querySelector('.mcm').value, alias: el.querySelector('.mca').value.trim() }; saveRec(); }; el.querySelector('.mcm').onchange = save1; el.querySelector('.mca').onchange = save1; });
   $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
   $('meAlleys').querySelectorAll('button[data-ed]').forEach(b => b.onclick = () => openAl(b.dataset.ed));
@@ -1767,6 +1776,24 @@ $('riApply').onclick = () => {
   $('riSheet').classList.add('hide'); if (curView === 'rec') renderRec(); else view('rec');
   alert(added + '건을 등록했습니다.' + (newAl ? ' 새 볼링장 ' + newAl + '곳이 추가됐습니다.' : '') + (dup ? ' 이미 있는 기록 ' + dup + '건은 건너뛰었습니다.' : '') + (skipped ? ' 날짜나 점수가 비어 건너뜀 ' + skipped + '건.' : ''));
 };
+
+
+// ===== 크루 이미지(정사각형 256px로 줄여 이 폰 안에만 저장) =====
+async function imgThumb(file, size) {
+  const cv = await fileToCanvas(file, 1024); const s = Math.min(cv.width, cv.height); const out = document.createElement('canvas'); out.width = out.height = size; const g = out.getContext('2d');
+  g.imageSmoothingQuality = 'high'; g.fillStyle = '#fff'; g.fillRect(0, 0, size, size); g.drawImage(cv, (cv.width - s) / 2, (cv.height - s) / 2, s, s, 0, 0, size, size); return out.toDataURL('image/jpeg', 0.85);
+}
+let NCIMG = '';
+function ncRender() { $('ncPrev').innerHTML = NCIMG ? '<img src="' + NCIMG + '" alt="">' : '+'; $('ncDel').classList.toggle('hide', !NCIMG); }
+async function ncPick(f) { if (!f) return; try { NCIMG = await imgThumb(f, 256); ncRender(); } catch (e) { alert('이미지를 읽지 못했습니다.'); } }
+$('ncCam').onclick = () => $('ncFileCam').click(); $('ncPic').onclick = () => $('ncFilePic').click(); $('ncPrev').onclick = () => $('ncFilePic').click(); $('ncDel').onclick = () => { NCIMG = ''; ncRender(); };
+['ncFileCam', 'ncFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ncPick(f); });
+function ciRender() { const c = C(); if (!c) return; $('ciPrev').innerHTML = c.img ? '<img src="' + c.img + '" alt="">' : '+'; $('ciDel').classList.toggle('hide', !c.img); }
+async function ciPick(f) { if (!f) return; const c = C(); if (!c) return; try { c.img = await imgThumb(f, 256); save(); ciRender(); setHeadAv(); } catch (e) { alert('이미지를 읽지 못했습니다.'); } }
+$('ciCam').onclick = () => $('ciFileCam').click(); $('ciPic').onclick = () => $('ciFilePic').click(); $('ciPrev').onclick = () => $('ciFilePic').click();
+$('ciDel').onclick = () => { const c = C(); if (!c) return; delete c.img; save(); ciRender(); setHeadAv(); };
+['ciFileCam', 'ciFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ciPick(f); });
+function setHeadAv() { const el = $('hAv'); const c = (typeof curView !== 'undefined' && curView === 'crew' && DB.cur) ? C() : null; if (c && c.img) { el.src = c.img; el.classList.remove('hide'); } else el.classList.add('hide'); }
 
 // ===== 시작 =====
 (async () => {
