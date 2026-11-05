@@ -56,6 +56,10 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 .logobox img{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
 .clubbtn{display:flex;width:100%;align-items:center;gap:8px;margin:0 0 8px;padding:16px 14px;font-size:19px;text-align:left;background:var(--ink);border-radius:18px}
 .clubbtn .small{color:#fff4de;opacity:.85}
+.clubrow{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.clubrow .clubbtn{margin:0;flex:1;min-width:0}
+.clubdel{flex:none;width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:transparent;color:var(--pri);border:2px solid var(--pri);border-radius:18px;padding:6px 4px;font-size:12px;font-weight:800}
+.clubdel svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));overflow:auto}
 .modal img{max-width:100%;height:auto;border-radius:10px;background:#fff}
 .modal .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;justify-content:center}
@@ -225,7 +229,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 <section id="scr-home">
   <div class="card">
     <b>크루 선택</b>
-    <div class="small" style="margin-bottom:8px">등록한 크루을 누르면 그 크루의 팀원으로 팀을 짭니다.</div>
+    <div class="small" style="margin-bottom:8px">등록한 크루를 누르면 그 크루의 팀원으로 팀을 짭니다.</div>
     <div id="clubList"></div>
   </div>
   <div class="card">
@@ -639,8 +643,14 @@ function go(scr) {
   window.scrollTo(0, 0);
 }
 function renderHome() {
-  $('clubList').innerHTML = DB.clubs.map(c => '<button class="clubbtn" data-id="' + c.id + '"><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button>').join('') || '<div class="small">등록된 크루이 없습니다. 아래에서 새 크루을 등록하세요.</div>';
+  $('clubList').innerHTML = DB.clubs.map(c => '<div class="clubrow"><button class="clubbtn" data-id="' + c.id + '"><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button><button class="clubdel" data-del="' + c.id + '" aria-label="' + esc(c.name) + ' 삭제"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span>삭제</span></button></div>').join('') || '<div class="small">등록된 크루가 없습니다. 아래에서 새 크루를 등록하세요.</div>';
   $('clubList').querySelectorAll('.clubbtn').forEach(b => b.onclick = () => openClub(b.dataset.id));
+  $('clubList').querySelectorAll('.clubdel').forEach(b => b.onclick = () => delClub(b.dataset.del));
+}
+function delClub(id) {
+  const c = DB.clubs.find(x => x.id === id); if (!c) return;
+  if (!confirm('"' + c.name + '" 크루와 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.\n(지우기 전에 마이 탭에서 백업 파일을 저장해 둘 수 있습니다)')) return;
+  DB.clubs = DB.clubs.filter(x => x.id !== id); if (DB.cur === id) DB.cur = null; save(); renderHome();
 }
 function openClub(id) {
   DB.cur = id; save(); result = null; curTeams = null; idx = 0;
@@ -650,7 +660,7 @@ function openClub(id) {
 $('btnBack').onclick = () => { DB.cur = null; save(); go('home'); };
 $('btnNewClub').onclick = () => {
   const n = $('newClub').value.trim(); if (!n) return alert('크루 이름을 입력해 주세요.');
-  if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 크루이 이미 있습니다.');
+  if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 크루가 이미 있습니다.');
   const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() };
   DB.clubs.push(c); save(); $('newClub').value = ''; openClub(c.id);
 };
@@ -914,8 +924,8 @@ $('optMonth').onchange = e => { C().opts.month = e.target.value.trim(); save(); 
 $('optFloor').onchange = e => { C().opts.floor = e.target.checked; save(); };
 $('hdM').onchange = e => { C().opts.hdM = num(e.target.value, 0) || 0; save(); };
 $('hdF').onchange = e => { C().opts.hdF = num(e.target.value, 0) || 0; save(); };
-$('clubName').onchange = e => { const n = e.target.value.trim(); const c = C(); if (!n) { e.target.value = c.name; return; } if (DB.clubs.some(x => x !== c && x.name === n)) { alert('같은 이름의 크루이 이미 있습니다.'); e.target.value = c.name; return; } c.name = n; $('hTitle').textContent = n; save(); };
-$('btnDelClub').onclick = () => { const c = C(); if (confirm('"' + c.name + '" 크루과 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.')) { DB.clubs = DB.clubs.filter(x => x !== c); DB.cur = null; save(); go('home'); } };
+$('clubName').onchange = e => { const n = e.target.value.trim(); const c = C(); if (!n) { e.target.value = c.name; return; } if (DB.clubs.some(x => x !== c && x.name === n)) { alert('같은 이름의 크루가 이미 있습니다.'); e.target.value = c.name; return; } c.name = n; $('hTitle').textContent = n; save(); };
+$('btnDelClub').onclick = () => { const c = C(); if (confirm('"' + c.name + '" 크루와 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.')) { DB.clubs = DB.clubs.filter(x => x !== c); DB.cur = null; save(); go('home'); } };
 function parseCsv(t) {
   const ls = t.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (ls.length && /이름|성명|name/i.test(ls[0]) && /에버|평균|avg|성별|별명|시드|구분/i.test(ls[0])) ls.shift();
