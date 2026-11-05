@@ -421,7 +421,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 17</div>
+  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 18</div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
@@ -1138,11 +1138,11 @@ function matchKnown(name, nick, known) {
   return bd <= 1.5 ? best : null;
 }
 function parseOcrText(text, known) {
-  const out = new Map(), skip = /^(게임수|미달|에버|총점|기준|시드|하한선|적용|올라간|참가횟수|부족|포함|되어있|팀전|제외한|개인|모든|게임에|등급은|떨어져도|내려가지|않습니다|합니다|개월)/;
+  const out = new Map(), gtok = /^(남|여|남자|여자|남성|여성)$/, skip = /^(이름|성명|성별|순번|번호|구분|닉네임|별명|게임수|미달|에버|총점|기준|시드|하한선|적용|올라간|참가횟수|부족|포함|되어있|팀전|제외한|개인|모든|게임에|등급은|떨어져도|내려가지|않습니다|합니다|개월)/;
   const lines = text.split(/\r?\n/);
   lines.forEach((line, li) => {
     const names = [];
-    [...line.matchAll(/[가-힣]+/g)].forEach(t => { const prev = line[t.index - 1]; if (prev === '(' || prev === '（') { if (names.length) names[names.length - 1].nick = t[0]; return; } names.push({ s: t[0], i: t.index, end: t.index + t[0].length, nick: '' }); });
+    [...line.matchAll(/[가-힣]+/g)].forEach(t => { const prev = line[t.index - 1]; if (gtok.test(t[0])) { const lastNm = names[names.length - 1]; if (lastNm && !lastNm.g) lastNm.g = t[0].charAt(0) === '여' ? 'F' : 'M'; return; } if (prev === '(' || prev === '（') { if (names.length) names[names.length - 1].nick = t[0]; return; } names.push({ s: t[0], i: t.index, end: t.index + t[0].length, nick: '' }); });
     names.forEach((nm, k) => {
       let name = nm.s, nick = nm.nick;
       if (name.length > 4) { nick = nick || name.slice(3); name = name.slice(0, 3); }
@@ -1155,7 +1155,7 @@ function parseOcrText(text, known) {
       const kn = matchKnown(name, nick, known);
       const key = kn ? kn.id : name; const rank = k * 100000 + li;
       const prev = out.get(key); if (prev && prev.rank <= rank) return;
-      out.set(key, { rank, row: kn ? { name: kn.name, nick: kn.nick || nick, gender: kn.gender === 'F' ? 'F' : 'M', avg, seed: kn.seed || '', guest: !!kn.guest, matchId: kn.id, status: '기존 팀원' + (String(kn.avg) !== String(avg) ? ' · 에버 ' + kn.avg + ' → ' + avg : ' · 변동 없음') } : { name, nick, gender: '', avg, seed: '', guest: false, status: '신규 · 성별 확인' } });
+      out.set(key, { rank, row: kn ? { name: kn.name, nick: kn.nick || nick, gender: kn.gender === 'F' ? 'F' : 'M', avg, seed: kn.seed || '', guest: !!kn.guest, matchId: kn.id, status: '기존 팀원' + (String(kn.avg) !== String(avg) ? ' · 에버 ' + kn.avg + ' → ' + avg : ' · 변동 없음') } : { name, nick, gender: nm.g || '', avg, seed: '', guest: false, status: nm.g ? '신규' : '신규 · 성별 확인' } });
     });
   });
   return [...out.values()].sort((a, b) => a.rank - b.rank).map(x => x.row);
