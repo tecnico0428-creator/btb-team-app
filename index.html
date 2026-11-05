@@ -1579,13 +1579,13 @@ function buildRows(items, lines) {
 }
 function parseRowTokens(texts, confs) {
   const toks = []; texts.forEach((tx, ci) => String(tx).replace(/[|｜]/g, ' ').split(/\s+/).filter(Boolean).forEach(t => toks.push({ t, c: confs && confs[ci] != null ? confs[ci] : 1 })));
-  const gh = toks.filter(x => GHDR.test(x.t)).length; let st = 0; const nm = [], vals = [];
+  const gh = toks.filter(x => GHDR.test(x.t)).length; let st = 0; const nm = [], vals = [], pre = [];
   toks.forEach(x => {
-    const t = x.t; if (GHDR.test(t)) return; const n = numTok(t); const nameLike = /[가-힣A-Za-z]/.test(t) && !(n && !/[가-힣]/.test(t));
-    if (nameLike) { const core = t.replace(/[^가-힣A-Za-z]/g, ''); if (!core || HDRW.test(core)) return; if (st <= 1) { nm.push(t); st = 1; } return; }
-    if (n) { if (st === 0) return; st = 2; n.c = x.c; vals.push(n); }
+    const t = x.t; if (GHDR.test(t)) return; let n = numTok(t); if (!n && st >= 1 && /^[Oo○]$/.test(t)) n = { v: 0, dec: false, raw: t }; const nameLike = /[가-힣A-Za-z]/.test(t) && !(n && !/[가-힣]/.test(t));
+    if (nameLike) { const core = t.replace(/[^가-힣A-Za-z]/g, ''); if (!core || HDRW.test(core)) return; if (core.length < 2 && !/[가-힣]/.test(core)) return; if (st <= 1) { nm.push(t); st = 1; } return; }
+    if (n) { n.c = x.c; if (st === 0) { pre.push(n); return; } st = 2; vals.push(n); }
   });
-  return { name: nm.join(' '), vals, gh };
+  return { name: nm.join(' '), vals, gh, pre };
 }
 const sumA = (a) => a.reduce((x, y) => x + y, 0);
 const CONF = { '0': ['8', '6', '9'], '8': ['0', '3', '6', '9'], '1': ['7'], '7': ['1'], '5': ['6', '3'], '6': ['5', '8', '0'], '3': ['8', '5'], '9': ['0', '8'], '2': ['7'] };
@@ -1604,20 +1604,71 @@ function nameless(rows) {
   rows.forEach((r) => { const t = tk(r); const words = t.filter(x => /[가-힣A-Za-z]/.test(x.t) && !GHDR.test(x.t) && !numTok(x.t)); if (words.some(x => !HDRW.test(x.t.replace(/[^가-힣A-Za-z]/g, '')))) return; const n = t.filter(x => !GHDR.test(x.t)).map(x => { const v = numTok(x.t); if (v) v.c = x.c; return v; }).filter(x => x && !x.dec && x.v <= 300); if (n.length < 2 || n.length > 10) return; const big = n.filter(x => x.v >= 60).length; if (big < 2 || big < n.length / 2) return; out.push(mk(n.map(x => x.v), n.map(x => x.c))); });
   return out;
 }
+// 표 머리글(성명 핸디 총점 평균 1G 2G ...)에서 이름 뒤 칸의 순서를 읽는다
+function findHeader(rows) {
+  for (const r of rows) {
+    const toks = []; r.texts.forEach(tx => String(tx).replace(/[|｜]/g, ' ').split(/\s+/).filter(Boolean).forEach(t => toks.push(t)));
+    if (toks.filter(t => GHDR.test(t)).length < 2) continue;
+    let cols = []; let seenName = false;
+    toks.forEach(t => {
+      const core = t.replace(/[^가-힣A-Za-z0-9]/g, '');
+      if (GHDR.test(t)) { cols.push({ k: 'g' }); return; }
+      if (/^(성명|이름|name)$/i.test(core)) { seenName = true; cols = []; return; }
+      if (/^(핸디|핸디캡|handi|hdcp)/i.test(core)) cols.push({ k: 'h' });
+      else if (/^(총점|합계|총|total|sum)$/i.test(core)) cols.push({ k: 't' });
+      else if (/^(평균|에버|avg|average)$/i.test(core)) cols.push({ k: 'a' });
+      else if (seenName && /^(순위|순번|번호|no|rank|lane|레인|팀)$/i.test(core)) cols.push({ k: 'x' });
+    });
+    if (cols.filter(c => c.k === 'g').length >= 2) return cols;
+  }
+  return null;
+}
+function mapByHeader(p, hdr) {
+  if (!hdr || p.vals.length !== hdr.length) return null; const games = [], gconf = []; let total = null, avg = null;
+  hdr.forEach((c, i) => { const v = p.vals[i]; if (c.k === 'g') { games.push(v.v); gconf.push(v.c); } else if (c.k === 't') total = v.v; else if (c.k === 'a') avg = v.v; });
+  if (games.some(g => g > 300 || g < 0)) return null; return { games, gconf, total, avg, by: '표 머리글 칸 순서' };
+}
+// 머리글이 없어도: 게임 수만큼 이어진 점수의 합이 같은 줄의 다른 숫자(총점)와 같으면 그 구간을 게임 칸으로 본다
+function sumSearch(p, ng) {
+  if (!ng || ng < 3) return null; const all = p.vals; const hits = [];
+  for (let s = 0; s + ng <= all.length; s++) {
+    const win = all.slice(s, s + ng); if (win.some(v => v.dec || v.v > 300)) continue; const sm = sumA(win.map(v => v.v)); if (sm < 100) continue;
+    const tot = all.find((v, i) => (i < s || i >= s + ng) && !v.dec && v.v === sm); const av = all.find((v, i) => (i < s || i >= s + ng) && v.dec && Math.abs(v.v - sm / ng) <= 0.6);
+    if (tot || av) hits.push({ games: win.map(v => v.v), gconf: win.map(v => v.c), total: tot ? tot.v : null, avg: av ? av.v : null, by: '합계 검산으로 찾은 점수 칸' });
+  }
+  return hits.length === 1 ? hits[0] : (hits.length > 1 ? hits.filter(x => x.total != null && x.avg != null)[0] || null : null);
+}
+// 사진이 기울어 한 줄이 둘로 쪼개진 경우(이름+앞 칸 / 나머지 칸)를 합친다. 합계 검산이 맞을 때만 합친다.
+function mergeFragments(P, hdr) {
+  if (!hdr) return; const exp = hdr.length; const gi = hdr.map((c, i) => c.k === 'g' ? i : -1).filter(i => i >= 0); const ti = hdr.findIndex(c => c.k === 't'); const used = new Set();
+  const okv = (vals) => { const g = gi.map(i => vals[i]); if (g.some(v => !v || v.v > 300)) return false; return ti >= 0 ? (!!vals[ti] && vals[ti].v === sumA(g.map(v => v.v))) : true; };
+  P.filter(p => p.name && p.vals.length < exp).forEach(hd => {
+    const tails = P.filter(q => q !== hd && !used.has(q) && !q.name && q.pre && q.pre.length >= 2 && Math.abs(q.i - hd.i) <= 3).sort((a, b) => Math.abs(a.i - hd.i) - Math.abs(b.i - hd.i));
+    for (const q of tails) for (const drop of [0, 1]) {
+      if (drop && !(!q.pre[0].dec && q.pre[0].v <= 99)) continue; const comb = hd.vals.concat(q.pre.slice(drop));
+      if (comb.length === exp && okv(comb)) { hd.vals = comb; hd.fixedFrom = '쪼개진 줄 합침'; used.add(q); return; }
+    }
+  });
+}
 function analyzeScoreSheet(rows, crewId, alleyIds) {
-  const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs)));
+  const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs))); mergeFragments(P, findHeader(rows));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
   const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
   let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
   const data = P.filter(p => p.name && p.vals.filter(v => !v.dec && v.v <= 300).length >= 2);
   if (!ng) { const ks = []; data.forEach(p => { const iv = p.vals.filter(v => !v.dec).map(v => v.v); for (let k = Math.min(iv.length - 1, 10); k >= 2; k--) { if (iv[k] === sumA(iv.slice(0, k))) { ks.push(k); break; } } }); if (ks.length >= 2) { ng = mode(ks); ngFrom = '합계 칸 검산'; } }
   if (!ng) { ng = Math.min(10, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
+  const HDR = findHeader(rows);
   data.forEach(p => {
+    const mp = mapByHeader(p, HDR) || sumSearch(p, ng); if (mp) { p.games = mp.games; p.gconf = mp.gconf; p.total = mp.total; p.avg = mp.avg; p.colBy = mp.by; }
     const ivo = p.vals.filter(v => !v.dec); const iv = ivo.map(v => v.v); const decs = p.vals.filter(v => v.dec).map(v => v.v);
+    if (!mp) {
     const cut = iv.findIndex(v => v > 300); const head = cut >= 0 ? iv.slice(0, cut) : iv.slice(); let games = head.slice(0, ng);
     if (cut >= 0) { for (let k = Math.min(head.length, ng); k >= 1; k--) { if (sumA(head.slice(0, k)) === iv[cut]) { games = head.slice(0, k); break; } } }
     p.games = games; p.gconf = ivo.slice(0, games.length).map(v => v.c); p.total = null; p.avg = null; const sum = sumA(games); const rest = iv.slice(games.length).concat(decs);
     rest.forEach(v => { if (p.total == null && (v > 300 || v === sum)) p.total = v; else if (p.avg == null && Math.abs(v - sum / Math.max(1, games.length)) <= 1) p.avg = v; });
+    }
+    const sum = sumA(p.games);
     p.sumOk = p.total != null ? (p.total === sum) : null; p.avgOk = p.avg != null ? (Math.abs(p.avg - sum / Math.max(1, p.games.length)) <= 1) : null;
     if ((p.sumOk === false || p.avgOk === false) && p.games.length) { const fx = tryRepair(p.games, p.total, p.avg, p.gconf); if (fx && fx.alts) p.alts = fx.alts; else p.fix = fx; }
     p.short = p.games.length < ng; const own = rowOwner(nk(p.name), who); Object.assign(p, own);
@@ -1709,7 +1760,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 21, APP_DATE = '2026.11.06';
+const APP_VER = 22, APP_DATE = '2026.11.06';
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
 const GUIDE = [
