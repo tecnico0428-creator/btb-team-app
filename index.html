@@ -720,12 +720,16 @@ function parseOcrText(text, known) {
   }
   return [...out.values()];
 }
+function sortImp() {
+  const c = C(); const rank = (r) => { const ex = r.matchId ? c.members.find(x => x.id === r.matchId) : c.members.find(x => x.name === r.name); if (!ex) { r.flag = '확인 필요 · 새 이름(글자가 틀렸을 수 있음)'; return 0; } const d = r.avg === '' || ex.avg === '' ? 0 : Math.abs(+r.avg - +ex.avg); if (d >= 15) { r.flag = '확인 필요 · 에버가 ' + d + '점 달라졌습니다(' + ex.avg + ' → ' + r.avg + ')'; return 1; } r.flag = ''; return d > 0 ? 2 : 3; };
+  const ord = impRows.map((r, i) => [rank(r), i, r]); ord.sort((a, b) => a[0] - b[0] || a[1] - b[1]); impRows = ord.map(x => x[2]);
+}
 function renderPrev() {
   const c = C();
   if (!impRows.length) { $('impPrev').innerHTML = ''; return; }
   $('impPrev').innerHTML = '<div class="small" style="margin:10px 0 4px">읽은 결과 ' + impRows.length + '명 · 틀린 곳을 고친 뒤 등록하세요 (체크 해제한 사람은 건너뜁니다)</div>' + impRows.map((r, i) => {
     const ex = r.matchId ? c.members.find(x => x.id === r.matchId) : c.members.find(x => x.name === r.name);
-    const st = r.status || (ex ? '기존 팀원 · 에버 ' + ex.avg + ' → ' + (r.avg === '' ? '유지' : r.avg) : '신규');
+    const st = r.flag || r.status || (ex ? '기존 팀원 · 에버 ' + ex.avg + ' → ' + (r.avg === '' ? '유지' : r.avg) : '신규');
     return '<div class="impr" data-i="' + i + '"><div class="row"><input type="checkbox" class="ck" ' + (r.ck === false ? '' : 'checked') + ' style="width:22px;height:22px"><input type="text" class="grow in-nm" value="' + esc(r.name) + '"><select class="in-g" style="width:84px"><option value="">성별?</option><option value="M"' + (r.gender === 'M' ? ' selected' : '') + '>남</option><option value="F"' + (r.gender === 'F' ? ' selected' : '') + '>여</option></select><input type="number" class="in-av" style="width:76px" inputmode="decimal" value="' + (r.avg === '' ? '' : r.avg) + '"></div><div class="row" style="margin-top:6px"><input type="text" class="grow in-nk" placeholder="별명" value="' + esc(r.nick || '') + '"><select class="in-sd" style="width:92px"><option value="">시드 자동</option>' + ['A', 'B', 'C', 'D'].map(s => '<option' + (r.seed === s ? ' selected' : '') + '>' + s + '</option>').join('') + '</select><select class="in-kd" style="width:84px"><option value="member">회원</option><option value="guest"' + (r.guest ? ' selected' : '') + '>게스트</option></select></div><div class="small">' + esc(st) + '</div></div>';
   }).join('') + '<div class="row" style="margin-top:10px"><button id="btnImpOk" class="grow">선택한 사람 등록</button><button id="btnImpNo" class="gray">취소</button></div>';
   $('impPrev').querySelectorAll('.impr').forEach(el => { const r = impRows[+el.dataset.i]; el.querySelector('.ck').onchange = e => { r.ck = e.target.checked; }; el.querySelector('.in-nm').onchange = e => { r.name = e.target.value.trim(); delete r.matchId; renderPrev(); }; el.querySelector('.in-g').onchange = e => { r.gender = e.target.value; }; el.querySelector('.in-av').onchange = e => { r.avg = e.target.value === '' ? '' : num(e.target.value, ''); }; el.querySelector('.in-nk').onchange = e => { r.nick = e.target.value.trim(); }; el.querySelector('.in-sd').onchange = e => { r.seed = e.target.value; }; el.querySelector('.in-kd').onchange = e => { r.guest = e.target.value === 'guest'; r.kindSet = true; }; });
@@ -767,7 +771,7 @@ async function runOcr(file) {
     const worker = await Tesseract.createWorker('kor+eng', 1, { workerPath: abs('ocr-worker.min.js'), corePath: abs('ocr-core-simd-lstm.wasm.js'), langPath: abs('.').replace(/\/$/, ''), logger: m => { if (m.status === 'recognizing text') bar(0.2 + 0.78 * m.progress, '글자를 읽는 중... ' + Math.round(m.progress * 100) + '%'); else if (/load|initializ/.test(m.status || '')) bar(0.08 + 0.1 * (m.progress || 0), '분석 준비 중...'); } });
     await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
     const r = await worker.recognize(cv); await worker.terminate();
-    impRows = parseOcrText(r.data.text || '', C().members);
+    impRows = parseOcrText(r.data.text || '', C().members); sortImp();
     st.textContent = impRows.length ? '이미지에서 ' + impRows.length + '명을 읽었습니다. 사진 글자는 틀릴 수 있으니 이름·에버를 꼭 확인하세요.' : '이름과 에버를 찾지 못했습니다. 표가 또렷하게 나온 이미지로 다시 시도하거나 엑셀·CSV 파일을 써 주세요.';
     renderPrev();
   } catch (e) { st.textContent = '이미지를 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
@@ -780,7 +784,7 @@ async function handleFile(file) {
     if (/\.xlsx$/i.test(name)) { st.textContent = '엑셀 파일을 읽는 중...'; impRows = tableToRows(await readXlsx(await file.arrayBuffer())); }
     else if (/\.(csv|txt)$/i.test(name) || /text\//.test(file.type)) { impRows = parseTextTable(await file.text()); }
     else { st.textContent = '지원하지 않는 파일입니다. 이미지, .xlsx, .csv, .txt 파일을 올려 주세요.'; return; }
-    const c = C(); impRows.forEach(r => { const k = c.members.find(m => m.name === r.name); if (k) r.matchId = k.id; });
+    const c = C(); impRows.forEach(r => { const k = c.members.find(m => m.name === r.name); if (k) r.matchId = k.id; }); sortImp();
     st.textContent = impRows.length ? name + ' 에서 ' + impRows.length + '명을 읽었습니다. 확인 후 등록하세요.' : '읽을 수 있는 팀원이 없습니다. 첫 줄에 이름·성별·에버 같은 제목이 있는지 확인하세요.';
     renderPrev();
   } catch (e) { st.textContent = '파일을 읽지 못했습니다: ' + (e && e.message ? e.message : e); }
