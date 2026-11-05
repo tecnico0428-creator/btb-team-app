@@ -63,6 +63,28 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 .modal .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;justify-content:center}
 .impr{border-bottom:1px solid var(--line);padding:8px 0}
 .impr input[type=text],.impr input[type=number],.impr select{padding:7px 8px}
+#attList .mem{font-size:20px;padding:12px 4px;gap:10px}
+#attList .mem .grow{font-weight:600}
+#attList .mem .nick{font-size:14px;font-weight:400}
+#attList .mem .small{font-size:14px}
+#attList .badge{font-size:15px;min-width:28px;padding:2px 8px}
+#attList input[type=checkbox]{width:32px;height:32px;flex:none}
+#attList .avin{width:92px!important;font-size:21px!important;padding:9px 10px!important;font-weight:600}
+.cntbar{position:sticky;top:var(--hh,66px);z-index:4;background:var(--card);border:2px solid var(--pri);border-radius:14px;padding:6px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.cnt{display:flex;align-items:baseline;gap:6px}
+.bignum{font-size:56px;font-weight:800;color:var(--pri);line-height:1.05;min-width:46px;text-align:center}
+.lbl2{font-size:22px;font-weight:700}
+.cnt2{font-size:22px;text-align:right}
+.cnt2 b{font-size:34px;font-weight:800}
+.seedck{display:inline-flex;align-items:center;gap:6px;margin:0 14px 8px 0;font-size:19px}
+.seedck input{width:28px;height:28px}
+.seedck.off{opacity:.45}
+.pick{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}
+@media (min-width:620px){.pick{grid-template-columns:1fr 1fr}}
+.pk{display:flex;align-items:center;gap:8px;padding:10px 8px;border:1px solid var(--line);border-radius:12px;font-size:19px;font-weight:600;background:var(--bg)}
+.pk.on{border-color:var(--pri);background:rgba(200,16,46,.12)}
+.pk input{width:28px;height:28px;flex:none}
+.pk .badge{font-size:13px;min-width:22px;padding:1px 6px}
 .prog{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
 .prog i{display:block;height:100%;width:0;background:var(--pri)}
 </style>
@@ -91,7 +113,8 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 <section id="scr-club" class="hide">
 <div id="tab-att">
   <div class="card">
-    <div class="row"><b class="grow">참가 팀원 체크 <span id="attCount">0</span>명</b><button class="sec" id="btnAll">전체 선택</button><button class="sec" id="btnNone">전체 해제</button></div>
+    <div class="cntbar" id="cntBar"><div class="cnt"><span class="lbl2">참가</span><span id="attCount" class="bignum">0</span><span class="lbl2">명</span></div><div class="cnt2">남 <b id="attM">0</b> · 여 <b id="attF">0</b><span class="small"> / 전체 <span id="attAll">0</span>명</span></div></div>
+    <div class="row" style="margin:8px 0"><b class="grow" style="font-size:19px">참가 팀원 체크</b><button class="sec" id="btnAll">전체 선택</button><button class="sec" id="btnNone">전체 해제</button></div>
     <div id="attList"></div>
     <div class="small" style="margin-top:6px">오른쪽 에버 숫자를 눌러 바로 고칠 수 있습니다. 고친 값은 명단에도 저장됩니다.</div>
     <div class="lbl">게스트 바로 추가</div>
@@ -100,9 +123,14 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
   <div class="card">
     <label class="row"><input type="checkbox" id="pairOn" style="width:22px;height:22px"> <b>같은 편이 되면 안 되는 사람 지정</b></label>
     <div id="pairBox" class="hide">
+      <div class="lbl" style="margin-top:6px"><b>시드 체크 목록</b></div>
+      <div class="small">체크한 시드는 같은 시드끼리 같은 편이 되지 않게 팀에 고르게 나눕니다. 그 시드 인원이 팀 수보다 많으면 한 팀에 최대한 적게 들어갑니다.</div>
+      <div id="seedList" style="margin:8px 0 12px"></div>
+      <div class="lbl"><b>사람별 지정</b></div>
       <div id="pairList"></div>
-      <div class="row" style="margin-top:8px"><select id="pA" class="grow"></select><select id="pB" class="grow"></select><button id="btnPair">추가</button></div>
-      <div class="small" style="margin-top:6px">참가자 중 두 명을 고르세요. 한 사람을 여러 쌍에 넣을 수 있고, 같은 사람끼리나 이미 넣은 쌍은 막습니다.</div>
+      <div class="small" style="margin-top:10px">아래 참가자 <b id="pickN">0</b>명 중 <b>두 명</b>을 체크한 뒤 "쌍 추가"를 누르세요. 한 사람을 여러 쌍에 넣을 수 있고, 이미 넣은 쌍은 막습니다.</div>
+      <div id="pairPick" class="pick"></div>
+      <div class="row" style="margin-top:8px"><div class="grow" id="pickSel" style="font-size:18px;font-weight:700">선택: 없음</div><button id="btnPair">쌍 추가</button><button id="btnPairClear" class="gray">선택 해제</button></div>
       <label class="row" style="margin-top:8px"><input type="checkbox" id="optRelax" style="width:22px;height:22px"> 목표 합계 차이를 못 맞추면 이 조건을 풀어서라도 더 나은 안을 보여 주기</label>
     </div>
   </div>
@@ -215,7 +243,19 @@ const FLOOR = { A: 211, B: 191, C: 171, D: 151 };
 function makeRng(seed) { let s = (seed >>> 0) || 123456789; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; }
 
 // ===== 팀 평가: 에버(+핸디) 합계 차이(팀 크기가 다르면 큰 팀 기준 환산) + 등급 분포 + 분리 조건 위반 =====
-function evaluateTeams(teams, maxSize, pairs, gm) {
+// 시드 분산: 체크한 시드는 팀에 고르게(한 팀에 몰리지 않게). 남자팀/여자팀 방식이면 각 그룹 안에서 따로 본다.
+function seedViolOf(teams, seedSet, gm) {
+  let total = 0; const bad = [];
+  if (!seedSet || !seedSet.length) return { total, bad };
+  const isMen = (t) => t.length && t.every(m => m.gender !== 'F');
+  const groups = gm === 'split' ? [teams.filter(isMen), teams.filter(t => !isMen(t))] : [teams];
+  for (const s of seedSet) for (const g of groups) {
+    if (g.length < 2) continue; const cnt = g.map(t => t.filter(m => m.grade === s).length); const tot = cnt.reduce((x, y) => x + y, 0); if (tot < 2) continue;
+    const ideal = Math.ceil(tot / g.length); let v = 0; cnt.forEach(c => { if (c > ideal) v += c - ideal; }); if (v) { total += v; if (!bad.includes(s)) bad.push(s); }
+  }
+  return { total, bad };
+}
+function evaluateTeams(teams, maxSize, pairs, gm, seedSet) {
   const calc = (ts) => {
     if (!ts.length) return { sp: 0, gp: 0 };
     const norm = ts.map(t => t.length ? t.reduce((a, m) => a + m.avg, 0) * (maxSize / t.length) : 0);
@@ -229,12 +269,13 @@ function evaluateTeams(teams, maxSize, pairs, gm) {
     const a = calc(teams.filter(isMen)), b = calc(teams.filter(t => !isMen(t)));
     spreadAvg = Math.max(a.sp, b.sp); gp = a.gp + b.gp;
   } else { const r = calc(teams); spreadAvg = r.sp; gp = r.gp; }
-  let viol = 0;
+  let pairViol = 0;
   if (pairs && pairs.length) {
     const where = {}; teams.forEach((t, i) => t.forEach(m => { where[m.id] = i; }));
-    for (const pr of pairs) if (where[pr[0]] !== undefined && where[pr[0]] === where[pr[1]]) viol++;
+    for (const pr of pairs) if (where[pr[0]] !== undefined && where[pr[0]] === where[pr[1]]) pairViol++;
   }
-  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, score: spreadAvg * 4 + 12 * gp + 1000 * viol };
+  const seedViol = seedViolOf(teams, seedSet, gm).total; const viol = pairViol + seedViol;
+  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, pairViol, seedViol, score: spreadAvg * 4 + 12 * gp + 1000 * viol };
 }
 function allocateCounts(total, sizes, r) {
   const n = sizes.reduce((a, b) => a + b, 0);
@@ -245,8 +286,8 @@ function allocateCounts(total, sizes, r) {
   for (let k = 0; k < rem; k++) base[order[k % order.length].i]++;
   return base;
 }
-function improveTeams(teams, maxSize, pairs, gm, anyGender) {
-  let best = evaluateTeams(teams, maxSize, pairs, gm), improved = true, iter = 0;
+function improveTeams(teams, maxSize, pairs, gm, anyGender, seedSet) {
+  let best = evaluateTeams(teams, maxSize, pairs, gm, seedSet), improved = true, iter = 0;
   while (improved && iter < 200) {
     improved = false; iter++;
     for (let a = 0; a < teams.length; a++) for (let b = a + 1; b < teams.length; b++)
@@ -254,7 +295,7 @@ function improveTeams(teams, maxSize, pairs, gm, anyGender) {
         const x = teams[a][i], y = teams[b][j];
         if ((!anyGender && x.gender !== y.gender) || x.avg === y.avg) continue;
         teams[a][i] = y; teams[b][j] = x;
-        const e = evaluateTeams(teams, maxSize, pairs, gm);
+        const e = evaluateTeams(teams, maxSize, pairs, gm, seedSet);
         if (e.score < best.score - 1e-9) { best = e; improved = true; } else { teams[a][i] = x; teams[b][j] = y; }
       }
   }
@@ -289,7 +330,7 @@ function planTeams(n, size, mode, forced, gm, nM, nF) {
   return { k: g.k };
 }
 function buildTeams(people, opt) {
-  opt = Object.assign({ k: 1, seed: 1, tries: 150, pairs: [], anyGender: false, gm: 'balanced' }, opt || {});
+  opt = Object.assign({ k: 1, seed: 1, tries: 150, pairs: [], anyGender: false, gm: 'balanced', seedSet: [] }, opt || {});
   const n = people.length; if (!n || !opt.k) return null;
   const k = opt.k;
   const sizes = Array.from({ length: k }, (_, i) => Math.floor(n / k) + (i < n % k ? 1 : 0));
@@ -313,7 +354,7 @@ function buildTeams(people, opt) {
       const fc = allocateCounts(F.length, sizes, r);
       place(F, fc); place(M, sizes.map((s, i) => s - fc[i]));
     }
-    const ev = improveTeams(teams, maxSize, opt.pairs, opt.gm, opt.anyGender);
+    const ev = improveTeams(teams, maxSize, opt.pairs, opt.gm, opt.anyGender, opt.seedSet);
     all.push({ teams: teams.map(tm => tm.slice().sort((a, b) => b.avg - a.avg)), ev });
   }
   all.sort((a, b) => a.ev.score - b.ev.score);
@@ -321,24 +362,24 @@ function buildTeams(people, opt) {
   for (const s of all) { const sig = s.teams.map(tm => tm.map(m => m.id || m.name).sort().join(',')).sort().join('|'); if (!seen.has(sig)) { seen.add(sig); uniq.push(s); } }
   return { sizes, maxSize, results: uniq };
 }
-function buildAny(ppl, plan, o, seed, pairs) {
+function buildAny(ppl, plan, o, seed, pairs, seedSet) {
   const gm = o.genderMode || 'balanced';
   if (gm === 'split') {
     const M = ppl.filter(p => p.gender !== 'F'), F = ppl.filter(p => p.gender === 'F');
-    const rm = plan.kM ? buildTeams(M, { k: plan.kM, seed, tries: 120, pairs, gm: 'balanced' }) : null;
-    const rf = plan.kF ? buildTeams(F, { k: plan.kF, seed: seed + 7, tries: 120, pairs, gm: 'balanced' }) : null;
+    const rm = plan.kM ? buildTeams(M, { k: plan.kM, seed, tries: 120, pairs, gm: 'balanced', seedSet }) : null;
+    const rf = plan.kF ? buildTeams(F, { k: plan.kF, seed: seed + 7, tries: 120, pairs, gm: 'balanced', seedSet }) : null;
     const maxSize = Math.max(rm ? rm.maxSize : 0, rf ? rf.maxSize : 0);
     const cnt = Math.min(40, Math.max(rm ? rm.results.length : 1, rf ? rf.results.length : 1));
     const results = [];
     for (let i = 0; i < cnt; i++) {
       const a = rm ? rm.results[i % rm.results.length] : null, b = rf ? rf.results[i % rf.results.length] : null;
       const teams = (a ? a.teams : []).concat(b ? b.teams : []);
-      results.push({ teams, ev: evaluateTeams(teams, maxSize, pairs, 'split') });
+      results.push({ teams, ev: evaluateTeams(teams, maxSize, pairs, 'split', seedSet) });
     }
     results.sort((a, b) => a.ev.score - b.ev.score);
     return { sizes: [], maxSize, results };
   }
-  return buildTeams(ppl, { k: plan.k, seed, tries: 150, pairs, gm, anyGender: gm === 'random' });
+  return buildTeams(ppl, { k: plan.k, seed, tries: 150, pairs, gm, anyGender: gm === 'random', seedSet });
 }
 function computeResult(ppl, c) {
   const o = c.opts, gm = o.genderMode || 'balanced';
@@ -350,13 +391,14 @@ function computeResult(ppl, c) {
   const ids = new Set(ppl.map(p => p.id));
   const pairs = c.pairOn ? (c.pairs || []).filter(p => ids.has(p[0]) && ids.has(p[1])) : [];
   const seed = o.seed || 1;
-  let used = buildAny(ppl, plan, o2, seed, pairs);
+  const seedSet = c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : [];
+  let used = buildAny(ppl, plan, o2, seed, pairs, seedSet);
   let relaxed = false;
-  if (pairs.length && o.relax && used.results[0].ev.spreadAvg > o.goal + 1e-9) {
-    const free = buildAny(ppl, plan, o2, seed, []);
+  if ((pairs.length || seedSet.length) && o.relax && used.results[0].ev.spreadAvg > o.goal + 1e-9) {
+    const free = buildAny(ppl, plan, o2, seed, [], []);
     if (free.results[0].ev.spreadAvg < used.results[0].ev.spreadAvg - 1e-9) { used = free; relaxed = true; }
   }
-  return { plan, used, relaxed, pairs, gm: effGm };
+  return { plan, used, relaxed, pairs, seedSet, gm: effGm };
 }
 
 // ===== 저장소 =====
@@ -411,6 +453,7 @@ $('btnNewClub').onclick = () => {
   DB.clubs.push(c); save(); $('newClub').value = ''; openClub(c.id);
 };
 function tab(t) {
+  setHH();
   ['att', 'team', 'mem'].forEach(x => { $('tab-' + x).classList.toggle('hide', x !== t); });
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   window.scrollTo(0, 0);
@@ -420,15 +463,18 @@ function tab(t) {
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
 
 // ===== 참석 =====
+function updateCounts() { const c = C(); const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
+function setHH() { const hd = document.querySelector('header'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); }
+window.addEventListener('resize', setHH);
 function renderAtt() {
   const c = C(); const all = c.members;
   const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (c.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (c.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < FLOOR[m.seed] ? ' <span class="nick">하한 ' + FLOOR[m.seed] + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
   $('attList').innerHTML = rows || '<div class="small" style="padding:12px 0">팀원이 없습니다. 명단 탭에서 팀원을 등록해 주세요.</div>';
   const cnt = () => c.present.filter(id => all.some(m => m.id === id)).length;
-  $('attCount').textContent = cnt();
+  updateCounts();
   $('attList').querySelectorAll('.delg').forEach(a => a.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const id = a.dataset.id; c.members = c.members.filter(g => g.id !== id); c.present = c.present.filter(x => x !== id); c.pairs = c.pairs.filter(p => p[0] !== id && p[1] !== id); save(); renderAtt(); });
   $('attList').querySelectorAll('.avin').forEach(inp => { inp.onclick = (e) => e.stopPropagation(); inp.onchange = () => { const m = all.find(x => x.id === inp.dataset.id); if (!m) return; const v = inp.value.trim(); if (v === '') { m.avg = ''; save(); renderAtt(); return; } const x = parseFloat(v); if (!isFinite(x) || x < 1 || x > 300) { alert('에버는 1~300 사이 숫자로 넣어 주세요.'); inp.value = m.avg === '' || m.avg == null ? '' : m.avg; return; } m.avg = Math.round(x * 10) / 10; save(); renderAtt(); }; });
-  $('attList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; c.present = c.present.filter(x => x !== id); if (ck.checked) c.present.push(id); save(); $('attCount').textContent = cnt(); renderPairs(); showPlan(); });
+  $('attList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; c.present = c.present.filter(x => x !== id); if (ck.checked) c.present.push(id); save(); updateCounts(); renderPairs(); showPlan(); });
   renderPairs();
 }
 $('btnAll').onclick = () => { const c = C(); c.present = c.members.map(m => m.id); save(); renderAtt(); showPlan(); };
@@ -439,20 +485,30 @@ $('btnGuest').onclick = () => { const c = C(); const n = $('gName').value.trim()
 function renderPairs() {
   const c = C(); const present = c.members.filter(m => c.present.includes(m.id)).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
   $('pairOn').checked = !!c.pairOn; $('pairBox').classList.toggle('hide', !c.pairOn); $('optRelax').checked = !!c.opts.relax;
-  const opts = '<option value="">선택</option>' + present.map(m => '<option value="' + m.id + '">' + esc(m.name) + '</option>').join('');
-  const keepA = $('pA').value, keepB = $('pB').value; $('pA').innerHTML = opts; $('pB').innerHTML = opts; $('pA').value = keepA; $('pB').value = keepB;
+  const sc = { A: 0, B: 0, C: 0, D: 0 }; people().forEach(p => { sc[p.grade] = (sc[p.grade] || 0) + 1; }); if (!Array.isArray(c.seedSep)) c.seedSep = [];
+  $('seedList').innerHTML = ['A', 'B', 'C', 'D'].map(s => '<label class="seedck' + (sc[s] < 2 ? ' off' : '') + '"><input type="checkbox" data-s="' + s + '"' + (c.seedSep.includes(s) && sc[s] >= 2 ? ' checked' : '') + (sc[s] < 2 ? ' disabled' : '') + '> ' + grBadge(s) + ' <b>' + sc[s] + '명</b></label>').join('');
+  $('seedList').querySelectorAll('input').forEach(ck => ck.onchange = () => { c.seedSep = [...$('seedList').querySelectorAll('input:checked')].map(i => i.dataset.s); save(); });
+  pickSel = pickSel.filter(id => present.some(m => m.id === id));
+  $('pickN').textContent = present.length;
+  $('pairPick').innerHTML = present.map(m => '<label class="pk' + (pickSel.includes(m.id) ? ' on' : '') + '"><input type="checkbox" data-id="' + m.id + '"' + (pickSel.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '</label>').join('') || '<div class="small" style="padding:8px 0">참가자를 먼저 체크해 주세요.</div>';
+  $('pairPick').querySelectorAll('input').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; pickSel = pickSel.filter(x => x !== id); if (ck.checked) { pickSel.push(id); if (pickSel.length > 2) pickSel.shift(); } renderPairPick(); });
+  renderPickSel();
   const nm = (id) => { const m = c.members.find(x => x.id === id); return m ? m.name : '(삭제됨)'; };
   $('pairList').innerHTML = c.pairs.map((p, i) => { const off = !c.present.includes(p[0]) || !c.present.includes(p[1]); return '<div class="pair"' + (off ? ' style="opacity:.5"' : '') + '><span class="grow">' + esc(nm(p[0])) + ' · ' + esc(nm(p[1])) + (off ? ' <span class="small">(불참 포함, 이번엔 적용 안 됨)</span>' : '') + '</span><button class="gray del" data-i="' + i + '" style="padding:8px 10px">삭제</button></div>'; }).join('') || '<div class="small" style="padding:6px 0">등록된 쌍이 없습니다.</div>';
   $('pairList').querySelectorAll('button').forEach(b => b.onclick = () => { c.pairs.splice(+b.dataset.i, 1); save(); renderPairs(); });
 }
 $('pairOn').onchange = (e) => { const c = C(); c.pairOn = e.target.checked; save(); renderPairs(); };
 $('optRelax').onchange = (e) => { C().opts.relax = e.target.checked; save(); };
+let pickSel = [];
+function renderPickSel() { const c = C(); const nm = (id) => { const m = c.members.find(x => x.id === id); return m ? m.name : ''; }; $('pickSel').textContent = '선택: ' + (pickSel.length ? pickSel.map(nm).join(' · ') : '없음'); $('btnPair').disabled = pickSel.length !== 2; }
+function renderPairPick() { $('pairPick').querySelectorAll('.pk').forEach(l => { const ck = l.querySelector('input'); const on = pickSel.includes(ck.dataset.id); ck.checked = on; l.classList.toggle('on', on); }); renderPickSel(); }
+$('btnPairClear').onclick = () => { pickSel = []; renderPairPick(); };
 $('btnPair').onclick = () => {
-  const c = C(); const a = $('pA').value, b = $('pB').value;
-  if (!a || !b) return alert('두 사람을 모두 골라 주세요.');
+  const c = C(); const a = pickSel[0], b = pickSel[1];
+  if (!a || !b) return alert('두 사람을 체크해 주세요.');
   if (a === b) return alert('같은 사람은 선택할 수 없습니다. 서로 다른 두 사람을 골라 주세요.');
   if (c.pairs.some(p => (p[0] === a && p[1] === b) || (p[0] === b && p[1] === a))) return alert('이미 등록된 쌍입니다.');
-  c.pairs.push([a, b]); c.pairOn = true; save(); $('pA').value = ''; $('pB').value = ''; renderPairs();
+  c.pairs.push([a, b]); c.pairOn = true; pickSel = []; save(); renderPairs();
 };
 
 // ===== 팀 만들기 설정 =====
@@ -507,7 +563,8 @@ function pickList() {
 }
 function show() { const list = pickList(); if (idx >= list.length) idx = 0; if (idx < 0) idx = list.length - 1; render(list[idx].teams.map(t => t.slice()), list.length); }
 function activePairs(all) { const c = C(); if (!c.pairOn) return []; const ids = new Set(all.map(p => p.id)); return (c.pairs || []).filter(p => ids.has(p[0]) && ids.has(p[1])); }
-function metrics(teams) { const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm); }
+function activeSeeds() { const c = C(); return c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : []; }
+function metrics(teams) { const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
 function render(teams, nCand) {
   const c = C(); const o = c.opts;
   curTeams = teams; const ev = metrics(teams); const goal = o.goal; const okg = ev.spreadAvg <= goal + 1e-9;
@@ -517,7 +574,8 @@ function render(teams, nCand) {
   const sizeBad = bowl && sizesNow.some(s => s < 4 || s > 6); const sizeDiff = Math.max(...sizesNow) !== Math.min(...sizesNow);
   const fcs = teams.map(t => t.filter(m => m.gender === 'F').length); const fDiff = Math.max(...fcs) - Math.min(...fcs);
   const togetherNames = [];
-  if (ev.viol) { const all = teams.reduce((a, t) => a.concat(t), []); activePairs(all).forEach(p => { const a = all.find(m => m.id === p[0]), b = all.find(m => m.id === p[1]); if (teams.some(t => t.includes(a) && t.includes(b))) togetherNames.push(a.name + '·' + b.name); }); }
+  const seedBad = ev.seedViol ? seedViolOf(teams, activeSeeds(), gm).bad : [];
+  if (ev.pairViol) { const all = teams.reduce((a, t) => a.concat(t), []); activePairs(all).forEach(p => { const a = all.find(m => m.id === p[0]), b = all.find(m => m.id === p[1]); if (teams.some(t => t.includes(a) && t.includes(b))) togetherNames.push(a.name + '·' + b.name); }); }
   const hdOn = (num(o.hdM, 0) || num(o.hdF, 0));
   $('buildInfo').innerHTML = (manual ? '직접 바꾼 결과 · ' : '후보 ' + (idx + 1) + '/' + nCand + ' · ') + '팀 합계 차이 <b class="' + (okg ? 'ok' : 'warn') + '">' + r1(ev.spreadAvg) + '점</b> (4게임 환산 ' + Math.round(ev.spread4) + '점) · 목표 ' + goal + '점 ' + (okg ? '충족' : '미달')
     + (gm === 'split' ? '<br>남자팀·여자팀을 나눠 구성했습니다. 차이는 남자팀끼리, 여자팀끼리 따로 비교한 값 중 큰 쪽입니다.' : '') + (gm === 'random' ? '<br>남녀 구분 없이 에버 합계만 맞췄습니다.' : '') + (hdOn ? '<br>성별 핸디(남 ' + (num(o.hdM, 0) || 0) + ', 여 ' + (num(o.hdF, 0) || 0) + ')를 에버에 더해 계산했습니다.' : '')
@@ -525,7 +583,7 @@ function render(teams, nCand) {
     + (sizeBad ? '<br><span class="warn">팀 인원이 4~6명 범위를 벗어난 팀이 있습니다(' + sizesNow.join('/') + '명).</span>' : '')
     + (sizeDiff ? '<br>팀 인원이 달라 합계는 큰 팀 기준으로 환산해 비교했습니다.' : '')
     + (gm === 'balanced' && fDiff > 1 ? '<br><span class="warn">여성 수 차이가 ' + fDiff + '명입니다.</span>' : '')
-    + (togetherNames.length ? '<br><span class="warn">분리 조건을 풀었습니다: ' + esc(togetherNames.join(', ')) + ' 같은 팀</span>' : '')
+    + (togetherNames.length ? '<br><span class="warn">분리 조건을 풀었습니다: ' + esc(togetherNames.join(', ')) + ' 같은 팀</span>' : '') + (seedBad.length ? '<br><span class="warn">같은 시드가 한 팀에 몰린 곳이 있습니다: ' + seedBad.join(', ') + ' 시드</span>' : '')
     + (!okg ? '<br>목표 이내로 맞추지 못했습니다. "새 조합"을 눌러 다른 후보를 비교해 보세요.' : '');
   $('teamOut').innerHTML = teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 <span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + (m.floored ? ' <span class="nick">하한 적용(원 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
   $('copyBox').classList.remove('hide');
