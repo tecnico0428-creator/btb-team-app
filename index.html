@@ -6,36 +6,33 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="팀 구성">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#231e20">
-<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fce1b8">
+<meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>팀 구성</title>
+<title>볼링 팀 구성</title>
 <style>
-:root{--bg:#f2f4f8;--card:#fff;--tx:#1a1d24;--sub:#6b7280;--pri:#c8102e;--line:#e3e6ec;--ok:#16a34a;--warn:#d97706;--m:#2563eb;--f:#db2777;--hd:#231e20}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#1a1d24;--tx:#f1f3f7;--sub:#9aa3b2;--line:#2a2f3a}}
+:root{--bg:#fce1b8;--card:#fff4de;--tx:#10413d;--sub:#5d716b;--pri:#dc4527;--line:#e2c898;--ok:#1b7f4b;--warn:#c46a05;--m:#1d6fb8;--f:#d6336c;--hd:#fce1b8;--ink:#10413d;--lime:#e8f43a;color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;background:var(--hd);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;z-index:5;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--pri)}
-header h1{margin:0;font-size:18px}
-header small{opacity:.8}
-header .back{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;padding:6px 10px;border-radius:10px;font-weight:600}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;background:var(--hd);color:var(--ink);padding:calc(8px + env(safe-area-inset-top)) 14px 8px;z-index:5;border-bottom:2px solid var(--ink)}
+header .hrow{display:flex;align-items:center;gap:10px}
+header h1{margin:0;font-size:20px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+header small{opacity:.75}
+header .back{background:transparent;border:2px solid var(--ink);color:var(--ink);padding:6px 10px;border-radius:12px;font-weight:800}
 main{padding:12px;max-width:760px;margin:0 auto}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.card{background:var(--card);border:1.5px solid rgba(16,65,61,.8);border-radius:18px;padding:12px;margin-bottom:12px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .grow{flex:1;min-width:0}
 button,select,input,textarea{font:inherit;color:inherit}
-button{border:0;background:var(--pri);color:#fff;border-radius:10px;padding:10px 14px;font-weight:600}
-button.sec{background:transparent;color:var(--pri);border:1px solid var(--pri)}
-button.gray{background:var(--line);color:var(--tx)}
+button{border:0;background:var(--pri);color:#fff4de;border-radius:12px;padding:10px 14px;font-weight:800}
+button.sec{background:transparent;color:var(--pri);border:2px solid var(--pri)}
+button.gray{background:#ecd3a3;color:var(--ink)}
 button.danger{background:#7f1d1d}
 button.del,.mem .del{min-height:44px}
 button:disabled{opacity:.4}
-input[type=text],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
-.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
-.tabs button{flex:1;background:transparent;color:var(--sub);border-radius:0;padding:14px 4px;font-size:15px}
-.tabs button.on{color:var(--pri);box-shadow:inset 0 3px 0 var(--pri)}
+input[type=text],input[type=number],input[type=date],select,textarea{background:#fffaf0;border:1.5px solid #cdb685;border-radius:12px;padding:9px 10px;width:100%}
 .hide{display:none!important}
 .mem{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line)}
 .mem:last-child{border-bottom:0}
@@ -47,30 +44,18 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 .team h3{margin:0 0 4px;font-size:17px}
 .meta{color:var(--sub);font-size:13px;margin-bottom:6px}
 .pm{display:flex;align-items:center;gap:8px;padding:9px 6px;border-radius:10px}
-.pm.sel{outline:2px solid var(--pri);background:rgba(200,16,46,.12)}
+.pm.sel{outline:2px solid var(--pri);background:rgba(220,69,39,.14)}
 .sum{font-weight:700}
 .ok{color:var(--ok)}.warn{color:var(--warn)}
 .lbl{font-size:13px;color:var(--sub);margin:6px 0 2px}
 .small{font-size:13px;color:var(--sub)}
 .nick{color:var(--sub);font-size:12px}
 .pair{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
-.hero{position:relative;border-radius:20px;overflow:hidden;margin-bottom:12px;aspect-ratio:3/2;background:#0b0e1a;box-shadow:0 10px 30px rgba(200,16,46,.35)}
-.heroimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kb 14s ease-in-out infinite alternate}
-@keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.10) translate(-1%,-1%)}}
-.heroshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.40) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.12) 52%,rgba(8,8,16,.9) 100%)}
-.herospark{position:absolute;inset:0;background:radial-gradient(circle at 68% 42%,rgba(255,220,120,.38),transparent 42%);mix-blend-mode:screen;animation:pulse 2.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.9}}
-.herologo{position:absolute;top:12px;left:12px;width:64px;height:64px;border-radius:50%;box-shadow:0 2px 14px rgba(0,0,0,.65),0 0 0 2px rgba(255,214,107,.55)}
-.herotext{position:absolute;left:16px;right:16px;bottom:14px;color:#fff}
-.herotag{font-size:12px;letter-spacing:3px;color:#ffd66b;font-weight:800}
-.herotitle{font-size:38px;font-weight:900;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.75)}
-.herotitle span{background:linear-gradient(90deg,#fff,#ffd66b);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
-.herosub{font-size:14px;opacity:.95;margin-top:4px;text-shadow:0 1px 6px rgba(0,0,0,.85)}
-@media (prefers-reduced-motion:reduce){.heroimg,.herospark{animation:none}}
+
 .logobox{background:#231e20;border-radius:16px;padding:10px;margin-bottom:12px;text-align:center}
 .logobox img{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
-.clubbtn{display:flex;width:100%;align-items:center;gap:8px;margin:0 0 8px;padding:16px 14px;font-size:18px;text-align:left}
-.clubbtn .small{color:#fff;opacity:.85}
+.clubbtn{display:flex;width:100%;align-items:center;gap:8px;margin:0 0 8px;padding:16px 14px;font-size:19px;text-align:left;background:var(--ink);border-radius:18px}
+.clubbtn .small{color:#fff4de;opacity:.85}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));overflow:auto}
 .modal img{max-width:100%;height:auto;border-radius:10px;background:#fff}
 .modal .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;justify-content:center}
@@ -95,7 +80,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 .pick{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}
 @media (min-width:620px){.pick{grid-template-columns:1fr 1fr}}
 .pk{display:flex;align-items:center;gap:8px;padding:10px 8px;border:1px solid var(--line);border-radius:12px;font-size:19px;font-weight:600;background:var(--bg)}
-.pk.on{border-color:var(--pri);background:rgba(200,16,46,.12)}
+.pk.on{border-color:var(--pri);background:rgba(220,69,39,.14)}
 .pk input{width:28px;height:28px;flex:none}
 .pk .badge{font-size:13px;min-width:22px;padding:1px 6px}
 .srow{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:var(--bg)}
@@ -107,35 +92,146 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 .badge.ga,.badge.gb,.badge.gc,.badge.gd{white-space:nowrap}
 .prog{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
 .prog i{display:block;height:100%;width:0;background:var(--pri)}
+
+/* ===== 레트로 테마(홈·기록·마이) ===== */
+.phero{position:relative;margin:0 -12px;aspect-ratio:4/5;max-height:560px;overflow:hidden;background:var(--bg)}
+.pheroimg{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%}
+.pbrand{position:absolute;left:16px;top:calc(14px + env(safe-area-inset-top));z-index:2;line-height:1}
+.pbrand small{display:block;font-size:11px;letter-spacing:.32em;font-weight:800;color:var(--ink)}
+.pbrand b{display:flex;align-items:center;gap:7px;font-size:30px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-top:5px}
+.ballmark{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#ffb08a 0 9%,transparent 10%),var(--pri);position:relative;flex:none}
+.ballmark::before{content:'';position:absolute;left:9px;top:7px;width:4px;height:4px;border-radius:50%;background:var(--ink);box-shadow:7px 3px 0 var(--ink),3px 8px 0 var(--ink)}
+.phead{position:absolute;left:16px;top:21%;z-index:2;color:var(--ink);font-weight:900;font-size:clamp(40px,14vw,64px);line-height:1.04;letter-spacing:-.04em}
+.phead span{display:block;transform:skewX(-9deg);transform-origin:left bottom;text-shadow:3px 3px 0 var(--pri)}
+.pcheck{position:absolute;left:18px;top:55%;width:98px;height:28px;z-index:2;background:conic-gradient(var(--pri) 25%,transparent 0 50%,var(--pri) 0 75%,transparent 0) 0 0/28px 28px;transform:skewX(-14deg)}
+.plets{position:absolute;left:14px;bottom:7%;width:23%;aspect-ratio:1;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-style:italic;font-size:clamp(14px,5vw,22px);line-height:1;color:var(--ink);transform:rotate(-12deg);z-index:2;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--lime)}
+.ticket{position:relative;overflow:hidden;border:2px solid var(--ink);border-radius:20px;background:var(--card);padding:10px 8px 12px;margin:12px 0}
+.ticket::before,.ticket::after{content:'';position:absolute;top:50%;width:26px;height:26px;margin-top:-13px;border-radius:50%;background:var(--bg);border:2px solid var(--ink)}
+.ticket::before{left:-15px}.ticket::after{right:-15px}
+.tkt{display:flex;align-items:center;gap:8px;justify-content:center;font-weight:900;font-size:19px;padding:0 6px}
+.tkt::before,.tkt::after{content:'';flex:1;height:2px;background:var(--ink);opacity:.75;max-width:70px}
+.tkcols{display:flex;margin-top:6px}
+.tkcols>div{flex:1;text-align:center;padding:2px 4px;min-width:0}
+.tkcols>div+div{border-left:2px dotted var(--ink)}
+.tkcols small{display:block;font-size:14px;font-weight:700}
+.tkcols b{display:block;font-size:44px;line-height:1.1;font-weight:900;font-style:italic;color:var(--pri);letter-spacing:-.04em}
+.tkcols.sm b{font-size:26px}
+.tknote{text-align:center;font-size:13px;color:var(--sub);margin-top:6px}
+.bigbtn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 12px 11px 30px;border-radius:999px;background:var(--pri);color:#fff4de;font-size:34px;font-weight:900;font-style:italic;letter-spacing:-.03em;margin:4px 0 0;box-shadow:0 4px 0 #a8321a}
+.bigbtn .circ{width:56px;height:56px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex:none}
+.bigbtn svg,.crewcard svg.ar{width:30px;height:30px;stroke:#fff4de;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.cap{display:flex;align-items:center;gap:10px;text-align:center;font-size:14px;margin:10px 0 14px}
+.cap::before,.cap::after{content:'';flex:1;height:1px;background:var(--ink);opacity:.55}
+.crewcard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--ink);color:#fff4de;border-radius:20px;padding:16px;margin-bottom:12px}
+.crewcard .sep{width:1px;align-self:stretch;background:rgba(255,244,222,.5)}
+.crewcard .tx{flex:1;min-width:0}
+.crewcard b{display:block;font-size:20px;font-weight:900}
+.crewcard .tx span{font-size:14px;opacity:.92}
+.crewcard svg.pin{width:44px;height:44px;flex:none}
+.bnav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1.5px solid rgba(16,65,61,.35);padding-bottom:env(safe-area-inset-bottom);z-index:8}
+.bnav button{flex:1;background:transparent;color:var(--ink);border-radius:0;padding:10px 4px 9px;font-size:13px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.bnav button svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bnav button.on{color:var(--pri)}
+.bnav button.on::after{content:'';position:absolute;left:22%;right:22%;bottom:2px;height:3px;border-radius:2px;background:var(--pri)}
+.subtabs{display:flex;gap:6px;margin-top:8px}
+.subtabs button{flex:1;background:transparent;color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:7px 4px;font-size:15px;font-weight:800}
+.subtabs button.on{background:var(--ink);color:#fff4de}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:transparent;color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800}
+.chip.on{background:var(--ink);color:#fff4de}
+.sheetbg{position:fixed;inset:0;background:rgba(10,30,28,.55);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom));border:2px solid var(--ink);border-bottom:0}
+.sheet h2{margin:0 0 8px;font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+.gin{display:flex;align-items:center;gap:8px;margin:6px 0}
+.gin b{width:34px;font-size:17px;color:var(--sub)}
+.gin input{font-size:26px;font-weight:900;text-align:center;padding:8px}
+.live{text-align:right;font-weight:800;color:var(--pri)}
+.rec{display:flex;gap:10px;align-items:center;padding:10px 2px;border-bottom:1.5px dashed #cdb685;cursor:pointer}
+.rec:last-child{border-bottom:0}
+.rec .d{width:50px;text-align:center;line-height:1.05;flex:none}
+.rec .d b{display:block;font-size:22px;font-weight:900;font-style:italic;color:var(--ink)}
+.rec .d small{font-size:12px;color:var(--sub)}
+.rec .mid{flex:1;min-width:0}
+.rec .al{font-weight:800}
+.sc{display:inline-block;min-width:44px;text-align:center;border:1.5px solid var(--ink);border-radius:10px;padding:1px 6px;margin:4px 4px 0 0;font-weight:800;font-size:15px;background:#fffaf0}
+.sc.hi{background:var(--pri);color:#fff4de;border-color:var(--pri)}
+.rec .av{font-size:25px;font-weight:900;font-style:italic;color:var(--pri);min-width:58px;text-align:right;flex:none}
+.rec .av small{display:block;font-size:11px;font-style:normal;font-weight:700;color:var(--sub)}
+.kbadge{display:inline-block;font-size:11px;font-weight:800;border-radius:8px;padding:1px 7px;margin-left:6px;vertical-align:middle;background:var(--ink);color:#fff4de}
+.kbadge.k2{background:var(--lime);color:var(--ink)}
+.kbadge.k3{background:var(--pri)}
+.kbadge.ks{background:#cdb685;color:var(--ink)}
+.mbars{display:flex;align-items:flex-end;gap:6px;height:150px;margin-top:6px}
+.mbar{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}
+.mbar i{display:block;width:100%;background:var(--ink);border-radius:8px 8px 0 0;min-height:4px}
+.mbar.cur i{background:var(--pri)}
+.mbar b{font-size:12px}
+.mbar span{font-size:11px;color:var(--sub);white-space:nowrap}
+.atbl{width:100%;border-collapse:collapse;font-size:14px}
+.atbl th{font-size:12px;color:var(--sub);text-align:right;font-weight:700;padding:2px 4px}
+.atbl td{padding:6px 4px;text-align:right;border-top:1px dashed #cdb685}
+.atbl th:first-child,.atbl td:first-child{text-align:left}
+.atbl td:first-child{font-weight:800}
+.ttl{font-size:17px;font-weight:900;margin-bottom:4px}
+.empty{text-align:center;padding:18px 6px;color:var(--sub)}
+.alrow{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1.5px dashed #cdb685}
+.alrow:last-child{border-bottom:0}
+.rirow{border:1.5px solid #cdb685;border-radius:14px;padding:8px;margin-bottom:8px;background:var(--card)}
+.rirow.bad{border-color:var(--pri)}
+.rirow .row{margin-top:6px}
 </style>
 </head>
 <body>
-<header>
-  <button class="back hide" id="btnBack">‹ 클럽</button>
-  <div class="grow"><h1 id="hTitle">팀 구성</h1><small id="sub">에버 합계와 남녀 비율을 맞춰 팀을 짭니다</small></div>
+<header id="hdr" class="hide">
+  <div class="hrow"><button class="back hide" id="btnBack">‹ 크루</button>
+  <div class="grow"><h1 id="hTitle">크루</h1><small id="sub"></small></div></div>
+  <nav class="subtabs hide" id="tabs"><button data-t="att" class="on">참석</button><button data-t="team">팀 구성</button><button data-t="mem">명단</button></nav>
 </header>
 <main>
-<section id="scr-home">
-  <div class="hero" id="hero">
-    <img class="heroimg" id="heroImg" src="hero-1.jpg" alt="볼링 스트라이크">
-    <div class="heroshade"></div>
-    <div class="herospark"></div>
-    <img class="herologo" src="logo-emblem.png" alt="볼링 팀 구성 로고">
-    <div class="herotext">
-      <div class="herotag">BOWLING · TEAM BUILDER</div>
-      <div class="herotitle">볼링 <span>팀 구성</span></div>
-      <div class="herosub">에버 · 시드 · 남녀 균형으로 공정한 팀을 한 번에</div>
-    </div>
+<section id="v-home">
+  <div class="phero">
+    <img class="pheroimg" src="hero-retro.jpg" alt="볼링공과 핀">
+    <div class="pbrand"><small>THE LANE CLUB</small><b><span class="ballmark"></span>볼링 팀 구성</b></div>
+    <div class="phead"><span>오늘도</span><span>스트라이크.</span></div>
+    <div class="pcheck"></div>
+    <div class="plets">LET'S<br>ROLL</div>
   </div>
+  <div class="ticket">
+    <div class="tkt">나의 볼링 기록</div>
+    <div class="tkcols"><div><small>평균</small><b id="hsAvg">-</b></div><div><small>최고</small><b id="hsMax">-</b></div><div><small>게임</small><b id="hsCnt">0</b></div></div>
+  </div>
+  <button class="bigbtn" id="btnStart"><span>게임 시작</span><span class="circ"><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></span></button>
+  <div class="cap">오늘의 기록을 남겨보세요</div>
+  <button class="crewcard" id="btnCrewGo"><svg class="pin" viewBox="0 0 48 48"><g transform="rotate(-20 24 24)"><path d="M24 4c-4 0-6 3-5 7 .8 3 2 4 2 7 0 2-3 4-4 9-1 5 1 11 7 11s8-6 7-11c-1-5-4-7-4-9 0-3 1.2-4 2-7 1-4-1-7-5-7z" fill="#e8f43a"/></g><path d="M38 8l4-3M40 15l5-1M36 2l1 4" stroke="#e8f43a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg><span class="sep"></span><span class="tx"><b>함께 굴릴까요?</b><span>크루 정모 팀 짜기</span></span><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></button>
+  <div class="small" style="text-align:center;margin:10px 0">기록과 명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
+</section>
+
+<section id="v-rec" class="hide">
+  <div class="row" style="margin-bottom:10px"><button id="btnRecNew" class="grow">+ 게임 기록</button><button id="btnRecEver" class="sec">에버 입력</button><button id="btnRecImp" class="sec">가져오기</button></div>
   <div class="card">
-    <b>클럽 선택</b>
-    <div class="small" style="margin-bottom:8px">등록한 클럽을 누르면 그 클럽의 팀원으로 팀을 짭니다.</div>
+    <div class="chips" id="perChips"></div>
+    <div id="perCustom" class="row hide" style="margin-top:8px"><input type="date" id="perFrom" class="grow"><span>~</span><input type="date" id="perTo" class="grow"></div>
+    <div class="small" id="perRange" style="margin-top:6px"></div>
+  </div>
+  <div class="ticket" id="recTicket"></div>
+  <div id="recCrewBox" class="hide" style="margin:-4px 0 12px"><button class="sec" id="btnCrewEver" style="width:100%"></button></div>
+  <div class="card hide" id="recChartCard"><div class="ttl" id="chtTitle"></div><div id="recChart"></div></div>
+  <div class="card hide" id="recMonthCard"><div class="ttl">월별 에버</div><div id="recMonth"></div></div>
+  <div class="card hide" id="recAlleyCard"><div class="ttl">볼링장별</div><div id="recAlley"></div></div>
+  <div class="card"><div class="ttl">기록 <span id="recCnt" class="small"></span></div><div id="recList"></div></div>
+</section>
+
+<section id="v-crew" class="hide">
+<section id="scr-home">
+  <div class="card">
+    <b>크루 선택</b>
+    <div class="small" style="margin-bottom:8px">등록한 크루을 누르면 그 크루의 팀원으로 팀을 짭니다.</div>
     <div id="clubList"></div>
   </div>
   <div class="card">
-    <b>새 클럽 등록</b>
-    <div class="small" style="margin-bottom:8px">클럽 이름을 넣고 등록하면 팀원 등록 화면으로 넘어갑니다.</div>
-    <div class="row"><input type="text" id="newClub" placeholder="클럽 이름" class="grow"><button id="btnNewClub">등록</button></div>
+    <b>새 크루 등록</b>
+    <div class="small" style="margin-bottom:8px">크루 이름을 넣고 등록하면 팀원 등록 화면으로 넘어갑니다.</div>
+    <div class="row"><input type="text" id="newClub" placeholder="크루 이름" class="grow"><button id="btnNewClub">등록</button></div>
   </div>
   <div class="small" style="text-align:center;margin:10px 0">명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
 </section>
@@ -256,17 +352,73 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
     <div class="row" style="margin-top:8px"><button id="btnImpReplace">명단 바꾸기</button><button id="btnImpAdd" class="sec">추가로 넣기</button><button id="btnExp" class="gray">현재 명단 보기</button></div>
   </div>
   <div class="card">
-    <b>클럽 설정</b>
-    <div class="lbl">클럽 이름</div><input type="text" id="clubName">
+    <b>크루 설정</b>
+    <div class="lbl">크루 이름</div><input type="text" id="clubName">
     <label class="row" style="margin-top:8px"><input type="checkbox" id="optFloor" style="width:22px;height:22px"> <span id="floorTxt">시드 하한선 적용</span></label>
     <div class="lbl">에버를 비워 둔(또는 1~300 밖인) 회원의 기본값</div><input type="number" id="optDef" inputmode="numeric">
     <div class="lbl">기준 월 (복사 글에 표시, 예: 11월)</div><input type="text" id="optMonth" placeholder="예: 11월">
-    <div class="row" style="margin-top:10px"><button id="btnDelClub" class="danger">이 클럽 삭제</button></div>
+    <div class="row" style="margin-top:10px"><button id="btnDelClub" class="danger">이 크루 삭제</button></div>
   </div>
 </div>
 </section>
+</section>
+
+<section id="v-me" class="hide">
+  <div class="card"><div class="ttl">내 정보</div><div class="lbl">이름 (크루 명단에 같은 이름이 있으면 내 에버를 반영할 때 씁니다)</div><input type="text" id="meName" placeholder="이름"></div>
+  <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
+  <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
+  <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
+  <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
+  <div class="small" style="text-align:center;margin-bottom:12px">볼링 팀 구성 · 버전 11</div>
+</section>
 </main>
-<nav class="tabs hide" id="tabs"><button data-t="att" class="on">참석</button><button data-t="team">팀 구성</button><button data-t="mem">명단</button></nav>
+<nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
+
+<datalist id="alleyDL"></datalist>
+
+<div id="rcSheet" class="sheetbg hide"><div class="sheet">
+  <h2 id="rcTitle">게임 기록</h2>
+  <div class="chips" id="rcMode" style="margin-bottom:8px"><button class="chip on" data-m="g">점수 입력</button><button class="chip" data-m="e">에버만 입력</button></div>
+  <div class="row"><div class="grow"><div class="lbl">날짜</div><input type="date" id="rcDate"></div><div class="grow"><div class="lbl">구분</div><select id="rcKind"><option>정모</option><option>연습</option><option>대회</option></select></div></div>
+  <div class="lbl">볼링장</div>
+  <div class="row"><select id="rcAlley" class="grow"></select><button class="sec" id="rcAddAlley">볼링장 등록</button></div>
+  <div id="rcG">
+    <div class="lbl">게임 점수 (0~300)</div>
+    <div id="rcScores"></div>
+    <div class="row"><button class="sec" id="rcMore">+ 게임 추가</button><button class="gray" id="rcLess">마지막 삭제</button><div class="grow live" id="rcLive"></div></div>
+  </div>
+  <div id="rcE" class="hide">
+    <div class="small" style="margin:6px 0">이미 알고 있는 에버(평균)와 게임 수를 그대로 넣습니다. 통계에는 "에버 × 게임 수"로 반영됩니다.</div>
+    <div class="row"><div class="grow"><div class="lbl">에버(평균)</div><input type="number" id="reAvg" inputmode="decimal" placeholder="예: 178"></div><div class="grow"><div class="lbl">게임 수</div><input type="number" id="reN" inputmode="numeric" placeholder="예: 32"></div><div class="grow"><div class="lbl">최고점(선택)</div><input type="number" id="reHi" inputmode="numeric" placeholder="예: 246"></div></div>
+  </div>
+  <div class="lbl">메모(선택)</div><input type="text" id="rcNote">
+  <div class="row" style="margin-top:14px"><button id="rcSave" class="grow">저장</button><button id="rcDel" class="danger hide">삭제</button><button id="rcClose" class="gray">닫기</button></div>
+</div></div>
+
+<div id="alSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
+  <h2 id="alTitle">볼링장 등록</h2>
+  <div class="lbl">볼링장 이름</div><input type="text" id="alName" placeholder="예: 송파 스트라이크볼링장">
+  <div class="lbl">지역(선택)</div><input type="text" id="alArea" placeholder="예: 서울 송파">
+  <div class="lbl">메모(선택)</div><input type="text" id="alMemo" placeholder="레인 수, 요금, 주차 등">
+  <label class="row" style="margin-top:10px"><input type="checkbox" id="alFav" style="width:24px;height:24px"> <b>자주 가는 볼링장 (목록 맨 위)</b></label>
+  <div class="row" style="margin-top:14px"><button id="alSave" class="grow">저장</button><button id="alDel" class="danger hide">삭제</button><button id="alClose" class="gray">닫기</button></div>
+</div></div>
+
+<div id="riSheet" class="sheetbg hide"><div class="sheet">
+  <h2>점수·에버 가져오기</h2>
+  <div class="small">엑셀·CSV 파일이나 점수표 사진에서 날짜, 볼링장, 점수(또는 에버와 게임 수)를 읽어 옵니다. 읽은 결과를 확인하고 고친 뒤 등록하세요. 이미지는 이 폰 안에서만 분석됩니다.</div>
+  <div class="row" style="margin:8px 0"><button id="riCam" class="grow">사진 찍기</button><button id="riPic" class="grow sec">이미지 가져오기</button><button id="riXls" class="grow sec">엑셀·CSV 파일</button></div>
+  <input type="file" id="riFileCam" accept="image/*" capture="environment" class="hide">
+  <input type="file" id="riFilePic" accept="image/*" class="hide">
+  <input type="file" id="riFileXls" class="hide">
+  <div id="riStatus" class="small"></div>
+  <div id="riSheetPick" class="hide" style="margin-top:8px"><div class="lbl">읽을 시트 선택</div><select id="riSheetSel"></select></div>
+  <div id="riPrev" style="margin-top:8px"></div>
+  <div class="row" style="margin-top:10px"><button id="riApply" class="grow hide">선택한 기록 등록</button><button id="riClose" class="gray">닫기</button></div>
+  <details style="margin-top:10px"><summary class="small">파일 작성 예시</summary><div class="small" style="margin-top:4px">첫 줄에 제목을 쓰고 한 줄에 하루치를 적습니다.<br>날짜, 볼링장, 구분, 1G, 2G, 3G<br>2026-10-25, 송파볼링장, 정모, 187, 201, 176<br>또는 날짜, 볼링장, 에버, 게임수 (예: 2026-09-30, 송파볼링장, 178, 32)<br>제목이 없어도 날짜와 점수가 한 줄에 있으면 읽습니다.</div></details>
+</div></div>
+
+
 
 <div id="imgModal" class="modal hide">
   <img id="imgOut" alt="팀 편성 이미지">
@@ -276,7 +428,7 @@ input[type=text],input[type=number],select,textarea{background:var(--bg);border:
 
 <script>
 // ===== 규칙: 시드(등급) A 211+, B 191~210, C 171~190, D 170 이하 / 시드 하한선 =====
-// 시드 구분 설정(클럽마다): 낮은 등급부터 [최저점수 ~ 상한1], [상한1+1 ~ 상한2], [상한2+1 ~ 상한3], [상한3+1 ~ 300]
+// 시드 구분 설정(크루마다): 낮은 등급부터 [최저점수 ~ 상한1], [상한1+1 ~ 상한2], [상한2+1 ~ 상한3], [상한3+1 ~ 300]
 const SEED_NAMES = { abcd: { A: 'A', B: 'B', C: 'C', D: 'D' }, names: { A: '마스터', B: '에이스', C: '챌린지', D: '루키' } };
 const SEED_DEFAULT = () => ({ scheme: 'abcd', min: 100, cuts: [170, 190, 210] });
 function seedCfgOf(c) {
@@ -483,35 +635,34 @@ let result = null, idx = 0, sel = null, manual = false, curTeams = null;
 function go(scr) {
   $('scr-home').classList.toggle('hide', scr !== 'home'); $('scr-club').classList.toggle('hide', scr !== 'club');
   $('tabs').classList.toggle('hide', scr !== 'club'); $('btnBack').classList.toggle('hide', scr !== 'club');
-  if (scr === 'home') { $('hTitle').textContent = '팀 구성'; $('sub').textContent = '클럽을 고르거나 새로 등록하세요'; renderHome(); }
+  if (scr === 'home') { $('hTitle').textContent = '크루'; $('sub').textContent = '크루를 고르거나 새로 등록하세요'; renderHome(); }
   window.scrollTo(0, 0);
 }
 function renderHome() {
-  $('clubList').innerHTML = DB.clubs.map(c => '<button class="clubbtn" data-id="' + c.id + '"><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button>').join('') || '<div class="small">등록된 클럽이 없습니다. 아래에서 새 클럽을 등록하세요.</div>';
+  $('clubList').innerHTML = DB.clubs.map(c => '<button class="clubbtn" data-id="' + c.id + '"><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button>').join('') || '<div class="small">등록된 크루이 없습니다. 아래에서 새 크루을 등록하세요.</div>';
   $('clubList').querySelectorAll('.clubbtn').forEach(b => b.onclick = () => openClub(b.dataset.id));
 }
 function openClub(id) {
   DB.cur = id; save(); result = null; curTeams = null; idx = 0;
-  const c = C(); $('hTitle').textContent = c.name; $('sub').textContent = '참석을 체크하고 팀을 만드세요';
-  go('club'); $('hTitle').textContent = c.name; $('sub').textContent = '참석을 체크하고 팀을 만드세요';
+  const c = C(); view('crew');
   tab(c.members.length ? 'att' : 'mem');
 }
 $('btnBack').onclick = () => { DB.cur = null; save(); go('home'); };
 $('btnNewClub').onclick = () => {
-  const n = $('newClub').value.trim(); if (!n) return alert('클럽 이름을 입력해 주세요.');
-  if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 클럽이 이미 있습니다.');
+  const n = $('newClub').value.trim(); if (!n) return alert('크루 이름을 입력해 주세요.');
+  if (DB.clubs.some(c => c.name === n)) return alert('같은 이름의 크루이 이미 있습니다.');
   const c = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() };
   DB.clubs.push(c); save(); $('newClub').value = ''; openClub(c.id);
 };
 function tab(t) {
   setHH();
   ['att', 'team', 'mem'].forEach(x => { $('tab-' + x).classList.toggle('hide', x !== t); });
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('.subtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   window.scrollTo(0, 0);
   if (t === 'att') { renderSeedCfg(); renderAtt(); syncOpts(); showPlan(); }
   if (t === 'mem') renderMem();
 }
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
+document.querySelectorAll('.subtabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
 
 // ===== 참석 =====
 function updateCounts() { const c = C(); const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
@@ -763,8 +914,8 @@ $('optMonth').onchange = e => { C().opts.month = e.target.value.trim(); save(); 
 $('optFloor').onchange = e => { C().opts.floor = e.target.checked; save(); };
 $('hdM').onchange = e => { C().opts.hdM = num(e.target.value, 0) || 0; save(); };
 $('hdF').onchange = e => { C().opts.hdF = num(e.target.value, 0) || 0; save(); };
-$('clubName').onchange = e => { const n = e.target.value.trim(); const c = C(); if (!n) { e.target.value = c.name; return; } if (DB.clubs.some(x => x !== c && x.name === n)) { alert('같은 이름의 클럽이 이미 있습니다.'); e.target.value = c.name; return; } c.name = n; $('hTitle').textContent = n; save(); };
-$('btnDelClub').onclick = () => { const c = C(); if (confirm('"' + c.name + '" 클럽과 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.')) { DB.clubs = DB.clubs.filter(x => x !== c); DB.cur = null; save(); go('home'); } };
+$('clubName').onchange = e => { const n = e.target.value.trim(); const c = C(); if (!n) { e.target.value = c.name; return; } if (DB.clubs.some(x => x !== c && x.name === n)) { alert('같은 이름의 크루이 이미 있습니다.'); e.target.value = c.name; return; } c.name = n; $('hTitle').textContent = n; save(); };
+$('btnDelClub').onclick = () => { const c = C(); if (confirm('"' + c.name + '" 크루과 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.')) { DB.clubs = DB.clubs.filter(x => x !== c); DB.cur = null; save(); go('home'); } };
 function parseCsv(t) {
   const ls = t.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (ls.length && /이름|성명|name/i.test(ls[0]) && /에버|평균|avg|성별|별명|시드|구분/i.test(ls[0])) ls.shift();
@@ -786,7 +937,7 @@ function applyRosterText(text, clubName) {
   const l = parseCsv(cl.join('\n')); if (!l.length) return false;
   let c = DB.cur ? C() : null;
   if (!c) { c = DB.clubs.find(x => x.name === (clubName || '비투비')); if (!c) { c = { id: uid(), name: clubName || '비투비', members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: { scheme: 'abcd', min: 151, cuts: [170, 190, 210] } }; DB.clubs.push(c); } }
-  if (!confirm('"' + c.name + '" 클럽에 명단 ' + l.length + '명' + (pl.length ? ', 분리 조건 ' + pl.length + '개' : '') + '을 불러와 현재 명단을 바꿀까요?')) return false;
+  if (!confirm('"' + c.name + '" 크루에 명단 ' + l.length + '명' + (pl.length ? ', 분리 조건 ' + pl.length + '개' : '') + '을 불러와 현재 명단을 바꿀까요?')) return false;
   const pairs = pl.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean);
   c.members = l; c.present = []; c.pairs = pairs; c.pairOn = pairs.length > 0; save();
   if (DB.cur !== c.id) openClub(c.id); else { renderMem(); renderAtt(); }
@@ -1005,12 +1156,371 @@ $('btnCam').onclick = () => $('fileCam').click(); $('btnPic').onclick = () => $(
 ['fileCam', 'filePic', 'fileXls'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); });
 $('sheetSel').onchange = (e) => chooseSheet(+e.target.value);
 
+
+// ===== 화면 전환(홈·기록·크루·마이) =====
+const VIEWS = ['home', 'rec', 'crew', 'me']; let curView = 'home';
+function view(v) {
+  curView = v;
+  VIEWS.forEach(x => $('v-' + x).classList.toggle('hide', x !== v));
+  document.querySelectorAll('#bnav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('hdr').classList.toggle('hide', v === 'home');
+  if (v !== 'crew') { $('btnBack').classList.add('hide'); $('tabs').classList.add('hide'); }
+  if (v === 'home') renderHomeStat();
+  if (v === 'rec') { $('hTitle').textContent = '기록'; $('sub').textContent = '점수와 에버를 기간별로 봅니다'; renderRec(); }
+  if (v === 'me') { $('hTitle').textContent = '마이'; $('sub').textContent = '내 정보, 볼링장, 백업'; renderMe(); }
+  if (v === 'crew') { const c = DB.cur ? C() : null; if (c) { go('club'); $('hTitle').textContent = c.name; $('sub').textContent = '참석을 체크하고 팀을 만드세요'; } else { DB.cur = null; go('home'); } }
+  setHH(); if (v !== 'crew') window.scrollTo(0, 0);
+}
+document.querySelectorAll('#bnav button').forEach(b => b.onclick = () => view(b.dataset.v));
+
+// ===== 내 기록: 볼링장, 점수, 에버, 기간별 통계 =====
+const KEYR = 'btbTeams.rec.v1';
+function loadRec() { try { const r = JSON.parse(localStorage.getItem(KEYR) || 'null'); if (r && Array.isArray(r.recs)) { r.alleys = Array.isArray(r.alleys) ? r.alleys : []; r.me = r.me || { name: '' }; return r; } } catch (e) {} return { v: 1, me: { name: '' }, alleys: [], recs: [] }; }
+let REC = loadRec();
+const saveRec = () => { try { localStorage.setItem(KEYR, JSON.stringify(REC)); } catch (e) { alert('저장에 실패했습니다. 사파리 개인정보 보호 모드이거나 저장 공간이 없을 수 있습니다.'); } };
+const pad2 = (n) => String(n).padStart(2, '0');
+const isoDate = (d) => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const isoToday = () => isoDate(new Date());
+const dowK = (iso) => ['일', '월', '화', '수', '목', '금', '토'][new Date(iso + 'T00:00:00').getDay()];
+const fmtD = (iso) => String(iso).replace(/-/g, '.');
+const fmtA = (x) => { const v = Math.round(x * 10) / 10; return Number.isInteger(v) ? String(v) : v.toFixed(1); };
+const favFirst = (a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || a.name.localeCompare(b.name, 'ko');
+const alleyName = (id) => { const a = REC.alleys.find(x => x.id === id); return a ? a.name : ''; };
+const cmpAsc = (x, y) => x.date < y.date ? -1 : x.date > y.date ? 1 : (x.t || 0) - (y.t || 0);
+
+function calcStats(rs) {
+  let cnt = 0, sum = 0, max = 0, min = 0, c200 = 0, hasMin = false; const days = new Set();
+  rs.forEach(r => {
+    days.add(r.date);
+    if (r.k === 'e') { cnt += r.n; sum += r.avg * r.n; if (r.hi > max) max = r.hi; }
+    else r.scores.forEach(s => { cnt++; sum += s; if (s > max) max = s; if (!hasMin || s < min) { min = s; hasMin = true; } if (s >= 200) c200++; });
+  });
+  return { cnt, avg: cnt ? sum / cnt : 0, max, min, days: days.size, c200, hasMin };
+}
+let PER = { k: 'all', from: '', to: '' };
+function perRange() {
+  const t = new Date(), to = isoDate(t); const back = (n) => { const d = new Date(); d.setDate(d.getDate() - (n - 1)); return isoDate(d); };
+  if (PER.k === '7') return [back(7), to]; if (PER.k === '30') return [back(30), to]; if (PER.k === '90') return [back(90), to];
+  if (PER.k === 'y') return [t.getFullYear() + '-01-01', to];
+  if (PER.k === 'c') return [PER.from || '0000-00-00', PER.to || '9999-99-99'];
+  return ['0000-00-00', '9999-99-99'];
+}
+const recsIn = () => { const [a, b] = perRange(); return REC.recs.filter(r => r.date >= a && r.date <= b); };
+
+function renderHomeStat() { const s = calcStats(REC.recs); $('hsAvg').textContent = s.cnt ? Math.round(s.avg) : '-'; $('hsMax').textContent = s.max || '-'; $('hsCnt').textContent = s.cnt; }
+$('btnStart').onclick = () => openRc(null, 'g');
+$('btnCrewGo').onclick = () => view('crew');
+
+function lineChart(g, avg) {
+  const W = 320, H = 150, L = 30, R = 8, T = 14, B = 14; const ys = g.map(x => x.sc);
+  let lo = Math.min(Math.min.apply(null, ys), avg), hi = Math.max(Math.max.apply(null, ys), avg);
+  lo = Math.max(0, Math.floor((lo - 10) / 10) * 10); hi = Math.min(300, Math.ceil((hi + 10) / 10) * 10); if (hi - lo < 40) hi = lo + 40;
+  const x = (i) => L + i * (W - L - R) / (g.length - 1), y = (v) => T + (hi - v) * (H - T - B) / (hi - lo);
+  const grid = [lo, Math.round((lo + hi) / 2), hi].map(v => '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#cdb685" stroke-dasharray="3 3"/><text x="' + (L - 4) + '" y="' + (y(v) + 4) + '" font-size="10" text-anchor="end" fill="#5d716b">' + v + '</text>').join('');
+  const pts = g.map((p, i) => x(i) + ',' + y(p.sc)).join(' ');
+  const dots = g.map((p, i) => '<circle cx="' + x(i) + '" cy="' + y(p.sc) + '" r="3.6" fill="' + (p.sc >= 200 ? '#dc4527' : '#10413d') + '"/>').join('');
+  const av = '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(avg) + '" y2="' + y(avg) + '" stroke="#dc4527" stroke-width="2" stroke-dasharray="6 4"/><text x="' + (W - R) + '" y="' + (y(avg) - 4) + '" font-size="11" font-weight="700" text-anchor="end" fill="#dc4527" stroke="#fff4de" stroke-width="3" paint-order="stroke">에버 ' + fmtA(avg) + '</text>';
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto">' + grid + '<polyline points="' + pts + '" fill="none" stroke="#10413d" stroke-width="2.5" stroke-linejoin="round"/>' + dots + av + '</svg><div class="small">빨간 점은 200점 이상, 점선은 이 기간 에버입니다.</div>';
+}
+function monthBars(rs) {
+  const by = {}; rs.forEach(r => { const k = r.date.slice(0, 7); (by[k] = by[k] || []).push(r); });
+  const ms = Object.keys(by).sort().slice(-12); if (ms.length < 2) return '';
+  const avs = ms.map(m => calcStats(by[m]).avg);
+  const lo = Math.max(0, Math.floor((Math.min.apply(null, avs) - 25) / 10) * 10), hi = Math.ceil((Math.max.apply(null, avs) + 5) / 10) * 10;
+  return '<div class="mbars">' + ms.map((m, i) => { const px = Math.max(6, Math.round((avs[i] - lo) / Math.max(1, hi - lo) * 100)); return '<div class="mbar' + (i === ms.length - 1 ? ' cur' : '') + '"><b>' + Math.round(avs[i]) + '</b><i style="height:' + px + 'px"></i><span>' + (+m.slice(5)) + '월</span></div>'; }).join('') + '</div>';
+}
+function alleyTable(rs) {
+  const by = {}; rs.forEach(r => { const k = r.alleyId || ''; (by[k] = by[k] || []).push(r); });
+  const ks = Object.keys(by); if (!ks.length || (ks.length === 1 && !ks[0])) return '';
+  const rows = ks.map(k => ({ k, s: calcStats(by[k]) })).sort((a, b) => b.s.cnt - a.s.cnt);
+  return '<table class="atbl"><tr><th>볼링장</th><th>방문</th><th>게임</th><th>에버</th><th>최고</th></tr>' + rows.map(x => '<tr><td>' + esc(alleyName(x.k) || '볼링장 미지정') + '</td><td>' + x.s.days + '일</td><td>' + x.s.cnt + '</td><td>' + fmtA(x.s.avg) + '</td><td>' + (x.s.max || '-') + '</td></tr>').join('') + '</table>';
+}
+let RECLIM = 30;
+function recRow(r) {
+  const kc = r.kind === '대회' ? 'k3' : r.kind === '연습' ? 'k2' : ''; const al = alleyName(r.alleyId) || '볼링장 미지정'; let mid, av;
+  if (r.k === 'e') { mid = '<div class="al">' + esc(al) + '<span class="kbadge ks">에버 입력</span></div><div class="small">' + r.n + '게임 평균' + (r.hi ? ' · 최고 ' + r.hi : '') + '</div>'; av = '<b style="font:inherit">' + fmtA(r.avg) + '</b><small>에버</small>'; }
+  else { const sm = r.scores.reduce((a, b) => a + b, 0); mid = '<div class="al">' + esc(al) + '<span class="kbadge ' + kc + '">' + esc(r.kind || '연습') + '</span></div><div>' + r.scores.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>'; av = fmtA(sm / r.scores.length) + '<small>' + r.scores.length + '게임 평균</small>'; }
+  return '<div class="rec" data-id="' + r.id + '"><div class="d"><b>' + (+r.date.slice(8, 10)) + '</b><small>' + (+r.date.slice(5, 7)) + '월 ' + dowK(r.date) + '</small></div><div class="mid">' + mid + (r.note ? '<div class="small">' + esc(r.note) + '</div>' : '') + '</div><div class="av">' + av + '</div></div>';
+}
+function renderRec() {
+  const per = [['7', '7일'], ['30', '30일'], ['90', '3개월'], ['y', '올해'], ['all', '전체'], ['c', '직접']];
+  $('perChips').innerHTML = per.map(([k, l]) => '<button class="chip' + (PER.k === k ? ' on' : '') + '" data-k="' + k + '">' + l + '</button>').join('');
+  $('perChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { PER.k = b.dataset.k; RECLIM = 30; renderRec(); });
+  $('perCustom').classList.toggle('hide', PER.k !== 'c'); $('perFrom').value = PER.from; $('perTo').value = PER.to;
+  const [a, b] = perRange(); const rs = recsIn(); const s = calcStats(rs);
+  $('perRange').textContent = PER.k === 'all' ? '전체 기간' : (a < '1000' ? '처음' : fmtD(a)) + ' ~ ' + (b > '9000' ? '오늘' : fmtD(b));
+  $('recTicket').innerHTML = '<div class="tkt">기간 에버</div><div class="tkcols sm"><div><small>에버</small><b>' + (s.cnt ? fmtA(s.avg) : '-') + '</b></div><div><small>최고</small><b>' + (s.max || '-') + '</b></div><div><small>최저</small><b>' + (s.hasMin ? s.min : '-') + '</b></div><div><small>게임</small><b>' + s.cnt + '</b></div></div><div class="tknote">' + (s.cnt ? '볼링 친 날 ' + s.days + '일 · 200점 이상 ' + s.c200 + '번' : (REC.recs.length ? '이 기간에 기록이 없습니다. 기간을 "전체"로 바꿔 보세요.' : '아직 기록이 없습니다. 위의 "게임 기록"으로 시작하세요.')) + '</div>';
+  const nm = (REC.me.name || '').trim(); const hit = nm ? DB.clubs.filter(c => c.members.some(m => m.name === nm)).length : 0;
+  $('recCrewBox').classList.toggle('hide', !(s.cnt && hit)); if (s.cnt && hit) $('btnCrewEver').textContent = '이 에버(' + Math.round(s.avg) + ')를 크루 명단의 "' + nm + '"에 반영 (' + hit + '곳)';
+  const games = []; rs.slice().sort(cmpAsc).forEach(r => { if (r.k === 'g') r.scores.forEach(sc => games.push({ sc, date: r.date })); });
+  const last = games.slice(-30); $('recChartCard').classList.toggle('hide', last.length < 2);
+  if (last.length >= 2) { $('chtTitle').textContent = '게임별 점수 (최근 ' + last.length + '게임)'; $('recChart').innerHTML = lineChart(last, s.avg); }
+  const mb = monthBars(rs); $('recMonthCard').classList.toggle('hide', !mb); $('recMonth').innerHTML = mb;
+  const at = alleyTable(rs); $('recAlleyCard').classList.toggle('hide', !at); $('recAlley').innerHTML = at;
+  const sorted = rs.slice().sort((x, y) => x.date < y.date ? 1 : x.date > y.date ? -1 : (y.t || 0) - (x.t || 0));
+  $('recCnt').textContent = sorted.length ? '(' + sorted.length + '건)' : '';
+  $('recList').innerHTML = sorted.length ? sorted.slice(0, RECLIM).map(recRow).join('') + (sorted.length > RECLIM ? '<button class="gray" id="recMore" style="width:100%;margin-top:8px">더 보기 (' + (sorted.length - RECLIM) + '건)</button>' : '') : '<div class="empty">기록이 없습니다.<br>"게임 기록"이나 "가져오기"로 시작하세요.</div>';
+  $('recList').querySelectorAll('.rec').forEach(el => el.onclick = () => openRc(el.dataset.id));
+  const mo = $('recMore'); if (mo) mo.onclick = () => { RECLIM += 30; renderRec(); };
+}
+$('perFrom').onchange = (e) => { PER.from = e.target.value; renderRec(); };
+$('perTo').onchange = (e) => { PER.to = e.target.value; renderRec(); };
+$('btnRecNew').onclick = () => openRc(null, 'g');
+$('btnRecEver').onclick = () => openRc(null, 'e');
+$('btnRecImp').onclick = () => openRi();
+$('btnCrewEver').onclick = () => {
+  const nm = (REC.me.name || '').trim(); const s = calcStats(recsIn()); if (!nm || !s.cnt) return; const ev = Math.round(s.avg); const targets = [];
+  DB.clubs.forEach(c => c.members.forEach(m => { if (m.name === nm) targets.push(m); })); if (!targets.length) return;
+  if (!confirm('크루 명단의 "' + nm + '" ' + targets.length + '명 에버를 ' + ev + '(으)로 바꿀까요?')) return;
+  targets.forEach(m => { m.avg = ev; }); save(); alert(targets.length + '명의 에버를 ' + ev + '(으)로 바꿨습니다.');
+};
+
+// ----- 기록 입력 창 -----
+let RC = { id: null, mode: 'g' };
+function fillAlleySel(sel, val) { sel.innerHTML = '<option value="">볼링장 선택 안 함</option>' + REC.alleys.slice().sort(favFirst).map(a => '<option value="' + a.id + '"' + (a.id === val ? ' selected' : '') + '>' + (a.fav ? '★ ' : '') + esc(a.name) + (a.area ? ' (' + esc(a.area) + ')' : '') + '</option>').join(''); }
+function rcSetMode(m) { RC.mode = m; $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('rcG').classList.toggle('hide', m !== 'g'); $('rcE').classList.toggle('hide', m !== 'e'); }
+$('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => rcSetMode(b.dataset.m));
+function rcBuild(vals) {
+  const box = $('rcScores'); box.innerHTML = vals.map((v, i) => '<div class="gin"><b>' + (i + 1) + 'G</b><input type="number" inputmode="numeric" min="0" max="300" value="' + esc(v) + '" placeholder="점수"></div>').join('');
+  box.querySelectorAll('input').forEach(inp => inp.oninput = rcLive); rcLive();
+}
+const rcVals = () => [...$('rcScores').querySelectorAll('input')].map(i => i.value.trim());
+function rcLive() { const v = rcVals().filter(x => x !== '').map(Number).filter(x => isFinite(x)); const sm = v.reduce((a, b) => a + b, 0); $('rcLive').textContent = v.length ? v.length + '게임 · 합계 ' + sm + ' · 평균 ' + fmtA(sm / v.length) : ''; }
+$('rcMore').onclick = () => { const v = rcVals(); v.push(''); rcBuild(v); const ins = $('rcScores').querySelectorAll('input'); ins[ins.length - 1].focus(); };
+$('rcLess').onclick = () => { const v = rcVals(); if (v.length > 1) v.pop(); rcBuild(v); };
+function openRc(id, mode) {
+  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null;
+  $('rcTitle').textContent = r ? '기록 고치기' : (mode === 'e' ? '에버 입력' : '게임 기록');
+  rcSetMode(r ? r.k : (mode || 'g'));
+  $('rcDate').value = r ? r.date : isoToday(); $('rcKind').value = r ? (r.kind || '연습') : (REC.lastKind || '정모');
+  fillAlleySel($('rcAlley'), r ? r.alleyId : (REC.lastAlley || '')); $('rcNote').value = r ? (r.note || '') : '';
+  rcBuild(r && r.k === 'g' ? r.scores.map(String) : ['', '', '']);
+  $('reAvg').value = r && r.k === 'e' ? r.avg : ''; $('reN').value = r && r.k === 'e' ? r.n : ''; $('reHi').value = r && r.k === 'e' && r.hi ? r.hi : '';
+  $('rcDel').classList.toggle('hide', !r); $('rcMode').classList.toggle('hide', !!r); $('rcSheet').classList.remove('hide');
+  if (!r && RC.mode === 'g') setTimeout(() => { const f = $('rcScores').querySelector('input'); if (f) f.focus(); }, 120);
+}
+$('rcClose').onclick = () => $('rcSheet').classList.add('hide');
+$('rcSheet').onclick = (e) => { if (e.target === $('rcSheet')) $('rcSheet').classList.add('hide'); };
+$('rcAddAlley').onclick = () => openAl(null, (id) => fillAlleySel($('rcAlley'), id));
+$('rcSave').onclick = () => {
+  const date = $('rcDate').value || isoToday(); const alleyId = $('rcAlley').value, kind = $('rcKind').value, note = $('rcNote').value.trim(); let rec;
+  if (RC.mode === 'g') {
+    const raw = rcVals().filter(x => x !== ''); if (!raw.length) return alert('점수를 한 게임 이상 넣어 주세요.');
+    const sc = raw.map(Number); if (sc.some(x => !Number.isInteger(x) || x < 0 || x > 300)) return alert('점수는 0~300 사이 정수로 넣어 주세요.');
+    rec = { k: 'g', scores: sc };
+  } else {
+    const avg = parseFloat($('reAvg').value), n = parseInt($('reN').value, 10), hi = parseInt($('reHi').value, 10);
+    if (!(avg >= 1 && avg <= 300)) return alert('에버는 1~300 사이로 넣어 주세요.'); if (!(n >= 1 && n <= 5000)) return alert('게임 수를 넣어 주세요.');
+    rec = { k: 'e', avg: Math.round(avg * 10) / 10, n, hi: hi >= 1 && hi <= 300 ? hi : 0 };
+  }
+  Object.assign(rec, { date, alleyId, kind, note });
+  const old = RC.id ? REC.recs.findIndex(r => r.id === RC.id) : -1;
+  if (old >= 0) { rec.id = RC.id; rec.t = REC.recs[old].t; rec.src = REC.recs[old].src || '직접'; REC.recs[old] = rec; } else { rec.id = uid(); rec.t = Date.now(); rec.src = '직접'; REC.recs.push(rec); }
+  REC.lastAlley = alleyId; REC.lastKind = kind; saveRec(); $('rcSheet').classList.add('hide');
+  if (curView === 'home') view('rec'); else if (curView === 'rec') renderRec(); else if (curView === 'me') renderMe();
+};
+$('rcDel').onclick = () => { if (!RC.id || !confirm('이 기록을 지울까요?')) return; REC.recs = REC.recs.filter(r => r.id !== RC.id); saveRec(); $('rcSheet').classList.add('hide'); if (curView === 'rec') renderRec(); };
+
+// ----- 볼링장 등록 -----
+let AL = { id: null, after: null };
+function openAl(id, after) {
+  const a = id ? REC.alleys.find(x => x.id === id) : null; AL = { id: a ? a.id : null, after: after || null };
+  $('alTitle').textContent = a ? '볼링장 고치기' : '볼링장 등록'; $('alName').value = a ? a.name : ''; $('alArea').value = a ? (a.area || '') : ''; $('alMemo').value = a ? (a.memo || '') : ''; $('alFav').checked = !!(a && a.fav);
+  $('alDel').classList.toggle('hide', !a); $('alSheet').classList.remove('hide'); if (!a) setTimeout(() => $('alName').focus(), 120);
+}
+$('alClose').onclick = () => $('alSheet').classList.add('hide');
+$('alSave').onclick = () => {
+  const name = $('alName').value.trim(); if (!name) return alert('볼링장 이름을 넣어 주세요.');
+  if (REC.alleys.some(x => x.name === name && x.id !== AL.id)) return alert('같은 이름의 볼링장이 이미 있습니다.');
+  let a = AL.id ? REC.alleys.find(x => x.id === AL.id) : null; if (!a) { a = { id: uid() }; REC.alleys.push(a); }
+  a.name = name; a.area = $('alArea').value.trim(); a.memo = $('alMemo').value.trim(); a.fav = $('alFav').checked; saveRec(); $('alSheet').classList.add('hide');
+  const f = AL.after; AL.after = null; if (f) f(a.id); if (curView === 'me') renderMe(); if (curView === 'rec') renderRec();
+};
+$('alDel').onclick = () => {
+  const a = AL.id ? REC.alleys.find(x => x.id === AL.id) : null; if (!a) return; const used = REC.recs.filter(r => r.alleyId === a.id).length;
+  if (!confirm('"' + a.name + '"을(를) 지울까요?' + (used ? ' 이 볼링장의 기록 ' + used + '건은 그대로 남고 "볼링장 미지정"이 됩니다.' : ''))) return;
+  REC.recs.forEach(r => { if (r.alleyId === a.id) r.alleyId = ''; }); REC.alleys = REC.alleys.filter(x => x.id !== a.id); saveRec(); $('alSheet').classList.add('hide'); if (curView === 'me') renderMe(); if (curView === 'rec') renderRec();
+};
+
+// ----- 마이 -----
+function renderMe() {
+  $('meName').value = REC.me.name || '';
+  $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
+  $('meAlleys').querySelectorAll('button[data-ed]').forEach(b => b.onclick = () => openAl(b.dataset.ed));
+}
+$('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); saveRec(); };
+$('btnAlNew').onclick = () => openAl(null);
+$('btnWipe').onclick = () => { if (!REC.recs.length) return alert('지울 기록이 없습니다.'); if (!confirm('내 점수 기록 ' + REC.recs.length + '건을 모두 지울까요? 되돌릴 수 없습니다. (볼링장 목록과 크루 명단은 남습니다)')) return; REC.recs = []; saveRec(); renderMe(); alert('기록을 모두 지웠습니다.'); };
+$('btnBk').onclick = async () => {
+  const data = JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC }); const name = '볼링팀구성_백업_' + isoToday() + '.json';
+  const file = new File([data], name, { type: 'application/json' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+};
+$('btnRs').onclick = () => $('fileRs').click();
+$('fileRs').onchange = async (e) => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text()); if (!d || d.app !== 'btb-team' || !d.db || !Array.isArray(d.db.clubs) || !d.rec || !Array.isArray(d.rec.recs)) return alert('이 앱의 백업 파일이 아닙니다.');
+    if (!confirm('백업 파일(' + (d.saved || '').slice(0, 10) + ')로 복원합니다. 지금 폰에 있는 크루 ' + DB.clubs.length + '곳과 기록 ' + REC.recs.length + '건이 백업 내용으로 바뀝니다. 계속할까요?')) return;
+    localStorage.setItem(KEY2, JSON.stringify(d.db)); localStorage.setItem(KEYR, JSON.stringify(d.rec)); location.reload();
+  } catch (err) { alert('백업 파일을 읽지 못했습니다.'); }
+};
+
+// ----- 점수·에버 가져오기(파일, 사진) -----
+function toDateISO(s) {
+  s = String(s == null ? '' : s).trim(); if (!s) return ''; let m, y, mo, d;
+  if ((m = s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/^(\d{2})\s*[.\-\/]\s*(\d{1,2})\s*[.\-\/]\s*(\d{1,2})$/))) { y = 2000 + +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/^(\d{1,2})\s*[\/월]\s*(\d{1,2})\s*일?$/))) { mo = +m[1]; d = +m[2]; y = new Date().getFullYear(); if (new Date(y, mo - 1, d) - new Date() > 40 * 864e5) y--; }
+  else if (/^\d{5}(\.\d+)?$/.test(s) && +s > 30000 && +s < 80000) { const t = new Date(Date.UTC(1899, 11, 30) + Math.floor(+s) * 864e5); y = t.getUTCFullYear(); mo = t.getUTCMonth() + 1; d = t.getUTCDate(); }
+  else return '';
+  if (mo < 1 || mo > 12 || d < 1 || d > 31 || y < 2000 || y > 2100) return '';
+  return y + '-' + pad2(mo) + '-' + pad2(d);
+}
+const kindOf = (s) => { s = String(s || ''); if (/연습/.test(s)) return '연습'; if (/대회|리그|토너|오픈/.test(s)) return '대회'; if (/정모|정기/.test(s)) return '정모'; return ''; };
+const STOPW = /^(날짜|일자|일시|볼링장|장소|구분|점수|스코어|합계|총점|평균|에버|에버리지|게임|게임수|최고|최저|메모|비고|순위|이름|성명|회차|정모|정기|연습|대회|리그|date|score|scores|total|avg|game|games|no|g)$/i;
+const parseScores = (t) => String(t || '').split(/[\s,;]+/).map(x => parseInt(x, 10)).filter(v => isFinite(v) && v >= 0 && v <= 300);
+function textLineToRec(line, ctx) {
+  let s = String(line || '').replace(/[|｜]/g, ' ').replace(/\s+/g, ' ').trim(); if (!s) return null; let date = '', m;
+  const dm = s.match(/\d{4}\s*[.\-\/년]\s*\d{1,2}\s*[.\-\/월]\s*\d{1,2}\s*일?|\d{1,2}\s*월\s*\d{1,2}\s*일|\b\d{1,2}\/\d{1,2}\b|\b\d{2}[.\-]\d{1,2}[.\-]\d{1,2}\b/);
+  if (dm) { date = toDateISO(dm[0].replace(/\s+/g, '')); if (date) s = s.replace(dm[0], ' '); }
+  let ever = 0, n = 0, hi = 0;
+  if ((m = s.match(/(?:에버리지|에버|평균|avg)\s*[:=]?\s*(\d{2,3}(?:\.\d+)?)/i))) { ever = +m[1]; s = s.replace(m[0], ' '); }
+  if ((m = s.match(/게임\s*수\s*[:=]?\s*(\d{1,4})/))) { n = +m[1]; s = s.replace(m[0], ' '); } else if (ever && (m = s.match(/(\d{1,4})\s*(?:게임|경기)/))) { n = +m[1]; s = s.replace(m[0], ' '); }
+  if ((m = s.match(/최고\s*[:=]?\s*(\d{2,3})/))) { hi = +m[1]; s = s.replace(m[0], ' '); }
+  s = s.replace(/(\d{1,2})[Gg](\d{2,3})/g, '$1G $2').replace(/(?:^|\s)[Gg]\s*\d{1,2}(?=\s|$)|(?:^|\s)\d{1,2}\s*[Gg](?=\s|$)|\d{1,2}\s*(?:번째|게임째)|(?:합계|총점|총|계)\s*\d{2,4}/g, ' ');
+  const scores = [], words = [];
+  s.split(/[\s,;]+/).filter(Boolean).forEach(t => { if (/^\d{2,3}$/.test(t)) { if (+t >= 20 && +t <= 300) scores.push(+t); } else if (/^\d{2,3}\.\d$/.test(t)) { if (!ever && +t >= 50 && +t <= 300) ever = +t; } else if (/[가-힣A-Za-z]{2,}/.test(t) && !STOPW.test(t) && !kindOf(t)) words.push(t); });
+  const alley = words.join(' ').trim(), kind = kindOf(line);
+  if (!scores.length && !ever) { if (date) { ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind; } return null; }
+  if (date) ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind;
+  const rec = { date: date || ctx.date || '', alley: alley || ctx.alley || '', kind: kind || ctx.kind || '' };
+  if (scores.length) { rec.k = 'g'; rec.scores = scores; } else { rec.k = 'e'; rec.avg = Math.round(ever * 10) / 10; rec.n = n || 1; rec.hi = hi >= 1 && hi <= 300 ? hi : 0; }
+  return rec;
+}
+function mergeRecs(list) {
+  const out = [], idx = {};
+  list.forEach(r => { if (r.k === 'g') { const key = r.date + '|' + r.alley + '|' + (r.kind || ''); if (idx[key] != null) { out[idx[key]].scores = out[idx[key]].scores.concat(r.scores); return; } idx[key] = out.length; } out.push(r); });
+  return out;
+}
+function tableToRecs(t) {
+  t = t.map(r => r.map(x => x == null ? '' : String(x).trim())).filter(r => r.some(Boolean)); if (!t.length) return [];
+  const isHead = (h) => /날짜|일자|일시|date|볼링장|장소|센터|구분|유형|종류|점수|스코어|score|에버|평균|avg|게임\s*수|횟수|^\d{1,2}\s*(?:G|g|게임|번째)$|^(?:G|g)\s*\d{1,2}$/.test(h);
+  let hi = -1; for (let i = 0; i < Math.min(8, t.length); i++) { if (t[i].filter(isHead).length >= 2) { hi = i; break; } }
+  const out = [], ctx = { date: '', alley: '', kind: '' };
+  if (hi >= 0) {
+    const map = { date: -1, alley: -1, kind: -1, ever: -1, n: -1, hi: -1, note: -1, sc: [] };
+    t[hi].forEach((h, i) => {
+      if (/날짜|일자|일시|date/i.test(h) && map.date < 0) map.date = i; else if (/볼링장|장소|센터|place|alley/i.test(h) && map.alley < 0) map.alley = i;
+      else if (/구분|유형|종류|kind/i.test(h) && map.kind < 0) map.kind = i; else if (/게임\s*수|횟수|경기\s*수|count/i.test(h) && map.n < 0) map.n = i;
+      else if (/에버|평균|avg|average/i.test(h) && map.ever < 0) map.ever = i; else if (/최고|high|max/i.test(h) && map.hi < 0) map.hi = i; else if (/메모|비고|note/i.test(h) && map.note < 0) map.note = i;
+      else if (/^(?:\d{1,2}\s*(?:G|g|게임|번째)|(?:G|g)\s*\d{1,2}|(?:점수|스코어|score)\s*\d*)$/i.test(h)) map.sc.push(i);
+    });
+    if (map.sc.length || map.ever >= 0) {
+      t.slice(hi + 1).forEach(r => {
+        const cell = (i) => i >= 0 && i < r.length ? r[i] : '';
+        const d = map.date >= 0 ? toDateISO(cell(map.date)) : ''; if (d) ctx.date = d; const al = map.alley >= 0 ? cell(map.alley) : ''; if (al) ctx.alley = al; const kd = map.kind >= 0 ? kindOf(cell(map.kind)) : ''; if (kd) ctx.kind = kd;
+        const scs = map.sc.map(i => parseInt(cell(i), 10)).filter(v => isFinite(v) && v >= 1 && v <= 300);
+        if (scs.length) out.push({ k: 'g', date: ctx.date, alley: ctx.alley, kind: ctx.kind, scores: scs, note: map.note >= 0 ? cell(map.note) : '' });
+        else if (map.ever >= 0) { const ev = parseFloat(cell(map.ever)); if (ev >= 1 && ev <= 300) out.push({ k: 'e', date: ctx.date, alley: ctx.alley, kind: ctx.kind, avg: Math.round(ev * 10) / 10, n: map.n >= 0 ? (parseInt(cell(map.n), 10) || 1) : 1, hi: map.hi >= 0 ? (parseInt(cell(map.hi), 10) || 0) : 0, note: map.note >= 0 ? cell(map.note) : '' }); }
+      });
+      return mergeRecs(out);
+    }
+  }
+  t.forEach(r => { const cells = r.map(v => (/^\d{5}(\.\d+)?$/.test(v) || /^\d{8}$/.test(v)) ? (toDateISO(v) || v) : v); const rec = textLineToRec(cells.join(' '), ctx); if (rec) out.push(rec); });
+  return mergeRecs(out);
+}
+function splitCsvLine(l) { const o = []; let cur = '', q = false; for (let i = 0; i < l.length; i++) { const ch = l[i]; if (q) { if (ch === '"') { if (l[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; } else if (ch === '"') q = true; else if (ch === ',' || ch === '\t') { o.push(cur); cur = ''; } else cur += ch; } o.push(cur); return o; }
+function ocrTextToRecs(text) { const ctx = { date: '', alley: '', kind: '' }; const out = []; text.split(/\r?\n/).forEach(l => { const r = textLineToRec(l, ctx); if (r) out.push(r); }); return mergeRecs(out); }
+async function ocrImageText(file, st) {
+  const bar = (p, t) => { st.innerHTML = esc(t) + '<div class="prog"><i style="width:' + Math.round(p * 100) + '%"></i></div>'; };
+  bar(0.01, '이미지를 준비하는 중...');
+  try {
+    const base = new URL('.', location.href).href;
+    if (!window.PPOCR) await loadScript('ocr-pp.js');
+    await PPOCR.init({ ort: base + 'ort.min.js', wasmBase: base, det: base + 'pp-det.onnx', rec: base + 'pp-rec-ko.onnx', dict: base + 'pp-ko-dict.txt' }, bar);
+    const cv = await fileToCanvas(file, 2400); const r = await PPOCR.recognize(cv, bar); return { text: r.lines.join('\n'), engine: '정밀 분석' };
+  } catch (e) { console.log('정밀 분석 실패', e); return { text: await ocrWithTesseract(file, bar), engine: '보조 분석' }; }
+}
+let RI = { rows: [], src: '파일', busy: false, sheets: [] };
+function openRi() { RI.rows = []; RI.sheets = []; $('riStatus').textContent = ''; $('riSheetPick').classList.add('hide'); riRender(); $('riSheet').classList.remove('hide'); }
+$('riClose').onclick = () => $('riSheet').classList.add('hide');
+$('riSheet').onclick = (e) => { if (e.target === $('riSheet')) $('riSheet').classList.add('hide'); };
+function riSetRows(list) { RI.rows = list.map(r => Object.assign({}, r, { on: !!r.date && (r.k === 'g' ? r.scores.length > 0 : r.avg > 0) })); riRender(); }
+function riRender() {
+  const box = $('riPrev'), rows = RI.rows; $('riApply').classList.toggle('hide', !rows.length);
+  $('alleyDL').innerHTML = REC.alleys.map(a => '<option value="' + esc(a.name) + '">').join('');
+  box.innerHTML = rows.map((r, i) => {
+    const bad = !r.date || (r.k === 'g' && !r.scores.length);
+    return '<div class="rirow' + (bad ? ' bad' : '') + '" data-i="' + i + '"><label class="row"><input type="checkbox" class="rck" style="width:24px;height:24px"' + (r.on ? ' checked' : '') + '><b>' + (i + 1) + '번</b>' + (r.k === 'e' ? '<span class="kbadge ks">에버 입력</span>' : '') + (r.alley && !REC.alleys.some(a => a.name.toLowerCase() === r.alley.toLowerCase()) ? '<span class="kbadge k2">새 볼링장</span>' : '') + '<span class="grow"></span><button class="gray rdel" style="padding:6px 10px">빼기</button></label>'
+      + '<div class="row"><input type="date" class="rdate grow" value="' + esc(r.date) + '"><select class="rkind" style="width:92px">' + ['정모', '연습', '대회'].map(k => '<option' + ((r.kind || '연습') === k ? ' selected' : '') + '>' + k + '</option>').join('') + '</select></div>'
+      + '<div class="row"><input type="text" class="ral grow" list="alleyDL" placeholder="볼링장 이름(선택)" value="' + esc(r.alley) + '"></div>'
+      + (r.k === 'g' ? '<div class="row"><input type="text" class="rsc grow" inputmode="numeric" placeholder="점수들 (띄어쓰기로 구분)" value="' + esc(r.scores.join(' ')) + '"></div>' : '<div class="row"><div class="grow"><div class="lbl">에버</div><input type="number" class="rav" inputmode="decimal" value="' + r.avg + '"></div><div class="grow"><div class="lbl">게임 수</div><input type="number" class="rn" inputmode="numeric" value="' + r.n + '"></div></div>') + '</div>';
+  }).join('');
+  box.querySelectorAll('.rirow').forEach(el => {
+    const i = +el.dataset.i, r = rows[i];
+    el.querySelector('.rck').onchange = e => { r.on = e.target.checked; };
+    el.querySelector('.rdel').onclick = (e) => { e.preventDefault(); rows.splice(i, 1); riRender(); };
+    el.querySelector('.rdate').onchange = e => { r.date = e.target.value; el.classList.toggle('bad', !r.date); if (r.date) { r.on = true; el.querySelector('.rck').checked = true; } };
+    el.querySelector('.rkind').onchange = e => { r.kind = e.target.value; };
+    el.querySelector('.ral').onchange = e => { r.alley = e.target.value.trim(); };
+    const sc = el.querySelector('.rsc'); if (sc) sc.onchange = e => { r.scores = parseScores(e.target.value); e.target.value = r.scores.join(' '); };
+    const av = el.querySelector('.rav'); if (av) av.onchange = e => { r.avg = parseFloat(e.target.value) || 0; };
+    const nn = el.querySelector('.rn'); if (nn) nn.onchange = e => { r.n = parseInt(e.target.value, 10) || 0; };
+  });
+}
+function riChooseSheet(i) { const s = RI.sheets[i]; riSetRows(s.recs); $('riStatus').textContent = (RI.sheets.length > 1 ? '시트 "' + s.name + '"' : '엑셀') + '에서 ' + s.recs.length + '건을 읽었습니다. 날짜와 점수를 확인한 뒤 등록하세요.'; }
+$('riSheetSel').onchange = (e) => riChooseSheet(+e.target.value);
+async function riHandle(file) {
+  if (!file) return; const st = $('riStatus'), name = file.name || ''; RI.rows = []; RI.sheets = []; riRender(); $('riSheetPick').classList.add('hide');
+  try {
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer()); const is = (...b) => b.every((v, i) => head[i] === v);
+    const isImg = /^image\//.test(file.type) || /\.(png|jpe?g|heic|heif|webp|gif|bmp)$/i.test(name) || is(0xFF, 0xD8, 0xFF) || is(0x89, 0x50, 0x4E, 0x47) || (head[4] === 0x66 && head[5] === 0x74 && head[6] === 0x79 && head[7] === 0x70);
+    if (isImg) {
+      if (RI.busy) return; RI.busy = true;
+      try { const o = await ocrImageText(file, st); RI.src = '이미지'; const recs = ocrTextToRecs(o.text); riSetRows(recs); st.textContent = recs.length ? '이미지에서 ' + recs.length + '건을 읽었습니다(' + o.engine + '). 날짜와 점수가 맞는지 꼭 확인한 뒤 등록하세요.' : '날짜와 점수를 찾지 못했습니다. 점수표가 또렷하게 나온 사진으로 다시 시도하거나 엑셀·CSV 파일을 써 주세요.'; }
+      finally { RI.busy = false; }
+      return;
+    }
+    RI.src = '파일';
+    if (is(0xD0, 0xCF, 0x11, 0xE0)) { st.textContent = '예전 엑셀 형식(.xls)입니다. 엑셀에서 "다른 이름으로 저장"으로 .xlsx 또는 CSV로 저장한 뒤 올려 주세요.'; return; }
+    if (is(0x50, 0x4B, 0x03, 0x04)) {
+      st.textContent = '엑셀 파일을 읽는 중...'; const r = await readXlsx(await file.arrayBuffer());
+      RI.sheets = r.sheets.map(s => ({ name: s.name, recs: tableToRecs(s.rows) })).filter(x => x.recs.length).sort((a, b) => b.recs.length - a.recs.length);
+      if (!RI.sheets.length) { st.textContent = '읽을 수 있는 기록이 없습니다. 첫 줄에 날짜, 볼링장, 1G, 2G 같은 제목이 있는지 확인하세요. (아래 "파일 작성 예시" 참고)'; return; }
+      if (RI.sheets.length > 1) { $('riSheetSel').innerHTML = RI.sheets.map((s, i) => '<option value="' + i + '">' + esc(s.name) + ' (' + s.recs.length + '건)</option>').join(''); $('riSheetPick').classList.remove('hide'); }
+      riChooseSheet(0); return;
+    }
+    const text = await decodeText(file); const recs = tableToRecs(text.split(/\r?\n/).map(splitCsvLine)); riSetRows(recs);
+    st.textContent = recs.length ? name + ' 에서 ' + recs.length + '건을 읽었습니다. 날짜와 점수를 확인한 뒤 등록하세요.' : '읽을 수 있는 기록이 없습니다. 첫 줄에 날짜, 볼링장, 1G, 2G 같은 제목이 있는지 확인하세요.';
+  } catch (e) { st.textContent = '파일을 읽지 못했습니다: ' + (e && e.message ? e.message : e); }
+}
+$('riCam').onclick = () => $('riFileCam').click(); $('riPic').onclick = () => $('riFilePic').click(); $('riXls').onclick = () => $('riFileXls').click();
+['riFileCam', 'riFilePic', 'riFileXls'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; riHandle(f); });
+$('riApply').onclick = () => {
+  let added = 0, dup = 0, skipped = 0, newAl = 0;
+  RI.rows.filter(r => r.on).forEach(r => {
+    if (!r.date || (r.k === 'g' && !r.scores.length) || (r.k === 'e' && !(r.avg >= 1 && r.avg <= 300 && r.n >= 1))) { skipped++; return; }
+    let alleyId = ''; const nm = (r.alley || '').trim();
+    if (nm) { let a = REC.alleys.find(x => x.name.toLowerCase() === nm.toLowerCase()); if (!a) { a = { id: uid(), name: nm, area: '', memo: '', fav: false }; REC.alleys.push(a); newAl++; } alleyId = a.id; }
+    const key = r.k === 'g' ? r.scores.join(',') : r.avg + 'x' + r.n;
+    if (REC.recs.some(x => x.date === r.date && (x.alleyId || '') === alleyId && x.k === r.k && (x.k === 'g' ? x.scores.join(',') : x.avg + 'x' + x.n) === key)) { dup++; return; }
+    const rec = r.k === 'g' ? { k: 'g', scores: r.scores } : { k: 'e', avg: r.avg, n: r.n, hi: r.hi || 0 };
+    REC.recs.push(Object.assign(rec, { id: uid(), t: Date.now() + added, date: r.date, alleyId, kind: r.kind || '연습', note: r.note || '', src: RI.src })); added++;
+  });
+  saveRec();
+  if (!added) return alert('등록된 기록이 없습니다.' + (dup ? ' (이미 있는 기록 ' + dup + '건)' : '') + (skipped ? ' (날짜나 점수가 비어 건너뜀 ' + skipped + '건)' : '') + '\n날짜와 점수를 확인해 주세요.');
+  $('riSheet').classList.add('hide'); if (curView === 'rec') renderRec(); else view('rec');
+  alert(added + '건을 등록했습니다.' + (newAl ? ' 새 볼링장 ' + newAl + '곳이 추가됐습니다.' : '') + (dup ? ' 이미 있는 기록 ' + dup + '건은 건너뛰었습니다.' : '') + (skipped ? ' 날짜나 점수가 비어 건너뜀 ' + skipped + '건.' : ''));
+};
+
 // ===== 시작 =====
-try { if (new URLSearchParams(location.search).get('hero') === '2') $('heroImg').src = 'hero-2.jpg'; } catch (e) {}
 (async () => {
   const m = location.hash.match(/^#r=([A-Za-z0-9_-]+)/);
   if (m) { try { const t = await decodeRoster(m[1]); applyRosterText(t, '비투비'); } catch (e) { alert('명단 링크를 읽지 못했습니다.'); } try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} return; }
-  go('home');
+  view('home');
 })();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
