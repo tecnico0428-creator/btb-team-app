@@ -152,6 +152,11 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{background:transparent;color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800}
 .chip.on{background:var(--ink);color:#fff4de}
+.aip{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin:6px 0;font-weight:700}
+.aip.on{background:var(--ink);color:#fff4de}
+.aip small{display:block;font-weight:600;opacity:.85}
+.aihint{margin-top:10px;padding:8px 10px;border:2px dashed var(--ink);border-radius:14px;background:#fff4de}
+#aiSheet textarea,#aiBox textarea,#aiSheet input[type=password],#aiSheet input[type=text]{width:100%}
 .helpbtn{position:fixed;top:calc(8px + env(safe-area-inset-top));right:12px;z-index:9;display:flex;align-items:center;gap:6px;background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:4px 12px 4px 5px;font-size:14px;font-weight:900;box-shadow:0 2px 0 var(--ink)}
 .helpbtn b{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:15px}
 header .hrow{padding-right:92px}
@@ -255,7 +260,7 @@ header .hrow{padding-right:92px}
   <button class="bigbtn" id="btnStart"><span>게임 시작</span><span class="circ"><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></span></button>
   <div class="cap">오늘의 기록을 남겨보세요</div>
   <button class="crewcard" id="btnCrewGo"><svg class="pin" viewBox="0 0 48 48"><g transform="rotate(-20 24 24)"><path d="M24 4c-4 0-6 3-5 7 .8 3 2 4 2 7 0 2-3 4-4 9-1 5 1 11 7 11s8-6 7-11c-1-5-4-7-4-9 0-3 1.2-4 2-7 1-4-1-7-5-7z" fill="#e8f43a"/></g><path d="M38 8l4-3M40 15l5-1M36 2l1 4" stroke="#e8f43a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg><span class="sep"></span><span class="tx"><b>함께 굴릴까요?</b><span>크루 정모 팀 짜기</span></span><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></button>
-  <div class="small" style="text-align:center;margin:10px 0">기록과 명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
+  <div class="small" style="text-align:center;margin:10px 0">기록과 명단은 이 폰 안에만 저장됩니다(AI 판독을 직접 연결해 쓸 때만 점수표 사진이 선택한 AI 회사로 전송됩니다).</div>
   <div class="appver verline"></div>
 </section>
 
@@ -434,6 +439,7 @@ header .hrow{padding-right:92px}
     <div class="lbl" style="margin-top:12px"><b>볼링장별 이름·닉네임</b> (그 볼링장 점수판에 다르게 나올 때)</div><div id="meAlleyIds"></div></div>
   <div class="card"><div class="ttl">크루별 내 이름·닉네임</div><div class="small">점수표 사진에서 내 줄을 찾을 때 씁니다. 크루마다 "나"를 명단에서 골라 두면 그 크루 명단의 이름과 닉네임으로 내 줄을 판단하고, 다른 팀원의 줄은 걸러냅니다.</div><div id="meCrews"></div></div>
   <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
+  <div class="card"><div class="ttl">AI 판독 연결</div><div class="small" id="aiStat"></div><div class="small" style="margin-top:4px">점수표 사진 판독이 더 정확해지려면 AI를 연결하세요. 연결하지 않아도 기본 판독은 됩니다.</div><button id="btnAiSet" style="width:100%;margin-top:8px">AI 연결 설정</button></div>
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
@@ -468,6 +474,16 @@ header .hrow{padding-right:92px}
   <div class="small" style="margin-top:8px">이메일 앱이 열리지 않으면 "내용 복사"를 누른 뒤 이메일이나 카톡으로 아래 주소에 보내 주세요.<br><b id="rqAddr"></b></div>
 </div></div>
 
+<div id="aiSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
+  <h2>AI 판독 연결</h2>
+  <div class="small">기본 판독은 글자만 읽어서 표 모양이 낯설면 틀릴 수 있습니다. AI를 연결하면 표 구조를 이해해서 더 정확하게 읽습니다. 읽은 결과는 항상 합계 검산과 확인 화면을 거치고, 확인해야 저장됩니다.</div>
+  <details style="margin:8px 0"><summary class="small"><b>구독 중인 AI 계정으로 바로 로그인은 안 되나요?</b></summary>
+    <div class="small" style="margin-top:4px">ChatGPT, 클로드, 제미나이의 월정액 구독 계정으로 다른 앱에 로그인해 쓰는 것은 각 회사 약관상 일반 앱에 열려 있지 않거나 금지되어 있습니다(클로드는 금지, ChatGPT는 승인된 제휴 앱만 가능). 또 구독과 API 키는 요금이 따로입니다. 그래서 아래 두 가지 방법을 제공합니다.<br>1) <b>내 AI 앱으로 보내기</b>: 구독 중인 AI 앱을 그대로 쓰는 방법(키 불필요, 사진 보내고 답을 붙여 넣는 과정이 있음)<br>2) <b>API 키 연결</b>: 한 번 연결하면 자동으로 읽음(키는 이 폰 안에만 저장)</div></details>
+  <div class="lbl">연결할 AI 선택</div><div id="aiPicks"></div>
+  <div id="aiDetail"></div>
+  <div class="row" style="margin-top:12px"><button id="aiSave" class="grow">저장</button><button id="aiOff" class="gray">연결 해제</button><button id="aiClose" class="gray">닫기</button></div>
+</div></div>
+
 <datalist id="alleyDL"></datalist>
 
 <div id="rcSheet" class="sheetbg hide"><div class="sheet">
@@ -482,7 +498,7 @@ header .hrow{padding-right:92px}
     <div class="small" id="rpWho" style="margin:6px 0"></div>
     <div class="row"><button id="rpAgain" class="grow sec">사진 다시 찍기</button></div>
     <input type="file" id="rpFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="rpFilePic" accept="image/*" class="hide">
-    <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div>
+    <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div><div id="aiBox"></div>
   </div>
   <div id="rcG">
     <div class="lbl" id="rcGLbl">게임 점수 (0~300)</div>
@@ -1441,7 +1457,7 @@ function rcSetMode(m) {
   if (m === 'c' || m === 'i') { RC.mode = 'p'; RC.pick = m; } else RC.mode = m;
   const on = RC.mode === 'p' ? RC.pick : (RC.mode === 'g' ? 'g' : '');
   $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === on));
-  if (RC.mode === 'p') { rpCrewFill(); rpWhoNote(); $('rpAgain').textContent = RC.pick === 'c' ? '사진 다시 찍기' : '다른 이미지 고르기'; }
+  if (RC.mode === 'p') { rpCrewFill(); rpWhoNote(); $('rpAgain').textContent = RC.pick === 'c' ? '사진 다시 찍기' : '다른 이미지 고르기'; aiRender(); }
   rcShow();
 }
 $('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { const m = b.dataset.m; rcSetMode(m); if (RP && RP.busy) return; if (m === 'c') $('rpFileCam').click(); else if (m === 'i') $('rpFilePic').click(); });
@@ -1650,8 +1666,10 @@ function mergeFragments(P, hdr) {
     }
   });
 }
+// AI가 읽은 줄(이름, 게임 점수, 합계, 평균)을 분석기가 쓰는 모양으로 바꾼다
+function aiRowParts(ai) { const mk = (v, dec) => ({ v, dec: !!dec, raw: String(v), c: 1 }); const vals = ai.games.map(g => mk(g, false)); if (ai.total != null) vals.push(mk(ai.total, false)); if (ai.avg != null) vals.push(mk(ai.avg, true)); return { name: ai.name, vals, gh: 0, pre: [] }; }
 function analyzeScoreSheet(rows, crewId, alleyIds) {
-  const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs))); mergeFragments(P, findHeader(rows));
+  const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => r.ai ? Object.assign({ i }, aiRowParts(r.ai)) : Object.assign({ i }, parseRowTokens(r.texts, r.confs))); mergeFragments(P, findHeader(rows));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
   const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
   let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
@@ -1704,16 +1722,21 @@ async function rpHandle(file) {
   if (!file || RP.busy) return; RP.busy = true; const st = $('rpStatus'); $('rpRes').innerHTML = ''; RP.applied = false; RC.edited = false; rcShow();
   try {
     try { await loadAlleyData(); } catch (e) {}
-    const o = await ocrImageText(file, st); RP.raw = { items: o.items, text: o.text, engine: o.engine };
-    RP.rows = buildRows(o.items, o.text.split(/\r?\n/)); rpReanalyze(true);
+    RP.file = file; RP.byAI = false; RP.aiErr = ''; const A = aiCfg(); let done = false;
+    if (aiReady() && A.when === 'always') done = await rpAI();
+    if (!done) {
+      const o = await ocrImageText(file, st); RP.raw = { items: o.items, text: o.text, engine: o.engine };
+      RP.rows = buildRows(o.items, o.text.split(/\r?\n/)); RP.ocrRows = RP.rows; RP.ocrRaw = RP.raw; rpReanalyze(true);
+      if (aiReady() && A.when === 'auto' && aiNeeded(RP.res)) await rpAI();
+    }
   } catch (e) { st.textContent = '사진을 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
-  RP.busy = false;
+  RP.busy = false; aiRender();
 }
 function rpReanalyze(first) {
   const st = $('rpStatus'); const meta0 = detectMeta(RP.rows); if (!RP.meta || RP.meta.alleyId !== meta0.alleyId) RP.meta = meta0; else RP.meta = Object.assign(meta0, { alleyId: RP.meta.alleyId });
   const res = analyzeScoreSheet(RP.rows, $('rpCrew').value, [$('rcAlley').value, RP.meta.alleyId]); RP.res = res; RP.chosen = res.chosen; rpWhoNote();
   st.textContent = res.data.length ? '사진에서 ' + res.data.length + '줄을 읽었습니다(' + (RP.raw.engine || '') + ').' : '점수 줄을 찾지 못했습니다. 점수표가 또렷하게 나오게 가까이서 다시 찍어 주세요.';
-  if (first || !RC.edited) rpApply(); rpRender();
+  if (first || !RC.edited) rpApply(); rpRender(); aiRender();
 }
 function rpChecks(p, res) {
   const out = []; const ok = (t) => out.push('<div class="ck ok">✔ ' + t + '</div>'), wn = (t) => out.push('<div class="ck wn">! ' + t + '</div>');
@@ -1760,13 +1783,14 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 22, APP_DATE = '2026.11.06';
+const APP_VER = 23, APP_DATE = '2026.11.06';
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
 const GUIDE = [
-  ['처음 시작하기', '<p>아래 탭은 네 가지입니다.</p><ul><li><b>홈</b>: 내 평균과 최고 점수, "게임 시작" 버튼</li><li><b>기록</b>: 점수와 에버를 기간별로 보기, 그래프, 볼링장별 통계</li><li><b>크루</b>: 정모 팀 짜기</li><li><b>마이</b>: 내 이름과 닉네임, 내 볼링장, 백업</li></ul><p>기록과 명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다. 오른쪽 위 "도움말"에서 이 설명서와 개발자 요청을 언제든 열 수 있습니다.</p>'],
+  ['처음 시작하기', '<p>아래 탭은 네 가지입니다.</p><ul><li><b>홈</b>: 내 평균과 최고 점수, "게임 시작" 버튼</li><li><b>기록</b>: 점수와 에버를 기간별로 보기, 그래프, 볼링장별 통계</li><li><b>크루</b>: 정모 팀 짜기</li><li><b>마이</b>: 내 이름과 닉네임, 내 볼링장, 백업</li></ul><p>기록과 명단은 이 폰 안에만 저장됩니다(AI 판독을 직접 연결해 쓸 때만 점수표 사진이 선택한 AI 회사로 전송됩니다). 오른쪽 위 "도움말"에서 이 설명서와 개발자 요청을 언제든 열 수 있습니다.</p>'],
   ['개인 점수 등록 (사진촬영 · 이미지적용 · 직접입력)', '<p>홈의 "게임 시작"이나 기록 탭의 "+ 게임 기록"을 누르면 세 가지 방법 중에서 고를 수 있습니다. 날짜, 구분(정모·벙개·연습·대회), 볼링장도 함께 고르세요.</p><ul><li><b>사진촬영</b>: 점수표를 바로 찍습니다.</li><li><b>이미지적용</b>: 앨범에 있는 점수표 사진이나 캡처를 고릅니다.</li><li><b>직접입력</b>: 1G부터 점수를 직접 넣고, 게임이 더 있으면 "+ 게임 추가"를 누릅니다.</li></ul><p>사진촬영과 이미지적용은 게임 수를 판단해서 칸을 만들고 내 점수를 자동으로 채웁니다. 읽은 내용을 화면에 보여 주니 사진과 비교해 보세요. 틀린 칸은 고칠 수 있고, 내 줄이 아니면 아래 읽은 줄을 눌러 바꿀 수 있습니다. 맞으면 맨 아래 "확인하고 저장"을 누르고, 한 번 더 나오는 확인창에서 승인하면 저장됩니다.</p><p>점수가 아니라 에버(평균)만 알고 있다면 기록 탭의 "에버 입력"을 쓰세요.</p>'],
   ['사진이 잘 안 읽힐 때', '<ul><li>표가 화면에 꽉 차게, 밝은 곳에서, 흔들리지 않게 가까이서 찍어 주세요.</li><li>마이 탭에 내 이름과 닉네임을 넣어 두면 내 줄을 훨씬 정확히 찾습니다.</li><li>그래도 틀리면 읽은 줄을 눌러 고르거나, 칸의 숫자를 직접 고쳐 저장하세요. 한 번 고르면 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</li><li>끝까지 안 되면 "직접입력"을 쓰세요.</li></ul>'],
+  ['AI 연결로 더 정확하게 읽기', '<p>점수표 사진 판독은 기본으로 폰 안에서 글자를 읽어 처리합니다. 표 모양이 낯설어 틀릴 때는 AI를 연결하면 훨씬 정확합니다. 마이 탭의 "AI 판독 연결"(또는 점수 등록 화면의 "AI 연결하기")에서 설정합니다.</p><ul><li><b>API 키 연결</b>: 제미나이(무료 키 가능), OpenAI, 클로드 중 하나를 고르고 키를 붙여 넣은 뒤 "연결 시험"을 누릅니다. 이후 "AI로 더 정확하게 읽기" 버튼이나 자동 사용으로 읽습니다. 키는 이 폰 안에만 저장됩니다.</li><li><b>내 AI 앱으로 보내기</b>: 키 없이 구독 중인 ChatGPT·클로드·제미나이 앱을 그대로 씁니다. 사진과 질문을 AI 앱으로 보내고, 답을 복사해 붙여 넣으면 됩니다.</li><li>ChatGPT·클로드·제미나이 월정액 계정으로 바로 로그인하는 방식은 각 회사 정책상 일반 앱에서 쓸 수 없습니다. 구독과 API 키는 요금이 따로입니다.</li><li>AI를 쓸 때만 사진이 선택한 AI 회사로 전송되고, AI가 읽은 결과도 확인 화면과 합계 검산을 거칩니다.</li></ul>'],
   ['기록 보기와 고치기', '<ul><li>기록 탭 위쪽에서 기간(7일, 30일, 3개월, 올해, 전체, 직접)을 고르면 에버, 최고 점수, 게임 수, 그래프, 월별, 볼링장별 통계가 바뀝니다.</li><li>목록의 기록을 누르면 고치거나 지울 수 있습니다.</li><li>"가져오기"로 엑셀, CSV 파일이나 사진에서 지난 기록을 한꺼번에 넣을 수 있습니다. 읽은 결과를 확인하고 고친 뒤 등록합니다.</li></ul>'],
   ['볼링장 등록', '<ul><li>점수 등록 화면의 "볼링장 등록"이나 마이 탭의 "내 볼링장"에서 등록합니다.</li><li>시도, 구·군을 고르고 이름이나 동으로 검색하면 전국 볼링장 목록에서 찾을 수 있습니다. 목록에 없으면 이름을 직접 넣으세요.</li><li>즐겨찾기(★)한 볼링장은 목록 맨 위에 나옵니다.</li></ul>'],
   ['내 정보 (이름 · 닉네임)', '<p>마이 탭에서 이름과 닉네임을 넣어 두세요. 닉네임은 쉼표로 여러 개 넣을 수 있습니다. 볼링장마다 이름이 다르게 적히면 볼링장별 이름·닉네임을, 크루마다 다르면 크루별 "이 크루에서의 나"와 별칭을 넣으면 점수표 사진에서 내 줄을 정확히 찾습니다.</p>'],
@@ -1800,8 +1824,160 @@ $('rqCopy').onclick = async () => { if (!$('rqText').value.trim()) return alert(
 $('rqBack').onclick = () => { $('rqSheet').classList.add('hide'); $('hpSheet').classList.remove('hide'); };
 $('rqSheet').onclick = (e) => { if (e.target === $('rqSheet')) $('rqBack').onclick(); };
 
+// ===== AI 판독 연결 (사용자가 직접 고른 AI에 사진을 보내 점수표를 읽는다) =====
+const AIKEY = 'btbTeams.ai.v1';
+const AIP = {
+  gemini: { name: '구글 제미나이', short: '제미나이', keyUrl: 'https://aistudio.google.com/apikey', def: 'gemini-3.8-flash', desc: '무료 키로도 쓸 수 있음(하루 사용량 제한)', note: '무료 키를 쓰면 구글이 입력 내용(사진 포함)을 서비스 개선에 쓸 수 있습니다. 결제를 연결한 유료 키는 쓰지 않습니다.' },
+  openai: { name: 'OpenAI (ChatGPT 회사)', short: 'OpenAI', keyUrl: 'https://platform.openai.com/api-keys', def: 'gpt-5.4-mini', desc: 'API 키 필요(ChatGPT 구독과 요금 따로)', note: 'ChatGPT 구독과 별개로 API 결제 수단이 필요합니다. 사진 한 장에 대략 몇 원 수준입니다.' },
+  claude: { name: '앤트로픽 클로드', short: '클로드', keyUrl: 'https://console.anthropic.com/settings/keys', def: 'claude-haiku-4-5', desc: 'API 키 필요(클로드 구독과 요금 따로)', note: '클로드 구독과 별개로 API 결제 수단이 필요합니다. 사진 한 장에 대략 몇 원 수준입니다.' }
+};
+const AI_PROMPT = '이 이미지는 볼링 점수표입니다. 표에 있는 모든 사람의 줄을 읽어서 아래 JSON 형식으로만 답하세요. 설명이나 마크다운 코드 표시는 쓰지 마세요.\n{"games": 게임 수(숫자), "date": "YYYY-MM-DD 또는 null", "place": "볼링장 이름 또는 null", "rows": [{"name": "이름", "scores": [1게임 점수, 2게임 점수, ...], "total": 합계 또는 null, "avg": 평균 또는 null}]}\n규칙: 1) 이름은 사진에 적힌 그대로 쓰세요. 2) scores에는 게임 점수만 게임 순서대로(1G, 2G, ...) 정수로 넣고, 칸이 비었거나 안 보이면 null을 넣으세요. 3) 순번, 레인, 핸디, 총점, 평균 칸은 scores에 넣지 마세요. 4) 합계(total)가 적혀 있으면 그대로 옮기고, scores의 합과 맞는지 한 번 더 확인해서 맞지 않으면 사진을 다시 보고 숫자를 바로잡으세요. 5) 추측해서 만들지 마세요.';
+function aiCfg() { const d = { p: 'none', keys: {}, models: {}, when: 'manual', consent: false }; try { const c = JSON.parse(localStorage.getItem(AIKEY) || 'null'); if (c && typeof c === 'object') return Object.assign(d, c, { keys: Object.assign({}, c.keys), models: Object.assign({}, c.models) }); } catch (e) {} return d; }
+function aiSave(c) { try { localStorage.setItem(AIKEY, JSON.stringify(c)); } catch (e) { alert('저장에 실패했습니다.'); } }
+const aiIsApi = (p) => p === 'gemini' || p === 'openai' || p === 'claude';
+function aiReady() { const c = aiCfg(); return aiIsApi(c.p) && !!String(c.keys[c.p] || '').trim() && !!c.consent; }
+function aiLabel() { const c = aiCfg(); if (aiIsApi(c.p)) return aiReady() ? '연결됨: ' + AIP[c.p].name + ' (' + (c.models[c.p] || AIP[c.p].def) + ')' : AIP[c.p].name + ' 선택됨(키나 동의가 없어 사용 안 함)'; if (c.p === 'chat') return '연결됨: 내 AI 앱으로 보내기(구독 그대로 사용)'; return '연결 안 됨(기본 판독만 사용)'; }
+function aiRefreshStat() { const e = $('aiStat'); if (e) e.textContent = '현재: ' + aiLabel(); }
+async function aiFetch(url, init, ms) {
+  const ac = new AbortController(); const tm = setTimeout(() => ac.abort(), ms || 90000);
+  try {
+    const r = await fetch(url, Object.assign({ signal: ac.signal }, init)); const tx = await r.text(); let j = null; try { j = JSON.parse(tx); } catch (e) {}
+    if (!r.ok) { const m = (j && ((j.error && (j.error.message || j.error)) || j.message)) || tx.slice(0, 160); throw new Error('(' + r.status + ') ' + String(typeof m === 'string' ? m : JSON.stringify(m)).slice(0, 220)); }
+    return j;
+  } catch (e) { if (e && e.name === 'AbortError') throw new Error('응답이 너무 오래 걸려 중단했습니다. 인터넷 연결을 확인해 주세요.'); if (e instanceof TypeError) throw new Error('AI 서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.'); throw e; } finally { clearTimeout(tm); }
+}
+async function aiAsk(prov, key, model, text, b64) {
+  if (prov === 'gemini') {
+    const parts = [{ text }]; if (b64) parts.push({ inline_data: { mime_type: 'image/jpeg', data: b64 } });
+    const j = await aiFetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', { method: 'POST', headers: { 'x-goog-api-key': key, 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0, responseMimeType: b64 ? 'application/json' : 'text/plain' } }) });
+    const c = j && j.candidates && j.candidates[0]; const tx = c && c.content && c.content.parts ? c.content.parts.map(p => p.text || '').join('') : ''; if (!tx) throw new Error('AI가 답을 주지 않았습니다' + (c && c.finishReason ? ' (' + c.finishReason + ')' : '')); return tx;
+  }
+  if (prov === 'openai') {
+    const content = [{ type: 'text', text }]; if (b64) content.push({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64, detail: 'high' } });
+    const body = { model, messages: [{ role: 'user', content }], max_completion_tokens: 12000 }; if (b64) body.response_format = { type: 'json_object' };
+    const j = await aiFetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const tx = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content; if (!tx) throw new Error('AI가 답을 주지 않았습니다'); return tx;
+  }
+  if (prov === 'claude') {
+    const content = []; if (b64) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } }); content.push({ type: 'text', text });
+    const j = await aiFetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json' }, body: JSON.stringify({ model, max_tokens: 8000, messages: [{ role: 'user', content }] }) });
+    const tx = j && j.content ? j.content.map(c => c.text || '').join('') : ''; if (!tx) throw new Error('AI가 답을 주지 않았습니다'); return tx;
+  }
+  throw new Error('지원하지 않는 AI입니다.');
+}
+// 키로 쓸 수 있는 최신 모델을 찾는다(실패하면 기본 모델 이름을 쓴다)
+const aiVer = (id) => ((String(id).match(/(\d+(?:\.\d+)*)/) || ['0'])[1]).split('.').map(Number);
+const aiCmp = (a, b) => { const x = aiVer(a), y = aiVer(b); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (y[i] || 0) - (x[i] || 0); if (d) return d; } return 0; };
+async function aiPickModel(prov, key) {
+  try {
+    if (prov === 'gemini') { const j = await aiFetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key } }, 30000); const ids = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => String(m.name).replace(/^models\//, '')).filter(id => /^gemini-[\d.]+-flash$/.test(id)).sort(aiCmp); if (ids.length) return ids[0]; }
+    if (prov === 'openai') { const j = await aiFetch('https://api.openai.com/v1/models', { headers: { Authorization: 'Bearer ' + key } }, 30000); const ids = (j.data || []).map(m => m.id).filter(id => /^gpt-[\d.]+-mini$/.test(id)).sort(aiCmp); if (ids.length) return ids[0]; }
+    if (prov === 'claude') { const j = await aiFetch('https://api.anthropic.com/v1/models?limit=100', { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' } }, 30000); const ids = (j.data || []).filter(m => /haiku/.test(m.id)).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).map(m => m.id); if (ids.length) return ids[0]; }
+  } catch (e) { if (/\((400|401|403)\)/.test(e.message)) throw e; }
+  return AIP[prov].def;
+}
+async function aiImageB64(file) { const cv = await fileToCanvas(file, 1800); return cv.toDataURL('image/jpeg', 0.88).split(',')[1]; }
+function aiParse(text) {
+  const s = String(text || '').trim(); const a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a < 0 || b <= a) throw new Error('AI 답에서 표 내용을 찾지 못했습니다.');
+  let j; try { j = JSON.parse(s.slice(a, b + 1)); } catch (e) { throw new Error('AI 답의 형식이 맞지 않습니다. 다시 시도해 주세요.'); }
+  if (!j || !Array.isArray(j.rows)) throw new Error('AI 답의 형식이 맞지 않습니다.'); return j;
+}
+function aiToRows(j) {
+  const rows = []; const num = (x) => (x == null || x === '' || !isFinite(+x)) ? null : +x;
+  const lists = j.rows.filter(r => r && r.name).map(r => ({ name: String(r.name).trim(), games: (Array.isArray(r.scores) ? r.scores : []).map(num).filter(x => x != null), total: num(r.total), avg: num(r.avg) }));
+  const G = Math.max.apply(null, [parseInt(j.games, 10) || 0, 1].concat(lists.map(l => l.games.length)));
+  const meta = [j.date ? String(j.date).replace(/-/g, '.') : '', j.place || ''].filter(Boolean).join(' '); if (meta) rows.push({ texts: [meta] });
+  const hd = ['성명']; for (let i = 1; i <= G; i++) hd.push(i + 'G'); hd.push('합계', '평균'); rows.push({ texts: hd });
+  lists.forEach(l => rows.push({ texts: [l.name].concat(l.games.map(String), l.total == null ? [] : [String(l.total)], l.avg == null ? [] : [String(l.avg)]), ai: { name: l.name, games: l.games, total: l.total, avg: l.avg } }));
+  return rows;
+}
+function aiApplyJson(j, label) {
+  const rows = aiToRows(j); if (rows.filter(r => r.ai).length < 1) throw new Error('AI가 표에서 읽은 줄이 없습니다.');
+  RP.rows = rows; RP.raw = { items: null, text: '', engine: label }; RP.byAI = true; RP.aiErr = ''; RC.edited = false; rpReanalyze(true); return true;
+}
+async function rpAI() {
+  const c = aiCfg(); const st = $('rpStatus'); if (!aiReady() || !RP.file) return false;
+  try {
+    st.innerHTML = esc('AI(' + AIP[c.p].short + ')가 사진을 읽는 중입니다. 잠시만 기다려 주세요...') + '<div class="prog"><i style="width:60%"></i></div>';
+    const b64 = await aiImageB64(RP.file); const model = c.models[c.p] || AIP[c.p].def;
+    const tx = await aiAsk(c.p, c.keys[c.p], model, AI_PROMPT, b64); return aiApplyJson(aiParse(tx), 'AI · ' + AIP[c.p].short);
+  } catch (e) { RP.aiErr = 'AI 읽기에 실패했습니다: ' + (e && e.message ? e.message : e); st.textContent = RP.aiErr + (RP.res ? ' 기본 판독 결과를 보여 드립니다.' : ''); return false; }
+}
+// 기본 판독 결과가 의심스러운지(내 줄을 못 찾았거나 합계 검산이 안 맞음)
+function aiNeeded(res) {
+  if (!res || !res.data.length) return true; const p = res.chosen >= 0 ? res.rows[res.chosen] : null; if (!p) return true;
+  return p.sumOk === false || p.avgOk === false || p.games.length < res.ng;
+}
+async function aiShare() {
+  if (!RP.file) return alert('먼저 위에서 점수표 사진을 고르세요.');
+  try { await navigator.clipboard.writeText(AI_PROMPT); } catch (e) {}
+  let b64; try { b64 = await aiImageB64(RP.file); } catch (e) { return alert('사진을 준비하지 못했습니다.'); }
+  const msg = '질문은 복사해 두었습니다. AI 앱 입력칸에 질문이 안 들어와 있으면 붙여 넣기 해서 보내세요.';
+  try {
+    const cap = window.Capacitor && window.Capacitor.Plugins;
+    if (cap && cap.Share && cap.Filesystem) { const w = await cap.Filesystem.writeFile({ path: 'score-share.jpg', data: b64, directory: 'CACHE' }); await cap.Share.share({ title: '볼링 점수표', text: AI_PROMPT, files: [w.uri] }); alert(msg); return; }
+    const blob = await (await fetch('data:image/jpeg;base64,' + b64)).blob(); const f = new File([blob], 'score.jpg', { type: 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: '볼링 점수표', text: AI_PROMPT }); alert(msg); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  alert('이 기기에서는 사진을 바로 보낼 수 없습니다. 질문은 복사해 두었으니, 구독 중인 AI 앱에서 점수표 사진을 직접 첨부하고 질문을 붙여 넣어 보내세요.');
+}
+function aiRender() {
+  const box = $('aiBox'); if (!box) return; const c = aiCfg(); let h = '';
+  const bad = RP.res !== null && RP.res !== undefined && aiNeeded(RP.res);
+  if (RP.aiErr) h += '<div class="ck wn">! ' + esc(RP.aiErr) + '</div>';
+  if (aiReady()) {
+    h += (bad && !RP.byAI ? '<div class="ck wn">! 기본 판독의 검산이 맞지 않거나 내 줄을 못 찾았습니다. AI로 다시 읽으면 더 정확할 수 있습니다.</div>' : '') + '<button id="aiRead" class="' + (bad && !RP.byAI ? '' : 'sec') + '" style="width:100%;margin-top:8px"' + (RP.file ? '' : ' disabled') + '>AI(' + AIP[c.p].short + ')로 ' + (RP.byAI ? '다시 읽기' : '더 정확하게 읽기') + '</button>' + (RP.byAI && RP.ocrRows ? '<button id="aiBack" class="gray" style="width:100%;margin-top:6px">기본 판독 결과로 되돌리기</button>' : '');
+  } else if (c.p === 'chat') {
+    h += '<div class="rpmine"><div class="ttl">내 AI 앱으로 읽기 (구독 그대로 사용)</div><div class="small">① 아래 버튼으로 사진과 질문을 ChatGPT, 클로드, 제미나이 등 구독 중인 AI 앱에 보냅니다. ② AI가 답하면 답 전체를 복사해 아래 칸에 붙여 넣고 "답 적용"을 누르세요.</div>' + (bad ? '<div class="ck wn">! 기본 판독의 검산이 맞지 않거나 내 줄을 못 찾았습니다. AI로 읽어 보세요.</div>' : '') + '<button id="chSend" style="width:100%;margin-top:8px"' + (RP.file ? '' : ' disabled') + '>① 사진과 질문 보내기</button><textarea id="chReply" rows="4" style="margin-top:8px" placeholder="AI의 답을 여기에 붙여 넣으세요"></textarea><div class="row" style="margin-top:6px"><button id="chPaste" class="sec grow">붙여넣기</button><button id="chApply" class="grow">② 답 적용</button></div></div>' + (RP.byAI && RP.ocrRows ? '<button id="aiBack" class="gray" style="width:100%;margin-top:6px">기본 판독 결과로 되돌리기</button>' : '');
+  } else {
+    h += '<div class="aihint small">' + (bad ? '<b>판독이 틀렸나요?</b> ' : '') + 'AI를 연결하면 더 정확하게 읽습니다. 연결하지 않아도 기본 판독은 쓸 수 있습니다.<button id="aiGo" class="sec" style="width:100%;margin-top:6px">AI 연결하기</button></div>';
+  }
+  box.innerHTML = h;
+  const on = (id, f) => { const e = $(id); if (e) e.onclick = f; };
+  on('aiGo', () => aiOpen()); on('aiRead', async () => { if (RP.busy) return; RP.busy = true; await rpAI(); RP.busy = false; aiRender(); });
+  on('aiBack', () => { RP.rows = RP.ocrRows; RP.raw = RP.ocrRaw; RP.byAI = false; RP.aiErr = ''; RC.edited = false; rpReanalyze(true); });
+  on('chSend', aiShare); on('chPaste', async () => { try { $('chReply').value = await navigator.clipboard.readText(); } catch (e) { alert('자동 붙여넣기가 안 됩니다. 칸을 길게 눌러 붙여 넣어 주세요.'); } });
+  on('chApply', () => { try { aiApplyJson(aiParse($('chReply').value), 'AI 앱 답변'); } catch (e) { RP.aiErr = e.message; aiRender(); } });
+}
+// --- 설정 창 ---
+let AIS = null;
+function aiOpen() { AIS = aiCfg(); aiSheetRender(); $('aiSheet').classList.remove('hide'); }
+function aiSheetRender() {
+  const s = AIS; const picks = [['gemini', AIP.gemini], ['openai', AIP.openai], ['claude', AIP.claude]];
+  $('aiPicks').innerHTML = picks.map(([k, v]) => '<button class="aip' + (s.p === k ? ' on' : '') + '" data-p="' + k + '">' + esc(v.name) + '<small>' + esc(v.desc) + '</small></button>').join('') + '<button class="aip' + (s.p === 'chat' ? ' on' : '') + '" data-p="chat">내 AI 앱으로 보내기<small>구독 중인 ChatGPT·클로드·제미나이 앱을 그대로 사용(키 불필요, 수동 단계 있음)</small></button><button class="aip' + (s.p === 'none' ? ' on' : '') + '" data-p="none">사용 안 함<small>기본 판독만 사용</small></button>';
+  $('aiPicks').querySelectorAll('.aip').forEach(b => b.onclick = () => { aiReadForm(); AIS.p = b.dataset.p; aiSheetRender(); });
+  let d = '';
+  if (aiIsApi(s.p)) {
+    const v = AIP[s.p];
+    d += '<div class="lbl">' + esc(v.name) + ' API 키</div><input type="password" id="aiKey" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="키를 붙여 넣으세요" value="' + esc(s.keys[s.p] || '') + '">'
+      + '<div class="small" style="margin-top:4px">키는 이 폰 안에만 저장되고 백업 파일에도 들어가지 않습니다. 다른 사람에게 알려 주지 마세요.</div>'
+      + '<div class="row" style="margin-top:6px"><a class="abtn grow" style="margin-top:0;padding:9px 10px;font-size:15px" href="' + v.keyUrl + '" target="_blank" rel="noopener">키 받는 곳 열기</a></div><div class="small" style="word-break:break-all">' + esc(v.keyUrl) + '</div>'
+      + '<div class="small" style="margin-top:6px">' + esc(v.note) + '</div>'
+      + '<details style="margin-top:6px"><summary class="small">고급: 모델 이름</summary><input type="text" id="aiModel" placeholder="' + esc(v.def) + '" value="' + esc(s.models[s.p] || '') + '"><div class="small">비워 두면 "연결 시험" 때 쓸 수 있는 최신 모델을 자동으로 고릅니다.</div></details>'
+      + '<div class="lbl">AI를 쓰는 때</div><select id="aiWhen"><option value="manual"' + (s.when === 'manual' ? ' selected' : '') + '>버튼을 눌렀을 때만</option><option value="auto"' + (s.when === 'auto' ? ' selected' : '') + '>기본 판독이 의심스러울 때 자동으로</option><option value="always"' + (s.when === 'always' ? ' selected' : '') + '>항상 AI로 읽기</option></select>'
+      + '<label class="row" style="margin-top:10px"><input type="checkbox" id="aiConsent" style="width:22px;height:22px"' + (s.consent ? ' checked' : '') + '> <span class="small" style="flex:1">AI로 읽을 때 점수표 사진이 선택한 AI 회사(' + esc(v.short) + ')로 전송되는 것에 동의합니다. 앱 개발자는 사진과 키를 받지 않습니다.</span></label>'
+      + '<button id="aiTest" class="sec" style="width:100%;margin-top:8px">연결 시험</button><div id="aiTestMsg" class="small" style="margin-top:4px"></div>';
+  } else if (s.p === 'chat') {
+    d += '<div class="small" style="margin-top:8px">구독 중인 AI 앱을 그대로 쓰는 방법입니다. 사진을 읽을 때 "내 AI 앱으로 읽기" 칸이 나타납니다.<br>① 사진과 질문을 AI 앱으로 보내기(공유 창에서 ChatGPT·클로드·제미나이 등을 고름)<br>② AI의 답을 복사해 붙여 넣고 "답 적용"<br>사진은 내가 고른 AI 앱으로만 전달되며, 이 앱은 사진을 외부로 보내지 않습니다. 기기에 따라 사진 공유가 안 되면 AI 앱에서 직접 첨부하면 됩니다.</div>';
+  } else d += '<div class="small" style="margin-top:8px">AI 없이 기본 판독만 씁니다.</div>';
+  $('aiDetail').innerHTML = d;
+  const t = $('aiTest'); if (t) t.onclick = async () => {
+    aiReadForm(); const k = String(AIS.keys[AIS.p] || '').trim(); const msg = $('aiTestMsg'); if (!k) { msg.textContent = '키를 먼저 넣어 주세요.'; return; }
+    t.disabled = true; msg.textContent = '연결을 시험하는 중...'; try { const model = AIS.models[AIS.p] || await aiPickModel(AIS.p, k); const r = await aiAsk(AIS.p, k, model, '다음 단어만 그대로 답하세요: OK'); AIS.models[AIS.p] = model; $('aiModel').value = model; msg.textContent = '연결됐습니다. 모델: ' + model + ' (답: ' + String(r).trim().slice(0, 20) + ')'; } catch (e) { msg.textContent = '연결하지 못했습니다: ' + e.message; } t.disabled = false;
+  };
+}
+function aiReadForm() { if (!AIS) return; const k = $('aiKey'); if (k && aiIsApi(AIS.p)) AIS.keys[AIS.p] = k.value.trim(); const m = $('aiModel'); if (m && aiIsApi(AIS.p)) AIS.models[AIS.p] = m.value.trim(); const w = $('aiWhen'); if (w) AIS.when = w.value; const c = $('aiConsent'); if (c) AIS.consent = c.checked; }
+$('btnAiSet').onclick = aiOpen; $('aiClose').onclick = () => $('aiSheet').classList.add('hide'); $('aiSheet').onclick = (e) => { if (e.target === $('aiSheet')) $('aiSheet').classList.add('hide'); };
+$('aiSave').onclick = () => {
+  aiReadForm(); const s = AIS; if (aiIsApi(s.p)) { if (!String(s.keys[s.p] || '').trim()) return alert('API 키를 넣어 주세요. 키가 없으면 "내 AI 앱으로 보내기"를 고르거나 키 받는 곳에서 먼저 발급받으세요.'); if (!s.consent) return alert('사진이 AI 회사로 전송되는 것에 동의하는 체크가 필요합니다.'); }
+  aiSave(s); aiRefreshStat(); aiRender(); $('aiSheet').classList.add('hide'); alert('저장했습니다. ' + aiLabel());
+};
+$('aiOff').onclick = () => { if (!confirm('AI 연결을 해제하고 저장된 키를 모두 지울까요?')) return; aiSave({ p: 'none', keys: {}, models: {}, when: 'manual', consent: false }); AIS = aiCfg(); aiRefreshStat(); aiRender(); aiSheetRender(); };
+aiRefreshStat();
+
 // ----- 마이 -----
 function renderMe() {
+  aiRefreshStat();
   $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
   $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
   $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
