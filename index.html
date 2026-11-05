@@ -665,7 +665,8 @@ async function readXlsx(buf) {
   if (eo < 0) throw new Error('엑셀(.xlsx) 파일이 아닙니다');
   const n = dv.getUint16(eo + 10, true); let p = dv.getUint32(eo + 16, true); const ents = {};
   for (let i = 0; i < n; i++) { const method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), usz = dv.getUint32(p + 24, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true); ents[new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl))] = { method, csz, usz, lo }; p += 46 + nl + el + cl; }
-  const get = async (name) => { const e = ents[name]; if (!e) return null; const nl = dv.getUint16(e.lo + 26, true), el = dv.getUint16(e.lo + 28, true); const s = e.lo + 30 + nl + el; const data = u8.subarray(s, s + e.csz); if (e.method === 0) return new TextDecoder().decode(data); return new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); };
+  const stripNs = (s) => s.replace(/<(\/?)[A-Za-z_][\w.-]*:(?=[A-Za-z_])/g, '<$1');
+  const get = async (name) => { const e = ents[name]; if (!e) return null; const nl = dv.getUint16(e.lo + 26, true), el = dv.getUint16(e.lo + 28, true); const s = e.lo + 30 + nl + el; const data = u8.subarray(s, s + e.csz); if (e.method === 0) return stripNs(new TextDecoder().decode(data)); return stripNs(new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer())); };
   const ssx = await get('xl/sharedStrings.xml');
   const sst = ssx ? [...ssx.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => unx([...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''))) : [];
   // 시트 이름·순서·파일 위치
@@ -697,10 +698,30 @@ function tableToRows(t) {
   t = t.filter(r => r.some(x => String(x).trim()));
   if (!t.length) return [];
   const isHead = (r) => r.some(x => /이름|성명|name/i.test(x)) && r.some(x => /에버|평균|avg|성별|시드|seed|별명|nick|구분/i.test(x));
-  let hi = t.findIndex(isHead); let map = {};
+  let hi = t.findIndex(isHead); let map = {}, carry = false;
   if (hi >= 0) { t[hi].forEach((h, i) => { h = String(h); if (/이름|성명|name/i.test(h) && map.name == null) map.name = i; else if (/성별|남녀|gender/i.test(h) && map.g == null) map.g = i; else if (/에버|평균|avg|average/i.test(h) && map.avg == null) map.avg = i; else if (/시드|seed|등급/i.test(h) && map.seed == null) map.seed = i; else if (/별명|닉네임|nick/i.test(h) && map.nick == null) map.nick = i; else if (/구분|게스트|kind/i.test(h) && map.kind == null) map.kind = i; }); t = t.slice(hi + 1); }
-  else { const f = t[0]; map = { name: 0 }; const second = String(f[1] || ''); if (gOf(second)) { map.g = 1; map.avg = 2; map.nick = 3; map.seed = 4; map.kind = 5; } else { map.avg = 1; map.nick = 2; map.seed = 3; } }
-  return t.map(r => { const name = String(r[map.name] || '').trim(); if (!name || name.length > 14 || /^[\d.\s]+$/.test(name)) return null; let avg = map.avg != null ? parseFloat(String(r[map.avg]).replace(/[^\d.]/g, '')) : NaN; if (isFinite(avg) && (avg < 1 || avg > 300)) avg = NaN; const sd = map.seed != null ? String(r[map.seed] || '').trim().toUpperCase().slice(0, 1) : ''; const kd = map.kind != null ? String(r[map.kind] || '') : ''; return { name, nick: map.nick != null ? String(r[map.nick] || '').trim() : '', gender: map.g != null ? gOf(r[map.g]) : '', avg: isFinite(avg) ? avg : '', seed: /[ABCD]/.test(sd) ? sd : '', guest: /게스트|guest|손님/i.test(kd), kindSet: map.kind != null }; }).filter(Boolean);
+  else {
+    // 제목이 없는 표: 칸의 내용을 보고 이름·에버·성별·시드 칸을 찾는다
+    const cols = Math.max(...t.map(r => r.length)); const st = [];
+    for (let c = 0; c < cols; c++) { const s = { nm: 0, nu: 0, sd: 0, gd: 0, ne: 0 }; t.forEach(r => { const v = String(r[c] == null ? '' : r[c]).trim(); if (!v) return; s.ne++; if (/^(남|여|남자|여자)$/.test(v)) s.gd++; else if (/^[A-Da-d]$/.test(v)) s.sd++; else if (/^[가-힣]{2,5}\s*([(（][^)）]*[)）]?)?$/.test(v) || /^[가-힣A-Za-z]{2,12}$/.test(v)) s.nm++; if (/^\d{1,3}(\.\d+)?$/.test(v) && +v >= 50 && +v <= 300) s.nu++; }); st.push(s); }
+    const best = (key, skip, min) => { let bi = -1, bv = min - 1; st.forEach((s, i) => { if (skip.includes(i)) return; if (s[key] > bv) { bv = s[key]; bi = i; } }); return bi; };
+    map.name = best('nm', [], 1); if (map.name < 0) return [];
+    const used = [map.name];
+    const gi = best('gd', used, 2); if (gi >= 0 && st[gi].gd >= 0.6 * st[gi].ne) { map.g = gi; used.push(gi); }
+    const ai = best('nu', used, 1); if (ai >= 0) { map.avg = ai; used.push(ai); }
+    const si = best('sd', used, 2); if (si >= 0 && st[si].sd >= 0.6 * st[si].ne) { map.seed = si; used.push(si); carry = true; }
+    const ni = best('nm', used, 1); if (ni >= 0 && st[ni].nm >= 0.5 * st[ni].ne) map.nick = ni;
+  }
+  let lastSeed = '';
+  return t.map(r => {
+    let name = String(r[map.name] || '').trim(); let nick = map.nick != null ? String(r[map.nick] || '').trim() : '';
+    const pm = name.match(/^([^(（]+?)\s*[(（]([^)）]*)[)）]?\s*$/); if (pm) { name = pm[1].trim(); if (!nick) nick = pm[2].trim(); }
+    if (!name || name.length > 14 || /^[\d.\s]+$/.test(name)) return null;
+    let avg = map.avg != null ? parseFloat(String(r[map.avg]).replace(/[^\d.]/g, '')) : NaN; if (isFinite(avg) && (avg < 1 || avg > 300)) avg = NaN;
+    let sd = map.seed != null ? String(r[map.seed] || '').trim().toUpperCase().slice(0, 1) : ''; if (!/[ABCD]/.test(sd)) sd = ''; if (carry) { if (sd) lastSeed = sd; else sd = lastSeed; }
+    const kd = map.kind != null ? String(r[map.kind] || '') : '';
+    return { name, nick, gender: map.g != null ? gOf(r[map.g]) : '', avg: isFinite(avg) ? avg : '', seed: sd, guest: /게스트|guest|손님/i.test(kd), kindSet: map.kind != null };
+  }).filter(Boolean);
 }
 function parseTextTable(text) { return tableToRows(text.split(/\r?\n/).map(l => l.split(/[,\t]/).map(s => s.trim()))); }
 function lev(a, b) { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let p = Array.from({ length: n + 1 }, (_, i) => i); for (let i = 1; i <= m; i++) { const q = [i]; for (let j = 1; j <= n; j++) q[j] = Math.min(p[j] + 1, q[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = q; } return p[n]; }
