@@ -399,10 +399,10 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
     <div class="lbl" style="margin-top:12px"><b>볼링장별 이름·닉네임</b> (그 볼링장 점수판에 다르게 나올 때)</div><div id="meAlleyIds"></div></div>
   <div class="card"><div class="ttl">크루별 내 이름·닉네임</div><div class="small">점수표 사진에서 내 줄을 찾을 때 씁니다. 크루마다 "나"를 명단에서 골라 두면 그 크루 명단의 이름과 닉네임으로 내 줄을 판단하고, 다른 팀원의 줄은 걸러냅니다.</div><div id="meCrews"></div></div>
   <div class="card"><div class="row"><div class="ttl grow" style="margin:0">내 볼링장</div><button id="btnAlNew">+ 볼링장 등록</button></div><div id="meAlleys"></div></div>
-  <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
+  <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 14</div>
+  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 15</div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
@@ -873,7 +873,7 @@ async function makeImage() {
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   g.fillStyle = '#f2f4f8'; g.fillRect(0, 0, W, H);
   g.fillStyle = '#231e20'; g.fillRect(0, 0, W, HEAD); g.fillStyle = '#c8102e'; g.fillRect(0, HEAD - 6, W, 6);
-  try { const lg = await loadImg('logo-small.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } catch (e) {}
+  try { const lg = await loadImg(/비투비|btb|back\s*to\s*back/i.test(c.name) ? 'logo-small.png' : 'logo-emblem.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } catch (e) {}
   g.textBaseline = 'alphabetic'; g.textAlign = 'right'; g.fillStyle = '#ffffff';
   g.font = '700 46px ' + FONT; g.fillText(todayStr(), W - P, 78);
   g.font = '700 40px ' + FONT; g.fillStyle = '#ffd7dc'; g.fillText(c.name + ' 팀 편성', W - P, 134);
@@ -1597,8 +1597,19 @@ $('btnBk').onclick = async () => {
   const file = new File([data], name, { type: 'application/json' });
   try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  if (/Android/i.test(navigator.userAgent) && !(navigator.canShare && navigator.canShare({ files: [file] }))) setTimeout(() => alert('이 폰에서는 파일 저장이 안 될 수 있습니다. 바로 아래 "백업 글로 복사"를 함께 이용해 주세요.'), 600);
 };
 $('btnRs').onclick = () => $('fileRs').click();
+const bkData = () => JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC });
+$('btnBkTxt').onclick = async () => { const s = bkData(); try { await navigator.clipboard.writeText(s); alert('백업 글을 복사했습니다(' + s.length + '자). 카톡 나와의 채팅이나 메모에 붙여 넣어 보관하세요.'); } catch (e) { $('bkTxt').classList.remove('hide'); $('btnRsGo').classList.add('hide'); $('bkTxt').value = s; try { $('bkTxt').select(); } catch (e2) {} alert('자동 복사가 안 됩니다. 아래 칸의 글을 길게 눌러 전체 복사해 주세요.'); } };
+$('btnRsTxt').onclick = () => { const hid = $('bkTxt').classList.toggle('hide'); $('btnRsGo').classList.toggle('hide', hid); if (!hid) { $('bkTxt').value = ''; $('bkTxt').focus(); } };
+$('btnRsGo').onclick = () => {
+  try {
+    const d = JSON.parse($('bkTxt').value.trim()); if (!d || d.app !== 'btb-team' || !d.db || !Array.isArray(d.db.clubs) || !d.rec || !Array.isArray(d.rec.recs)) return alert('이 앱의 백업 글이 아닙니다. 복사한 글 전체를 붙여 넣었는지 확인해 주세요.');
+    if (!confirm('백업 글(' + (d.saved || '').slice(0, 10) + ')로 복원합니다. 지금 폰에 있는 크루 ' + DB.clubs.length + '곳과 기록 ' + REC.recs.length + '건이 백업 내용으로 바뀝니다. 계속할까요?')) return;
+    localStorage.setItem(KEY2, JSON.stringify(d.db)); localStorage.setItem(KEYR, JSON.stringify(d.rec)); location.reload();
+  } catch (err) { alert('백업 글을 읽지 못했습니다.'); }
+};
 $('fileRs').onchange = async (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
   try {
