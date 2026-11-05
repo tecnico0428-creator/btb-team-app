@@ -152,6 +152,21 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{background:transparent;color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800}
 .chip.on{background:var(--ink);color:#fff4de}
+.helpbtn{position:fixed;top:calc(8px + env(safe-area-inset-top));right:12px;z-index:9;display:flex;align-items:center;gap:6px;background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:4px 12px 4px 5px;font-size:14px;font-weight:900;box-shadow:0 2px 0 var(--ink)}
+.helpbtn b{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:15px}
+header .hrow{padding-right:92px}
+.hpitem{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:14px;margin:10px 0}
+.hpitem .hpt{display:block;font-size:19px;font-weight:900}
+.hpitem .small{display:block;font-weight:600;margin-top:2px}
+.abtn{display:block;text-align:center;background:var(--pri);color:#fff4de;border-radius:12px;padding:13px 14px;font-weight:800;text-decoration:none;margin-top:10px;font-size:17px}
+#gdBody details{border-bottom:1.5px dashed #cdb685;padding:9px 0}
+#gdBody summary{font-weight:900;font-size:17px;cursor:pointer}
+#gdBody p,#gdBody li{font-size:15px;margin:5px 0}
+#gdBody ul{margin:4px 0;padding-left:20px}
+.appver{text-align:center;font-weight:800;color:var(--sub);margin:6px 0 4px;font-size:14px}
+.rc3 .chip{flex:1;padding:11px 4px;font-size:16px;text-align:center}
+.gnum{font-size:20px;font-weight:900;color:var(--pri)}
+.rpconf{border:2px solid var(--pri);border-radius:14px;padding:8px 10px;background:#fff4de;margin-top:8px;font-weight:800}
 .sheetbg{position:fixed;inset:0;background:rgba(10,30,28,.55);z-index:30;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom));border:2px solid var(--ink);border-bottom:0}
 .sheet h2{margin:0 0 8px;font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.02em}
@@ -241,6 +256,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
   <div class="cap">오늘의 기록을 남겨보세요</div>
   <button class="crewcard" id="btnCrewGo"><svg class="pin" viewBox="0 0 48 48"><g transform="rotate(-20 24 24)"><path d="M24 4c-4 0-6 3-5 7 .8 3 2 4 2 7 0 2-3 4-4 9-1 5 1 11 7 11s8-6 7-11c-1-5-4-7-4-9 0-3 1.2-4 2-7 1-4-1-7-5-7z" fill="#e8f43a"/></g><path d="M38 8l4-3M40 15l5-1M36 2l1 4" stroke="#e8f43a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg><span class="sep"></span><span class="tx"><b>함께 굴릴까요?</b><span>크루 정모 팀 짜기</span></span><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></button>
   <div class="small" style="text-align:center;margin:10px 0">기록과 명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
+  <div class="appver verline"></div>
 </section>
 
 <section id="v-rec" class="hide">
@@ -421,29 +437,54 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 18</div>
+  <div class="appver verline" style="margin-bottom:12px"></div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
+
+<button id="btnHelp" class="helpbtn" aria-label="도움말과 개발자 요청"><b>?</b><span>도움말</span></button>
+<div id="hpSheet" class="sheetbg hide"><div class="sheet">
+  <h2>도움말</h2>
+  <button class="hpitem" id="hpGuide"><span class="hpt">앱 사용 설명서</span><span class="small">처음 쓰는 방법과 기능별 사용법</span></button>
+  <button class="hpitem" id="hpReq"><span class="hpt">개발자 추가요청</span><span class="small">기능 추가, 오류 신고, 문의를 이메일로 보냅니다</span></button>
+  <div class="appver verline"></div>
+  <div class="row" style="margin-top:8px"><button id="hpClose" class="gray grow">닫기</button></div>
+</div></div>
+<div id="gdSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
+  <h2>앱 사용 설명서</h2>
+  <div id="gdBody"></div>
+  <div class="appver verline"></div>
+  <div class="row" style="margin-top:8px"><button id="gdBack" class="gray grow">‹ 뒤로</button></div>
+</div></div>
+<div id="rqSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
+  <h2>개발자 추가요청</h2>
+  <div class="small">원하는 기능이나 불편한 점을 적어 보내 주세요. "이메일 보내기"를 누르면 이메일 앱이 열리고 내용이 채워져 있으니 그대로 보내면 됩니다.</div>
+  <div class="lbl">종류</div><select id="rqKind"><option>기능 추가 요청</option><option>오류 신고</option><option>사용 문의</option><option>기타</option></select>
+  <div class="lbl">내용</div><textarea id="rqText" rows="6" maxlength="1500" placeholder="예: 대회 기록에 레인 번호도 넣고 싶어요"></textarea>
+  <div class="small" style="margin-top:4px">앱 버전과 기기 종류가 함께 들어갑니다. 내 점수나 크루 명단은 들어가지 않습니다.</div>
+  <a id="rqSend" class="abtn" href="#">이메일 보내기</a>
+  <div class="row" style="margin-top:8px"><button id="rqCopy" class="sec grow">내용 복사</button><button id="rqBack" class="gray grow">‹ 뒤로</button></div>
+  <div class="small" style="margin-top:8px">이메일 앱이 열리지 않으면 "내용 복사"를 누른 뒤 이메일이나 카톡으로 아래 주소에 보내 주세요.<br><b id="rqAddr"></b></div>
+</div></div>
 
 <datalist id="alleyDL"></datalist>
 
 <div id="rcSheet" class="sheetbg hide"><div class="sheet">
   <h2 id="rcTitle">게임 기록</h2>
-  <div class="chips" id="rcMode" style="margin-bottom:8px"><button class="chip on" data-m="g">직접 입력</button><button class="chip" data-m="p">사진 판독</button><button class="chip" data-m="e">에버만 입력</button></div>
+  <div class="chips rc3" id="rcMode" style="margin-bottom:8px"><button class="chip" data-m="c">사진촬영</button><button class="chip" data-m="i">이미지적용</button><button class="chip on" data-m="g">직접입력</button></div>
   <div class="g2"><div><div class="lbl">날짜</div><input type="date" id="rcDate"></div><div><div class="lbl">구분</div><select id="rcKind"><option>정모</option><option>벙개</option><option>연습</option><option>대회</option></select></div></div>
   <div class="lbl">볼링장</div>
   <div class="row"><select id="rcAlley" class="grow"></select><button class="sec" id="rcAddAlley">볼링장 등록</button></div>
   <div id="rcP" class="hide">
-    <div class="small" style="margin:6px 0">점수표 사진에서 내 줄을 찾아 점수를 채웁니다. 내 이름, 닉네임, 크루 명단, 합계 칸 검산으로 내 줄을 판단하고 근거를 보여 줍니다.</div>
+    <div class="small" id="rpIntro" style="margin:6px 0">점수표 사진에서 게임 수와 내 점수를 읽어 아래 입력칸에 자동으로 채웁니다. 읽은 결과를 확인한 뒤 "확인하고 저장"을 눌러야 저장됩니다.</div>
     <div class="lbl">어느 크루의 점수표인가요?</div><select id="rpCrew"></select>
     <div class="small" id="rpWho" style="margin:6px 0"></div>
-    <div class="row"><button id="rpCam" class="grow">사진 찍기</button><button id="rpPic" class="grow sec">사진 가져오기</button></div>
+    <div class="row"><button id="rpAgain" class="grow sec">사진 다시 찍기</button></div>
     <input type="file" id="rpFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="rpFilePic" accept="image/*" class="hide">
     <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div>
   </div>
   <div id="rcG">
-    <div class="lbl">게임 점수 (0~300)</div>
+    <div class="lbl" id="rcGLbl">게임 점수 (0~300)</div>
     <div id="rcScores"></div>
     <div class="row"><button class="sec" id="rcMore">+ 게임 추가</button><button class="gray" id="rcLess">마지막 삭제</button><div class="grow live" id="rcLive"></div></div>
   </div>
@@ -1388,38 +1429,51 @@ $('btnCrewEver').onclick = () => {
 };
 
 // ----- 기록 입력 창 -----
-let RC = { id: null, mode: 'g' };
+let RC = { id: null, mode: 'g', pick: 'c', edited: false };
 function fillAlleySel(sel, val) { sel.innerHTML = '<option value="">볼링장 선택 안 함</option>' + REC.alleys.slice().sort(favFirst).map(a => '<option value="' + a.id + '"' + (a.id === val ? ' selected' : '') + '>' + (a.fav ? '★ ' : '') + esc(a.name) + (a.area ? ' (' + esc(a.area) + ')' : '') + '</option>').join(''); }
-function rcSetMode(m) { RC.mode = m; $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('rcG').classList.toggle('hide', m !== 'g'); $('rcE').classList.toggle('hide', m !== 'e'); $('rcP').classList.toggle('hide', m !== 'p'); if (m === 'p') { rpCrewFill(); rpWhoNote(); } }
-$('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => rcSetMode(b.dataset.m));
+function rcShow() {
+  const ph = RC.mode === 'p', ready = ph && !!(RP && RP.applied);
+  $('rcP').classList.toggle('hide', !ph); $('rcG').classList.toggle('hide', !(RC.mode === 'g' || ready)); $('rcE').classList.toggle('hide', RC.mode !== 'e');
+  $('rcSave').classList.toggle('hide', ph && !ready); $('rcSave').textContent = ph ? '확인하고 저장' : '저장';
+  $('rcGLbl').textContent = ph ? '판독한 점수 (틀린 칸은 고쳐 주세요)' : '게임 점수 (0~300)';
+}
+function rcSetMode(m) {
+  if (m === 'c' || m === 'i') { RC.mode = 'p'; RC.pick = m; } else RC.mode = m;
+  const on = RC.mode === 'p' ? RC.pick : (RC.mode === 'g' ? 'g' : '');
+  $('rcMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === on));
+  if (RC.mode === 'p') { rpCrewFill(); rpWhoNote(); $('rpAgain').textContent = RC.pick === 'c' ? '사진 다시 찍기' : '다른 이미지 고르기'; }
+  rcShow();
+}
+$('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { const m = b.dataset.m; rcSetMode(m); if (RP && RP.busy) return; if (m === 'c') $('rpFileCam').click(); else if (m === 'i') $('rpFilePic').click(); });
 function rcBuild(vals) {
   const box = $('rcScores'); box.innerHTML = vals.map((v, i) => '<div class="gin"><b>' + (i + 1) + 'G</b><input type="number" inputmode="numeric" min="0" max="300" value="' + esc(v) + '" placeholder="점수"></div>').join('');
-  box.querySelectorAll('input').forEach(inp => inp.oninput = rcLive); rcLive();
+  box.querySelectorAll('input').forEach(inp => inp.oninput = () => { RC.edited = true; rcLive(); }); rcLive();
 }
 const rcVals = () => [...$('rcScores').querySelectorAll('input')].map(i => i.value.trim());
 function rcLive() { const v = rcVals().filter(x => x !== '').map(Number).filter(x => isFinite(x)); const sm = v.reduce((a, b) => a + b, 0); $('rcLive').textContent = v.length ? v.length + '게임 · 합계 ' + sm + ' · 평균 ' + fmtA(sm / v.length) : ''; }
 $('rcMore').onclick = () => { const v = rcVals(); v.push(''); rcBuild(v); const ins = $('rcScores').querySelectorAll('input'); ins[ins.length - 1].focus(); };
 $('rcLess').onclick = () => { const v = rcVals(); if (v.length > 1) v.pop(); rcBuild(v); };
 function openRc(id, mode) {
-  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null; RC.src = ''; RP = { res: null, chosen: -1, meta: null, busy: false }; $('rpRes').innerHTML = ''; $('rpStatus').textContent = '';
-  $('rcTitle').textContent = r ? '기록 고치기' : (mode === 'e' ? '에버 입력' : '게임 기록');
+  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null; RC.src = ''; RC.edited = false; RP = { res: null, chosen: -1, meta: null, busy: false, applied: false }; $('rpRes').innerHTML = ''; $('rpStatus').textContent = '';
+  $('rcTitle').textContent = r ? '기록 고치기' : (mode === 'e' ? '에버 입력' : '개인 점수 등록');
   rcSetMode(r ? r.k : (mode || 'g'));
   $('rcDate').value = r ? r.date : isoToday(); $('rcKind').value = r ? (r.kind || '연습') : (REC.lastKind || '정모');
   fillAlleySel($('rcAlley'), r ? r.alleyId : (REC.lastAlley || '')); $('rcNote').value = r ? (r.note || '') : '';
   rcBuild(r && r.k === 'g' ? r.scores.map(String) : ['', '', '']);
   $('reAvg').value = r && r.k === 'e' ? r.avg : ''; $('reN').value = r && r.k === 'e' ? r.n : ''; $('reHi').value = r && r.k === 'e' && r.hi ? r.hi : '';
-  $('rcDel').classList.toggle('hide', !r); $('rcMode').classList.toggle('hide', !!r); $('rcSheet').classList.remove('hide');
+  $('rcDel').classList.toggle('hide', !r); $('rcMode').classList.toggle('hide', !!r || mode === 'e'); $('rcSheet').classList.remove('hide');
   if (!r && RC.mode === 'g') setTimeout(() => { const f = $('rcScores').querySelector('input'); if (f) f.focus(); }, 120);
 }
 $('rcClose').onclick = () => $('rcSheet').classList.add('hide');
 $('rcSheet').onclick = (e) => { if (e.target === $('rcSheet')) $('rcSheet').classList.add('hide'); };
 $('rcAddAlley').onclick = () => openAl(null, (id) => fillAlleySel($('rcAlley'), id));
 $('rcSave').onclick = () => {
-  if (RC.mode === 'p') return alert('먼저 "이 점수 쓰기"를 눌러 입력칸에 점수를 채운 뒤 저장해 주세요.');
+  const photo = RC.mode === 'p'; if (photo && !(RP && RP.applied)) return alert('먼저 점수표 사진을 읽어 주세요.');
   const date = $('rcDate').value || isoToday(); const alleyId = $('rcAlley').value, kind = $('rcKind').value, note = $('rcNote').value.trim(); let rec;
-  if (RC.mode === 'g') {
+  if (RC.mode === 'g' || photo) {
     const raw = rcVals().filter(x => x !== ''); if (!raw.length) return alert('점수를 한 게임 이상 넣어 주세요.');
     const sc = raw.map(Number); if (sc.some(x => !Number.isInteger(x) || x < 0 || x > 300)) return alert('점수는 0~300 사이 정수로 넣어 주세요.');
+    if (photo) { const sm = sumA(sc); const dupe = REC.recs.some(r => r.k === 'g' && r.id !== RC.id && r.date === date && r.scores.join(',') === sc.join(',')); const al = alleyId ? alleyName(alleyId) : '볼링장 선택 안 함'; if (!confirm('판독한 점수를 저장할까요?\n\n' + sc.length + '게임: ' + sc.join(', ') + '\n합계 ' + sm + ' · 평균 ' + fmtA(sm / sc.length) + '\n날짜 ' + fmtD(date) + ' · ' + kind + ' · ' + al + (dupe ? '\n\n※ 같은 날짜에 같은 점수 기록이 이미 있습니다.' : ''))) return; rpLearn(); }
     rec = { k: 'g', scores: sc };
   } else {
     const avg = parseFloat($('reAvg').value), n = parseInt($('reN').value, 10), hi = parseInt($('reHi').value, 10);
@@ -1514,7 +1568,7 @@ function rowOwner(rn, who) {
   return { mine, mineKind, mineT, other, otherName };
 }
 const HDRW = /^(순위|이름|성명|닉네임|레인|합계|평균|총점|총|팀|게임|핀|점수|에버|시드|번호|no|lane|name|total|avg|game|games|score|rank|frame|g)$/i;
-const GHDR = /^(?:[1-9]\s*[Gg]|[Gg][1-9]|[1-9]\s*게임)\.?$/;
+const GHDR = /^(?:[1-9]\s*[Gg]|[Gg][1-9]|[1-9]\s*(?:게임|경기))\.?$/;
 function numTok(t) { let s = String(t).replace(/,/g, ''); if (!/\d/.test(s)) return null; s = s.replace(/[Oo]/g, '0').replace(/[lI|]/g, '1').replace(/S/g, '5').replace(/B/g, '8'); if (!/^\d+(\.\d+)?$/.test(s)) return null; return { v: parseFloat(s), dec: /\./.test(s), raw: t }; }
 function buildRows(items, lines) {
   if (!items || !items.length) return (lines || []).map(l => ({ texts: [l] }));
@@ -1541,14 +1595,23 @@ function tryRepair(games, total, avg, confs) {
   const uniq = []; sols.forEach(x => { if (!uniq.some(y => y.gi === x.gi && y.to === x.to)) uniq.push(x); }); if (uniq.length > 1 && confs) { const sc = uniq.map(x => ({ x, c: confs[x.gi] == null ? 1 : confs[x.gi] })).sort((a, b) => a.c - b.c); if (sc[1].c - sc[0].c >= 0.04) { sc[0].x.lowConf = true; return sc[0].x; } }
   return uniq.length === 1 ? uniq[0] : (uniq.length ? { alts: uniq } : null);
 }
+// 이름 칸이 없는 사진(내 점수만 찍은 경우): "1G 180 2G 190 ...", 숫자만 있는 줄, "1게임 180" 줄들
+function nameless(rows) {
+  const out = []; const tk = (r) => { const a = []; r.texts.forEach((tx, ci) => String(tx).replace(/[|｜]/g, ' ').split(/\s+/).filter(Boolean).forEach(t => a.push({ t, c: r.confs && r.confs[ci] != null ? r.confs[ci] : 1 }))); return a; };
+  const mk = (games, conf) => ({ i: -1, name: '(이름 없음)', games, gconf: conf, total: null, avg: null, vals: [], gh: 0, mine: 0, other: 0, otherName: '', mineKind: '', mineT: '', nameless: true });
+  const per = {}; rows.forEach((r) => { const s = r.texts.join(' ').replace(/[|｜]/g, ' '); const re = /(?:([1-9])\s*(?:게임|경기|[Gg])|[Gg]\s*([1-9]))\s*[:.\-]?\s*(\d{2,3})(?!\d)/g; let m; while ((m = re.exec(s))) { const gi = +(m[1] || m[2]), v = +m[3]; if (v <= 300 && per[gi] == null) per[gi] = v; } });
+  const pk = Object.keys(per).map(Number).sort((x, y) => x - y); if (pk.length >= 2) out.push(mk(pk.map(k => per[k]), pk.map(() => 1)));
+  rows.forEach((r) => { const t = tk(r); const words = t.filter(x => /[가-힣A-Za-z]/.test(x.t) && !GHDR.test(x.t) && !numTok(x.t)); if (words.some(x => !HDRW.test(x.t.replace(/[^가-힣A-Za-z]/g, '')))) return; const n = t.filter(x => !GHDR.test(x.t)).map(x => { const v = numTok(x.t); if (v) v.c = x.c; return v; }).filter(x => x && !x.dec && x.v <= 300); if (n.length < 2 || n.length > 10) return; const big = n.filter(x => x.v >= 60).length; if (big < 2 || big < n.length / 2) return; out.push(mk(n.map(x => x.v), n.map(x => x.c))); });
+  return out;
+}
 function analyzeScoreSheet(rows, crewId, alleyIds) {
   const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => Object.assign({ i }, parseRowTokens(r.texts, r.confs)));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
   const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
   let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
   const data = P.filter(p => p.name && p.vals.filter(v => !v.dec && v.v <= 300).length >= 2);
-  if (!ng) { const ks = []; data.forEach(p => { const iv = p.vals.filter(v => !v.dec).map(v => v.v); for (let k = Math.min(iv.length - 1, 6); k >= 2; k--) { if (iv[k] === sumA(iv.slice(0, k))) { ks.push(k); break; } } }); if (ks.length >= 2) { ng = mode(ks); ngFrom = '합계 칸 검산'; } }
-  if (!ng) { ng = Math.min(6, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
+  if (!ng) { const ks = []; data.forEach(p => { const iv = p.vals.filter(v => !v.dec).map(v => v.v); for (let k = Math.min(iv.length - 1, 10); k >= 2; k--) { if (iv[k] === sumA(iv.slice(0, k))) { ks.push(k); break; } } }); if (ks.length >= 2) { ng = mode(ks); ngFrom = '합계 칸 검산'; } }
+  if (!ng) { ng = Math.min(10, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
   data.forEach(p => {
     const ivo = p.vals.filter(v => !v.dec); const iv = ivo.map(v => v.v); const decs = p.vals.filter(v => v.dec).map(v => v.v);
     const cut = iv.findIndex(v => v > 300); const head = cut >= 0 ? iv.slice(0, cut) : iv.slice(); let games = head.slice(0, ng);
@@ -1560,6 +1623,7 @@ function analyzeScoreSheet(rows, crewId, alleyIds) {
     p.short = p.games.length < ng; const own = rowOwner(nk(p.name), who); Object.assign(p, own);
     p.isMine = own.mine >= 0.65 && own.mine > own.other; p.amb = own.mine >= 0.65 && own.mine === own.other && own.mine < 1 ? true : (own.mine >= 0.65 && own.other >= own.mine);
   });
+  if (!data.length) { const ex = nameless(rows); if (ex.length) { ex.forEach((p, k) => { p.i = P.length; P.push(p); data.push(p); }); ng = Math.max.apply(null, data.map(p => p.games.length)); ngFrom = '이름 없이 읽은 점수 개수'; if (data.length === 1) return { who, ng, ngFrom, rows: P, data, mine: [], chosen: data[0].i, why: 'single' }; } }
   const mine = data.filter(p => p.isMine).sort((a, b) => b.mine - a.mine); let chosen = -1, why = '';
   if (mine.length === 1) { chosen = mine[0].i; why = 'one'; } else if (mine.length > 1) { if (mine[0].mine > mine[1].mine) { chosen = mine[0].i; why = 'best'; } else why = 'multi'; }
   return { who, ng, ngFrom, rows: P, data, mine, chosen, why };
@@ -1583,10 +1647,10 @@ $('rcAlley').addEventListener('change', () => { if (RC.mode === 'p') { rpWhoNote
 function rpCrewFill() { let cur = REC.lastPhotoCrew || ''; if (!DB.clubs.some(c => c.id === cur)) { const mapped = DB.clubs.find(c => ((REC.me.crew || {})[c.id] || {}).mid) || (DB.clubs.length === 1 ? DB.clubs[0] : null); cur = mapped ? mapped.id : ''; } $('rpCrew').innerHTML = '<option value="">크루 선택 안 함 (내 이름·닉네임만 사용)</option>' + DB.clubs.map(c => '<option value="' + c.id + '"' + (c.id === cur ? ' selected' : '') + '>' + esc(c.name) + '</option>').join(''); }
 function rpWhoNote() { const w = meIdentities($('rpCrew').value, [$('rcAlley').value, RP.meta && RP.meta.alleyId]); $('rpWho').innerHTML = w.ids.length ? '내 줄 판단에 쓰는 이름: ' + w.ids.map(i => '<b>' + esc(i.t) + '</b>(' + esc(i.kind) + ')').join(', ') : '<span class="warn">내 이름과 닉네임이 없습니다. 마이 탭에서 먼저 넣으면 내 줄을 정확히 찾습니다. 지금은 사진에서 내 줄을 직접 눌러 고르게 됩니다.</span>'; }
 $('rpCrew').onchange = () => { REC.lastPhotoCrew = $('rpCrew').value; saveRec(); rpWhoNote(); if (RP.res) rpReanalyze(); };
-$('rpCam').onclick = () => $('rpFileCam').click(); $('rpPic').onclick = () => $('rpFilePic').click();
+$('rpAgain').onclick = () => $(RC.pick === 'i' ? 'rpFilePic' : 'rpFileCam').click();
 ['rpFileCam', 'rpFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; rpHandle(f); });
 async function rpHandle(file) {
-  if (!file || RP.busy) return; RP.busy = true; const st = $('rpStatus'); $('rpRes').innerHTML = '';
+  if (!file || RP.busy) return; RP.busy = true; const st = $('rpStatus'); $('rpRes').innerHTML = ''; RP.applied = false; RC.edited = false; rcShow();
   try {
     try { await loadAlleyData(); } catch (e) {}
     const o = await ocrImageText(file, st); RP.raw = { items: o.items, text: o.text, engine: o.engine };
@@ -1597,13 +1661,13 @@ async function rpHandle(file) {
 function rpReanalyze(first) {
   const st = $('rpStatus'); const meta0 = detectMeta(RP.rows); if (!RP.meta || RP.meta.alleyId !== meta0.alleyId) RP.meta = meta0; else RP.meta = Object.assign(meta0, { alleyId: RP.meta.alleyId });
   const res = analyzeScoreSheet(RP.rows, $('rpCrew').value, [$('rcAlley').value, RP.meta.alleyId]); RP.res = res; RP.chosen = res.chosen; rpWhoNote();
-  st.textContent = res.data.length ? '사진에서 ' + res.data.length + '줄을 읽었습니다(' + (RP.raw.engine || '') + '). 게임 수 ' + res.ng + '게임(근거: ' + res.ngFrom + ').' : '점수 줄을 찾지 못했습니다. 점수표가 또렷하게 나오게 가까이서 다시 찍어 주세요.';
-  rpRender();
+  st.textContent = res.data.length ? '사진에서 ' + res.data.length + '줄을 읽었습니다(' + (RP.raw.engine || '') + ').' : '점수 줄을 찾지 못했습니다. 점수표가 또렷하게 나오게 가까이서 다시 찍어 주세요.';
+  if (first || !RC.edited) rpApply(); rpRender();
 }
 function rpChecks(p, res) {
   const out = []; const ok = (t) => out.push('<div class="ck ok">✔ ' + t + '</div>'), wn = (t) => out.push('<div class="ck wn">! ' + t + '</div>');
-  if (p.mine >= 1) ok('이름 일치: 사진 "' + esc(p.name) + '" = ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.8) ok('이름이 거의 같음: 사진 "' + esc(p.name) + '" ~ ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.65) wn('이름이 비슷함: 사진 "' + esc(p.name) + '" ~ "' + esc(p.mineT) + '" (글자가 달라 확인이 필요합니다)'); else wn('이름 조건으로는 내 줄을 찾지 못해 직접 고른 줄입니다: "' + esc(p.name) + '"');
-  if (res.who.crew) { if (p.other >= 0.65 && p.other >= p.mine) wn('크루 명단의 다른 팀원 "' + esc(p.otherName) + '" 과(와)도 비슷합니다'); else ok('크루 명단 대조: 다른 팀원 이름과 겹치지 않음'); }
+  if (p.nameless) out.push('<div class="ck">· 이름이 없는 사진이라 이름 확인은 건너뜁니다. 내 점수가 맞는지 직접 확인해 주세요</div>'); else if (p.mine >= 1) ok('이름 일치: 사진 "' + esc(p.name) + '" = ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.8) ok('이름이 거의 같음: 사진 "' + esc(p.name) + '" ~ ' + esc(p.mineKind) + ' "' + esc(p.mineT) + '"'); else if (p.mine >= 0.65) wn('이름이 비슷함: 사진 "' + esc(p.name) + '" ~ "' + esc(p.mineT) + '" (글자가 달라 확인이 필요합니다)'); else wn('이름 조건으로는 내 줄을 찾지 못해 직접 고른 줄입니다: "' + esc(p.name) + '"');
+  if (res.who.crew && !p.nameless) { if (p.other >= 0.65 && p.other >= p.mine) wn('크루 명단의 다른 팀원 "' + esc(p.otherName) + '" 과(와)도 비슷합니다'); else ok('크루 명단 대조: 다른 팀원 이름과 겹치지 않음'); }
   if (p.games.length === res.ng) ok(res.ng + '게임 모두 읽음(근거: ' + esc(res.ngFrom) + ')'); else wn('읽은 점수가 ' + p.games.length + '개입니다(표는 ' + res.ng + '게임). 빠진 점수가 있으면 직접 넣어 주세요');
   if (p.games.some(g => g > 300)) wn('300점을 넘는 값이 있습니다'); else ok('점수 범위 0~300');
   if (p.sumOk === true) ok('합계 ' + p.total + ' 검산 일치'); else if (p.sumOk === false) wn('합계 ' + p.total + ' 와(과) 점수 합 ' + sumA(p.games) + ' 이(가) 다릅니다' + (p.fix ? ' → ' + p.fix.from + ' 을(를) ' + p.fix.to + ' 로 고치면 맞습니다(' + (p.fix.lowConf ? '글자 확신도가 가장 낮은 칸이라 ' : '') + '자동 보정 적용)' : (p.alts ? ' (숫자를 잘못 읽었을 수 있습니다. 후보: ' + p.alts.map(a => a.from + ' → ' + a.to).join(' 또는 ') + ' 중 사진과 비교해 고쳐 주세요)' : ' (숫자를 잘못 읽었을 수 있습니다)'))); else if (p.avgOk === true) ok('평균 ' + p.avg + ' 검산 일치'); else if (p.avgOk === false) wn('평균 ' + p.avg + ' 와(과) 점수 평균이 다릅니다' + (p.fix ? ' → ' + p.fix.from + ' 을(를) ' + p.fix.to + ' 로 고치면 맞습니다(' + (p.fix.lowConf ? '글자 확신도가 가장 낮은 칸이라 ' : '') + '자동 보정 적용)' : '')); else out.push('<div class="ck">· 합계·평균 칸이 없어 검산은 못 했습니다</div>');
@@ -1615,25 +1679,67 @@ function rpRender() {
   const res = RP.res, box = $('rpRes'); if (!res || !res.data.length) { box.innerHTML = ''; return; }
   const p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; let h = '';
   if (p) {
-    const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to;
-    h += '<div class="rpmine"><div class="ttl">내 점수로 판단한 줄</div><div class="rpg">' + g.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
-    const m = RP.meta || {}; const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : '') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '· 날짜는 사진에서 못 찾아 오늘로 넣습니다') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
+    const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
+    h += '<div class="rpmine"><div class="gnum">' + g.length + '게임으로 판단했습니다</div><div class="small">게임 수 근거: ' + esc(res.ngFrom) + (g.length < res.ng ? ' · 표는 ' + res.ng + '게임인데 이 줄에서 ' + g.length + '개만 읽었습니다' : '') + '</div><div class="ttl" style="margin-top:6px">' + (p.nameless ? '이름 없이 읽은 점수' : '내 점수로 판단한 줄: ' + esc(p.name)) + '</div><div class="rpg">' + g.map((s, i) => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + (i + 1) + 'G ' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
+    const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : '') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '· 날짜는 사진에서 못 찾아 위의 날짜(오늘)를 그대로 씁니다') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
     if (!al && m.hint) h += '<button id="rpAl" class="sec" style="width:100%;margin-top:6px">후보 볼링장 "' + esc(m.hint[0]) + '" 등록하고 선택</button>';
-    h += '<button id="rpUse" style="width:100%;margin-top:8px">이 점수 쓰기 (아래 입력칸에 채웁니다)</button>';
+    h += '<div class="rpconf">읽은 결과를 사진과 비교해 맞는지 확인하세요. 아래 "판독한 점수" 칸에 이미 채워 두었고, 틀린 칸은 고칠 수 있습니다. 맞으면 맨 아래 "확인하고 저장"을 누르세요.</div>';
   } else {
-    h += '<div class="rpmine"><div class="ttl">내 줄을 자동으로 정하지 못했습니다</div><div class="small">' + (res.why === 'multi' ? '내 이름과 비슷한 줄이 여러 개입니다.' : '내 이름·닉네임과 맞는 줄이 없습니다.') + ' 아래에서 내 줄을 눌러 주세요. 한 번 고르면 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</div></div>';
+    h += '<div class="rpmine"><div class="ttl">내 줄을 자동으로 정하지 못했습니다</div><div class="small">' + (res.why === 'multi' ? '내 이름과 비슷한 줄이 여러 개입니다.' : '내 이름·닉네임과 맞는 줄이 없습니다.') + ' 아래에서 내 줄을 눌러 주세요. 한 번 고르면 저장할 때 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</div></div>';
   }
   h += '<div class="lbl" style="margin-top:8px">사진에서 읽은 줄 (누르면 내 줄로 바꿈)</div>' + res.data.slice(0, 40).map(r => '<div class="rpr' + (r.i === RP.chosen ? ' on' : '') + (r.isMine ? ' mine' : '') + '" data-i="' + r.i + '"><b>' + esc(r.name) + '</b>' + (r.isMine ? '<span class="kbadge k2">내 이름과 비슷</span>' : '') + '<div>' + r.games.map(s => '<span class="sc">' + s + '</span>').join('') + (r.total != null ? '<span class="small"> 합계 ' + r.total + '</span>' : '') + '</div></div>').join('');
-  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; rpRender(); }); const u = $('rpUse'); if (u) u.onclick = rpApply; const ab = $('rpAl'); if (ab) ab.onclick = () => { const r = RP.meta.hint; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); let a = REC.alleys.find(x => x.name === r[0] && (x.area || '') === area); if (!a) { a = { id: uid(), name: r[0], area, memo: [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · '), fav: false }; REC.alleys.push(a); saveRec(); } RP.meta.alleyId = a.id; fillAlleySel($('rcAlley'), a.id); rpRender(); };
+  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; RC.edited = false; rpApply(); rpRender(); }); const ab = $('rpAl'); if (ab) ab.onclick = () => { const r = RP.meta.hint; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); let a = REC.alleys.find(x => x.name === r[0] && (x.area || '') === area); if (!a) { a = { id: uid(), name: r[0], area, memo: [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · '), fav: false }; REC.alleys.push(a); saveRec(); } RP.meta.alleyId = a.id; fillAlleySel($('rcAlley'), a.id); rpRender(); };
 }
+// 읽은 점수를 입력칸에 자동으로 채운다(게임 수만큼 칸을 만든다). 저장은 사용자가 확인한 뒤에만 한다.
 function rpApply() {
-  const res = RP.res, p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; if (!p || !p.games.length) return alert('내 줄을 먼저 골라 주세요.');
+  const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || !p.games.length) { RP.applied = false; rcShow(); return; }
   const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
-  // 사진에 적힌 이름을 별칭으로 기억(다음부터 정확히 찾기)
-  const k = nk(p.name), cid = $('rpCrew').value, aid = m.alleyId || $('rcAlley').value; if (k.length >= 2 && !res.who.ids.some(i => i.k === k)) { REC.me.crew = REC.me.crew || {}; if (!cid && aid && REC.alleys.some(x => x.id === aid)) { const a = REC.alleys.find(x => x.id === aid); a.myNick = splitAlias(a.myNick).concat([p.name.trim()]).join(', '); } else if (cid) { const c = REC.me.crew[cid] = REC.me.crew[cid] || { mid: '', alias: '' }; c.alias = splitAlias(c.alias).concat([p.name.trim()]).join(', '); } else { REC.me.nick = splitAlias(REC.me.nick).concat([p.name.trim()]).join(', '); } saveRec(); }
-  rcBuild(g.map(String)); if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId; RC.src = '사진'; rcSetMode('g');
-  $('rcNote').value = $('rcNote').value || '사진 판독: ' + p.name.trim(); try { $('rcG').scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
+  const vals = g.map(String); while (vals.length < res.ng && vals.length < 10) vals.push('');
+  rcBuild(vals); RC.edited = false;
+  if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId;
+  RC.src = '사진'; RP.applied = true; if (!p.nameless && (!$('rcNote').value || /^사진 판독: /.test($('rcNote').value))) $('rcNote').value = '사진 판독: ' + p.name.trim();
+  rcShow(); try { $('rcG').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
 }
+// 확인 후 저장할 때만: 사진에 적힌 이름을 별칭으로 기억(다음부터 정확히 찾기)
+function rpLearn() {
+  const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || p.nameless) return; const m = RP.meta || {};
+  const k = nk(p.name), cid = $('rpCrew').value, aid = m.alleyId || $('rcAlley').value;
+  if (k.length >= 2 && !res.who.ids.some(i => i.k === k)) { REC.me.crew = REC.me.crew || {}; if (!cid && aid && REC.alleys.some(x => x.id === aid)) { const a = REC.alleys.find(x => x.id === aid); a.myNick = splitAlias(a.myNick).concat([p.name.trim()]).join(', '); } else if (cid) { const c = REC.me.crew[cid] = REC.me.crew[cid] || { mid: '', alias: '' }; c.alias = splitAlias(c.alias).concat([p.name.trim()]).join(', '); } else { REC.me.nick = splitAlias(REC.me.nick).concat([p.name.trim()]).join(', '); } saveRec(); }
+}
+
+// ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
+// 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
+const APP_VER = 19, APP_DATE = '2026.11.06';
+const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
+document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
+const GUIDE = [
+  ['처음 시작하기', '<p>아래 탭은 네 가지입니다.</p><ul><li><b>홈</b>: 내 평균과 최고 점수, "게임 시작" 버튼</li><li><b>기록</b>: 점수와 에버를 기간별로 보기, 그래프, 볼링장별 통계</li><li><b>크루</b>: 정모 팀 짜기</li><li><b>마이</b>: 내 이름과 닉네임, 내 볼링장, 백업</li></ul><p>기록과 명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다. 오른쪽 위 "도움말"에서 이 설명서와 개발자 요청을 언제든 열 수 있습니다.</p>'],
+  ['개인 점수 등록 (사진촬영 · 이미지적용 · 직접입력)', '<p>홈의 "게임 시작"이나 기록 탭의 "+ 게임 기록"을 누르면 세 가지 방법 중에서 고를 수 있습니다. 날짜, 구분(정모·벙개·연습·대회), 볼링장도 함께 고르세요.</p><ul><li><b>사진촬영</b>: 점수표를 바로 찍습니다.</li><li><b>이미지적용</b>: 앨범에 있는 점수표 사진이나 캡처를 고릅니다.</li><li><b>직접입력</b>: 1G부터 점수를 직접 넣고, 게임이 더 있으면 "+ 게임 추가"를 누릅니다.</li></ul><p>사진촬영과 이미지적용은 게임 수를 판단해서 칸을 만들고 내 점수를 자동으로 채웁니다. 읽은 내용을 화면에 보여 주니 사진과 비교해 보세요. 틀린 칸은 고칠 수 있고, 내 줄이 아니면 아래 읽은 줄을 눌러 바꿀 수 있습니다. 맞으면 맨 아래 "확인하고 저장"을 누르고, 한 번 더 나오는 확인창에서 승인하면 저장됩니다.</p><p>점수가 아니라 에버(평균)만 알고 있다면 기록 탭의 "에버 입력"을 쓰세요.</p>'],
+  ['사진이 잘 안 읽힐 때', '<ul><li>표가 화면에 꽉 차게, 밝은 곳에서, 흔들리지 않게 가까이서 찍어 주세요.</li><li>마이 탭에 내 이름과 닉네임을 넣어 두면 내 줄을 훨씬 정확히 찾습니다.</li><li>그래도 틀리면 읽은 줄을 눌러 고르거나, 칸의 숫자를 직접 고쳐 저장하세요. 한 번 고르면 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</li><li>끝까지 안 되면 "직접입력"을 쓰세요.</li></ul>'],
+  ['기록 보기와 고치기', '<ul><li>기록 탭 위쪽에서 기간(7일, 30일, 3개월, 올해, 전체, 직접)을 고르면 에버, 최고 점수, 게임 수, 그래프, 월별, 볼링장별 통계가 바뀝니다.</li><li>목록의 기록을 누르면 고치거나 지울 수 있습니다.</li><li>"가져오기"로 엑셀, CSV 파일이나 사진에서 지난 기록을 한꺼번에 넣을 수 있습니다. 읽은 결과를 확인하고 고친 뒤 등록합니다.</li></ul>'],
+  ['볼링장 등록', '<ul><li>점수 등록 화면의 "볼링장 등록"이나 마이 탭의 "내 볼링장"에서 등록합니다.</li><li>시도, 구·군을 고르고 이름이나 동으로 검색하면 전국 볼링장 목록에서 찾을 수 있습니다. 목록에 없으면 이름을 직접 넣으세요.</li><li>즐겨찾기(★)한 볼링장은 목록 맨 위에 나옵니다.</li></ul>'],
+  ['내 정보 (이름 · 닉네임)', '<p>마이 탭에서 이름과 닉네임을 넣어 두세요. 닉네임은 쉼표로 여러 개 넣을 수 있습니다. 볼링장마다 이름이 다르게 적히면 볼링장별 이름·닉네임을, 크루마다 다르면 크루별 "이 크루에서의 나"와 별칭을 넣으면 점수표 사진에서 내 줄을 정확히 찾습니다.</p>'],
+  ['크루와 팀 짜기', '<ul><li><b>크루 만들기</b>: 크루 탭에서 이름을 넣고 등록합니다. 크루 이미지(사진 찍기 또는 앨범)는 선택입니다.</li><li><b>명단 탭</b>: 팀원을 한 명씩 등록하거나, 사진·엑셀·CSV 파일·글 붙여 넣기로 한꺼번에 넣습니다. 읽은 결과를 확인하고 고친 뒤 등록하세요.</li><li><b>참석 탭</b>: 오늘 오는 사람을 체크합니다(게스트 바로 추가 가능). 에버 숫자를 누르면 바로 고칠 수 있습니다.</li><li><b>시드 설정</b>: 점수 기준으로 A~D 등으로 나눕니다.</li><li><b>같은 편이 되면 안 되는 사람</b>과 <b>같은 편이 되어야 하는 사람</b>을 지정할 수 있습니다. 같은 편 지정은 남녀 균형보다 우선합니다.</li><li><b>팀 만들기 설정</b>에서 몇 명씩, 남녀 나누는 방식을 고르고 "팀 구성하기"를 누릅니다.</li><li>팀 구성 탭에서 "이전안, 다음안, 새 조합"으로 다른 안을 보고, 두 사람을 차례로 눌러 자리를 바꾸고, "이미지로 만들기"나 "글로 복사"로 카톡·밴드에 올립니다.</li></ul>'],
+  ['백업과 복원', '<p>기록과 명단은 이 폰 안에만 있어서 앱을 지우거나 폰을 바꾸면 사라집니다. 마이 탭의 "백업 파일 저장"으로 파일을 만들어 두고, 파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요. 복원은 "백업에서 복원"이나 "글 붙여넣어 복원"으로 합니다. 복원하면 지금 폰의 내용이 백업 내용으로 바뀝니다.</p>'],
+  ['자주 묻는 질문', '<ul><li><b>새 버전이 안 보여요</b>: 홈 화면에 추가한 앱은 한 번 완전히 닫았다가 두 번 열면 새 버전이 보입니다. 홈 맨 아래의 "버전 번호"로 확인하세요.</li><li><b>기록이 사라졌어요</b>: 앱을 지웠거나 브라우저 데이터를 지우면 사라집니다. 가끔 백업해 두세요.</li><li><b>원하는 기능이 있어요</b>: 오른쪽 위 "도움말"의 "개발자 추가요청"으로 보내 주세요.</li></ul>']
+];
+$('gdBody').innerHTML = GUIDE.map((g, i) => '<details' + (i === 0 ? ' open' : '') + '><summary>' + g[0] + '</summary>' + g[1] + '</details>').join('');
+$('btnHelp').onclick = () => $('hpSheet').classList.remove('hide');
+$('hpClose').onclick = () => $('hpSheet').classList.add('hide');
+$('hpSheet').onclick = (e) => { if (e.target === $('hpSheet')) $('hpSheet').classList.add('hide'); };
+$('hpGuide').onclick = () => { $('hpSheet').classList.add('hide'); $('gdSheet').classList.remove('hide'); };
+$('gdBack').onclick = () => { $('gdSheet').classList.add('hide'); $('hpSheet').classList.remove('hide'); };
+$('gdSheet').onclick = (e) => { if (e.target === $('gdSheet')) $('gdBack').onclick(); };
+const RQKEY = 'btbTeams.rqdraft';
+function rqBody() { const dev = (navigator.userAgent.match(/\(([^)]*)\)/) || ['', ''])[1].slice(0, 90); return ($('rqText').value.trim()) + '\n\n----\n앱 버전: ' + APP_VER + ' (' + APP_DATE + ')\n기기: ' + dev; }
+function rqLink() { const sub = '[오늘도 스트라이크] ' + $('rqKind').value; return 'mailto:' + DEV_MAIL + '?subject=' + encodeURIComponent(sub) + '&body=' + encodeURIComponent(rqBody()); }
+function rqSync() { $('rqSend').href = rqLink(); try { localStorage.setItem(RQKEY, JSON.stringify({ k: $('rqKind').value, t: $('rqText').value })); } catch (e) {} }
+$('hpReq').onclick = () => { $('hpSheet').classList.add('hide'); try { const d = JSON.parse(localStorage.getItem(RQKEY) || 'null'); if (d) { if ([...$('rqKind').options].some(o => o.value === d.k)) $('rqKind').value = d.k; $('rqText').value = d.t || ''; } } catch (e) {} $('rqAddr').textContent = DEV_MAIL; rqSync(); $('rqSheet').classList.remove('hide'); };
+$('rqText').oninput = rqSync; $('rqKind').onchange = rqSync;
+$('rqSend').onclick = (e) => { if (!$('rqText').value.trim()) { e.preventDefault(); return alert('보낼 내용을 먼저 적어 주세요.'); } rqSync(); };
+$('rqCopy').onclick = async () => { if (!$('rqText').value.trim()) return alert('보낼 내용을 먼저 적어 주세요.'); const s = '[오늘도 스트라이크] ' + $('rqKind').value + '\n\n' + rqBody(); try { await navigator.clipboard.writeText(s); alert('내용을 복사했습니다. 이메일이나 카톡에 붙여 넣어 보내 주세요.'); } catch (e) { $('rqText').focus(); $('rqText').select(); alert('자동 복사가 안 됩니다. 칸의 글을 길게 눌러 복사해 주세요.'); } };
+$('rqBack').onclick = () => { $('rqSheet').classList.add('hide'); $('hpSheet').classList.remove('hide'); };
+$('rqSheet').onclick = (e) => { if (e.target === $('rqSheet')) $('rqBack').onclick(); };
 
 // ----- 마이 -----
 function renderMe() {
