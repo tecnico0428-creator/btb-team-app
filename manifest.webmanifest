@@ -1,6 +1,6 @@
 {
-  "name": "볼링 팀 구성",
-  "short_name": "팀 구성",
+  "name": "오늘도 스트라이크",
+  "short_name": "오늘도 스트라이크",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

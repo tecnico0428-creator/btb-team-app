@@ -2,20 +2,22 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="팀 구성">
+<meta name="apple-mobile-web-app-title" content="오늘도 스트라이크">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#fce1b8">
 <meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- v12 -->
-<title>볼링 팀 구성</title>
+<title>오늘도 스트라이크</title>
 <style>
 :root{--bg:#fce1b8;--card:#fff4de;--tx:#10413d;--sub:#5d716b;--pri:#dc4527;--line:#e2c898;--ok:#1b7f4b;--warn:#c46a05;--m:#1d6fb8;--f:#d6336c;--hd:#fce1b8;--ink:#10413d;--lime:#e8f43a;color-scheme:light}
 *{box-sizing:border-box}
+html{overflow-x:hidden;touch-action:pan-y;--sat:env(safe-area-inset-top,0px)}
+body{overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 header{position:sticky;top:0;background:var(--hd);color:var(--ink);padding:calc(8px + env(safe-area-inset-top)) 14px 8px;z-index:5;border-bottom:2px solid var(--ink)}
 header .hrow{display:flex;align-items:center;gap:10px}
@@ -35,6 +37,12 @@ button.del,.mem .del{min-height:44px}
 button:disabled{opacity:.4}
 input[type=text],input[type=number],input[type=date],select,textarea{background:#fffaf0;border:1.5px solid #cdb685;border-radius:12px;padding:9px 10px;width:100%}
 .hide{display:none!important}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;line-height:1.2}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g2>*{min-width:0}
+.sheet .row>*,.rirow .row>*{min-width:0}
+.rirow .row{flex-wrap:nowrap}
 .mem{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line)}
 .mem:last-child{border-bottom:0}
 .mem input[type=checkbox]{width:24px;height:24px}
@@ -99,16 +107,16 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 .prog i{display:block;height:100%;width:0;background:var(--pri)}
 
 /* ===== 레트로 테마(홈·기록·마이) ===== */
-.phero{position:relative;margin:0 -12px;aspect-ratio:4/5;max-height:560px;overflow:hidden;background:var(--bg)}
+.phero{position:relative;margin:0 -12px;height:calc(min(125vw,560px) + var(--sat));overflow:hidden;background:var(--bg)}
 .pheroimg{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%}
-.pbrand{position:absolute;left:16px;top:calc(14px + env(safe-area-inset-top));z-index:2;line-height:1}
+.pbrand{position:absolute;left:16px;top:calc(14px + var(--sat));z-index:2;line-height:1}
 .pbrand small{display:block;font-size:11px;letter-spacing:.32em;font-weight:800;color:var(--ink)}
-.pbrand b{display:flex;align-items:center;gap:7px;font-size:30px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-top:5px}
+.pbrand b{display:flex;align-items:center;gap:7px;font-size:24px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-top:5px}
 .ballmark{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#ffb08a 0 9%,transparent 10%),var(--pri);position:relative;flex:none}
 .ballmark::before{content:'';position:absolute;left:9px;top:7px;width:4px;height:4px;border-radius:50%;background:var(--ink);box-shadow:7px 3px 0 var(--ink),3px 8px 0 var(--ink)}
-.phead{position:absolute;left:16px;top:21%;z-index:2;color:var(--ink);font-weight:900;font-size:clamp(40px,14vw,64px);line-height:1.04;letter-spacing:-.04em}
+.phead{position:absolute;left:16px;top:calc(var(--sat) + min(21vw,120px));z-index:2;color:var(--ink);font-weight:900;font-size:clamp(40px,14vw,64px);line-height:1.04;letter-spacing:-.04em}
 .phead span{display:block;transform:skewX(-9deg);transform-origin:left bottom;text-shadow:3px 3px 0 var(--pri)}
-.pcheck{position:absolute;left:18px;top:55%;width:98px;height:28px;z-index:2;background:conic-gradient(var(--pri) 25%,transparent 0 50%,var(--pri) 0 75%,transparent 0) 0 0/28px 28px;transform:skewX(-14deg)}
+.pcheck{position:absolute;left:18px;top:calc(var(--sat) + min(68vw,380px));width:98px;height:28px;z-index:2;background:conic-gradient(var(--pri) 25%,transparent 0 50%,var(--pri) 0 75%,transparent 0) 0 0/28px 28px;transform:skewX(-14deg)}
 .plets{position:absolute;left:14px;bottom:7%;width:23%;aspect-ratio:1;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-style:italic;font-size:clamp(14px,5vw,22px);line-height:1;color:var(--ink);transform:rotate(-12deg);z-index:2;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--lime)}
 .ticket{position:relative;overflow:hidden;border:2px solid var(--ink);border-radius:20px;background:var(--card);padding:10px 8px 12px;margin:12px 0}
 .ticket::before,.ticket::after{content:'';position:absolute;top:50%;width:26px;height:26px;margin-top:-13px;border-radius:50%;background:var(--bg);border:2px solid var(--ink)}
@@ -165,6 +173,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 .kbadge{display:inline-block;font-size:11px;font-weight:800;border-radius:8px;padding:1px 7px;margin-left:6px;vertical-align:middle;background:var(--ink);color:#fff4de}
 .kbadge.k2{background:var(--lime);color:var(--ink)}
 .kbadge.k3{background:var(--pri)}
+.kbadge.k4{background:#2b7a9b}
 .kbadge.ks{background:#cdb685;color:var(--ink)}
 .mbars{display:flex;align-items:flex-end;gap:6px;height:150px;margin-top:6px}
 .mbar{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}
@@ -181,6 +190,12 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 .empty{text-align:center;padding:18px 6px;color:var(--sub)}
 .alrow{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1.5px dashed #cdb685}
 .alrow:last-child{border-bottom:0}
+.aflist{max-height:240px;overflow:auto;border:1.5px solid #cdb685;border-radius:14px;background:#fffaf0}
+.afrow{padding:8px 12px;border-bottom:1px dashed #cdb685;cursor:pointer}
+.afrow:last-child{border-bottom:0}
+.afrow.on{background:rgba(220,69,39,.16)}
+.afrow b{font-size:16px}
+.afrow .small{display:block;margin-top:1px}
 .rirow{border:1.5px solid #cdb685;border-radius:14px;padding:8px;margin-bottom:8px;background:var(--card)}
 .rirow.bad{border-color:var(--pri)}
 .rirow .row{margin-top:6px}
@@ -195,8 +210,8 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 <main>
 <section id="v-home">
   <div class="phero">
-    <img class="pheroimg" src="hero-retro.jpg" alt="볼링공과 핀">
-    <div class="pbrand"><small>THE LANE CLUB</small><b><span class="ballmark"></span>볼링 팀 구성</b></div>
+    <img class="pheroimg" src="hero-retro.jpg" alt="오늘도 스트라이크">
+    <div class="pbrand"><small>THE LANE CLUB</small><b><span class="ballmark"></span>오늘도 스트라이크</b></div>
     <div class="phead"><span>오늘도</span><span>스트라이크.</span></div>
     <div class="pcheck"></div>
     <div class="plets">LET'S<br>ROLL</div>
@@ -374,7 +389,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
-  <div class="small" style="text-align:center;margin-bottom:12px">볼링 팀 구성 · 버전 11</div>
+  <div class="small" style="text-align:center;margin-bottom:12px">오늘도 스트라이크 · 버전 13</div>
 </section>
 </main>
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
@@ -384,7 +399,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 <div id="rcSheet" class="sheetbg hide"><div class="sheet">
   <h2 id="rcTitle">게임 기록</h2>
   <div class="chips" id="rcMode" style="margin-bottom:8px"><button class="chip on" data-m="g">점수 입력</button><button class="chip" data-m="e">에버만 입력</button></div>
-  <div class="row"><div class="grow"><div class="lbl">날짜</div><input type="date" id="rcDate"></div><div class="grow"><div class="lbl">구분</div><select id="rcKind"><option>정모</option><option>연습</option><option>대회</option></select></div></div>
+  <div class="g2"><div><div class="lbl">날짜</div><input type="date" id="rcDate"></div><div><div class="lbl">구분</div><select id="rcKind"><option>정모</option><option>벙개</option><option>연습</option><option>대회</option></select></div></div>
   <div class="lbl">볼링장</div>
   <div class="row"><select id="rcAlley" class="grow"></select><button class="sec" id="rcAddAlley">볼링장 등록</button></div>
   <div id="rcG">
@@ -402,6 +417,12 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
 
 <div id="alSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
   <h2 id="alTitle">볼링장 등록</h2>
+  <div id="alFind"><div class="lbl">목록에서 찾기 <span id="afCnt" class="small"></span></div>
+    <div class="g2"><select id="afSido"></select><select id="afGu"></select></div>
+    <input type="text" id="afQ" placeholder="이름·동 검색 (예: 잠실, 락, 스트라이크)" style="margin-top:6px">
+    <div id="afList" class="aflist" style="margin-top:6px"></div>
+    <div class="small" id="afNote" style="margin-top:4px"></div>
+    <div class="lbl" style="margin-top:12px">고른 볼링장 (고칠 수 있습니다)</div></div>
   <div class="lbl">볼링장 이름</div><input type="text" id="alName" placeholder="예: 송파 스트라이크볼링장">
   <div class="lbl">지역(선택)</div><input type="text" id="alArea" placeholder="예: 서울 송파">
   <div class="lbl">메모(선택)</div><input type="text" id="alMemo" placeholder="레인 수, 요금, 주차 등">
@@ -1170,8 +1191,10 @@ $('sheetSel').onchange = (e) => chooseSheet(+e.target.value);
 
 // ===== 화면 전환(홈·기록·크루·마이) =====
 const VIEWS = ['home', 'rec', 'crew', 'me']; let curView = 'home';
+function fixWide() { try { if (window.innerWidth > screen.width + 2) { const m = document.querySelector('meta[name=viewport]'); const c = m.getAttribute('content'); m.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover'); requestAnimationFrame(() => { m.setAttribute('content', c); window.scrollTo(0, window.scrollY); }); } } catch (e) {} }
+window.addEventListener('resize', fixWide);
 function view(v) {
-  curView = v;
+  curView = v; fixWide();
   VIEWS.forEach(x => $('v-' + x).classList.toggle('hide', x !== v));
   document.querySelectorAll('#bnav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('hdr').classList.toggle('hide', v === 'home');
@@ -1248,7 +1271,7 @@ function alleyTable(rs) {
 }
 let RECLIM = 30;
 function recRow(r) {
-  const kc = r.kind === '대회' ? 'k3' : r.kind === '연습' ? 'k2' : ''; const al = alleyName(r.alleyId) || '볼링장 미지정'; let mid, av;
+  const kc = r.kind === '대회' ? 'k3' : r.kind === '연습' ? 'k2' : r.kind === '벙개' ? 'k4' : ''; const al = alleyName(r.alleyId) || '볼링장 미지정'; let mid, av;
   if (r.k === 'e') { mid = '<div class="al">' + esc(al) + '<span class="kbadge ks">에버 입력</span></div><div class="small">' + r.n + '게임 평균' + (r.hi ? ' · 최고 ' + r.hi : '') + '</div>'; av = '<b style="font:inherit">' + fmtA(r.avg) + '</b><small>에버</small>'; }
   else { const sm = r.scores.reduce((a, b) => a + b, 0); mid = '<div class="al">' + esc(al) + '<span class="kbadge ' + kc + '">' + esc(r.kind || '연습') + '</span></div><div>' + r.scores.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>'; av = fmtA(sm / r.scores.length) + '<small>' + r.scores.length + '게임 평균</small>'; }
   return '<div class="rec" data-id="' + r.id + '"><div class="d"><b>' + (+r.date.slice(8, 10)) + '</b><small>' + (+r.date.slice(5, 7)) + '월 ' + dowK(r.date) + '</small></div><div class="mid">' + mid + (r.note ? '<div class="small">' + esc(r.note) + '</div>' : '') + '</div><div class="av">' + av + '</div></div>';
@@ -1337,12 +1360,12 @@ let AL = { id: null, after: null };
 function openAl(id, after) {
   const a = id ? REC.alleys.find(x => x.id === id) : null; AL = { id: a ? a.id : null, after: after || null };
   $('alTitle').textContent = a ? '볼링장 고치기' : '볼링장 등록'; $('alName').value = a ? a.name : ''; $('alArea').value = a ? (a.area || '') : ''; $('alMemo').value = a ? (a.memo || '') : ''; $('alFav').checked = !!(a && a.fav);
-  $('alDel').classList.toggle('hide', !a); $('alSheet').classList.remove('hide'); if (!a) setTimeout(() => $('alName').focus(), 120);
+  $('alDel').classList.toggle('hide', !a); $('alFind').classList.toggle('hide', !!a); $('alSheet').classList.remove('hide'); if (!a) afOpen();
 }
 $('alClose').onclick = () => $('alSheet').classList.add('hide');
 $('alSave').onclick = () => {
   const name = $('alName').value.trim(); if (!name) return alert('볼링장 이름을 넣어 주세요.');
-  if (REC.alleys.some(x => x.name === name && x.id !== AL.id)) return alert('같은 이름의 볼링장이 이미 있습니다.');
+  const area0 = $('alArea').value.trim(); if (REC.alleys.some(x => x.name === name && (x.area || '') === area0 && x.id !== AL.id)) return alert('같은 이름과 지역의 볼링장이 이미 등록돼 있습니다.');
   let a = AL.id ? REC.alleys.find(x => x.id === AL.id) : null; if (!a) { a = { id: uid() }; REC.alleys.push(a); }
   a.name = name; a.area = $('alArea').value.trim(); a.memo = $('alMemo').value.trim(); a.fav = $('alFav').checked; saveRec(); $('alSheet').classList.add('hide');
   const f = AL.after; AL.after = null; if (f) f(a.id); if (curView === 'me') renderMe(); if (curView === 'rec') renderRec();
@@ -1352,6 +1375,37 @@ $('alDel').onclick = () => {
   if (!confirm('"' + a.name + '"을(를) 지울까요?' + (used ? ' 이 볼링장의 기록 ' + used + '건은 그대로 남고 "볼링장 미지정"이 됩니다.' : ''))) return;
   REC.recs.forEach(r => { if (r.alleyId === a.id) r.alleyId = ''; }); REC.alleys = REC.alleys.filter(x => x.id !== a.id); saveRec(); $('alSheet').classList.add('hide'); if (curView === 'me') renderMe(); if (curView === 'rec') renderRec();
 };
+
+
+// ----- 볼링장 목록(칠텐, 네이버 지도, 대한볼링협회 공인경기장을 합쳐 중복 제거) -----
+let AFS = { sel: -1, ready: false };
+function loadAlleyData() { return new Promise((res, rej) => { if (window.ALLEYS) return res(); const s = document.createElement('script'); s.src = 'alleys.js'; s.onload = () => res(); s.onerror = () => rej(new Error('볼링장 목록을 불러오지 못했습니다. 아래에서 직접 입력해 주세요.')); document.head.appendChild(s); }); }
+async function afOpen() {
+  AFS.sel = -1; $('afQ').value = ''; $('afList').innerHTML = ''; $('afNote').textContent = '볼링장 목록을 불러오는 중...';
+  try { await loadAlleyData(); } catch (e) { $('afNote').textContent = e.message; return; }
+  const A = window.ALLEYS;
+  if (!AFS.ready) { $('afSido').innerHTML = '<option value="">전체 지역</option>' + Object.keys(A.regions).map(s => '<option value="' + s + '">' + s + ' (' + A.regions[s].reduce((a, b) => a + b[1], 0) + ')</option>').join(''); AFS.ready = true; }
+  $('afSido').value = REC.lastSido || ''; afGuFill(); $('afCnt').textContent = '(전국 ' + A.counts.total + '곳)'; afRender();
+}
+function afGuFill() { const A = window.ALLEYS, s = $('afSido').value; $('afGu').innerHTML = s ? '<option value="">전체 구·군</option>' + A.regions[s].map(([g, n]) => '<option value="' + esc(g) + '">' + esc(g) + ' (' + n + ')</option>').join('') : '<option value="">지역을 먼저 고르세요</option>'; $('afGu').disabled = !s; }
+function afRender() {
+  const A = window.ALLEYS; if (!A) return; const s = $('afSido').value, g = $('afGu').value, q = $('afQ').value.trim().toLowerCase().replace(/\s+/g, '');
+  const mine = new Set(REC.alleys.map(a => a.name + '|' + (a.area || '')));
+  const rows = []; A.list.forEach((r, i) => { if (s && r[1] !== s) return; if (g && (r[2] || '(구·군 미상)') !== g) return; if (q && !(r[0] + r[1] + r[2] + r[3] + r[4]).toLowerCase().replace(/\s+/g, '').includes(q)) return; rows.push(i); });
+  const LIM = 80;
+  $('afList').innerHTML = rows.slice(0, LIM).map(i => { const r = A.list[i]; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); const has = mine.has(r[0] + '|' + area);
+    return '<div class="afrow' + (i === AFS.sel ? ' on' : '') + '" data-i="' + i + '"><b>' + esc(r[0]) + '</b>' + (has ? '<span class="kbadge ks">등록됨</span>' : '') + ((r[6] & 4) ? '<span class="kbadge">협회 공인</span>' : '') + '<span class="small">' + esc(area) + (r[4] ? ' · ' + esc(r[4]) : '') + (r[5] ? ' · ' + r[5] + '레인' : '') + '</span></div>'; }).join('') || '<div class="empty">조건에 맞는 볼링장이 없습니다.</div>';
+  $('afNote').textContent = rows.length + '곳' + (rows.length > LIM ? ' 중 ' + LIM + '곳만 보입니다. 구·군을 고르거나 검색어를 넣어 좁혀 보세요.' : '이 있습니다.') + ' 목록에 없으면 아래에 직접 입력하세요.';
+  $('afList').querySelectorAll('.afrow').forEach(el => el.onclick = () => afPick(+el.dataset.i));
+}
+function afPick(i) {
+  const r = window.ALLEYS.list[i]; AFS.sel = i;
+  $('alName').value = r[0]; $('alArea').value = [r[1], r[2], r[3]].filter(Boolean).join(' '); $('alMemo').value = [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · ');
+  afRender(); try { $('alSave').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+}
+$('afSido').onchange = () => { REC.lastSido = $('afSido').value; saveRec(); afGuFill(); afRender(); };
+$('afGu').onchange = afRender;
+$('afQ').oninput = afRender;
 
 // ----- 마이 -----
 function renderMe() {
@@ -1363,7 +1417,7 @@ $('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); saveRec(); 
 $('btnAlNew').onclick = () => openAl(null);
 $('btnWipe').onclick = () => { if (!REC.recs.length) return alert('지울 기록이 없습니다.'); if (!confirm('내 점수 기록 ' + REC.recs.length + '건을 모두 지울까요? 되돌릴 수 없습니다. (볼링장 목록과 크루 명단은 남습니다)')) return; REC.recs = []; saveRec(); renderMe(); alert('기록을 모두 지웠습니다.'); };
 $('btnBk').onclick = async () => {
-  const data = JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC }); const name = '볼링팀구성_백업_' + isoToday() + '.json';
+  const data = JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC }); const name = '오늘도스트라이크_백업_' + isoToday() + '.json';
   const file = new File([data], name, { type: 'application/json' });
   try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
@@ -1390,8 +1444,8 @@ function toDateISO(s) {
   if (mo < 1 || mo > 12 || d < 1 || d > 31 || y < 2000 || y > 2100) return '';
   return y + '-' + pad2(mo) + '-' + pad2(d);
 }
-const kindOf = (s) => { s = String(s || ''); if (/연습/.test(s)) return '연습'; if (/대회|리그|토너|오픈/.test(s)) return '대회'; if (/정모|정기/.test(s)) return '정모'; return ''; };
-const STOPW = /^(날짜|일자|일시|볼링장|장소|구분|점수|스코어|합계|총점|평균|에버|에버리지|게임|게임수|최고|최저|메모|비고|순위|이름|성명|회차|정모|정기|연습|대회|리그|date|score|scores|total|avg|game|games|no|g)$/i;
+const kindOf = (s) => { s = String(s || ''); if (/연습/.test(s)) return '연습'; if (/벙개|번개/.test(s)) return '벙개'; if (/대회|리그|토너|오픈/.test(s)) return '대회'; if (/정모|정기/.test(s)) return '정모'; return ''; };
+const STOPW = /^(날짜|일자|일시|볼링장|장소|구분|점수|스코어|합계|총점|평균|에버|에버리지|게임|게임수|최고|최저|메모|비고|순위|이름|성명|회차|정모|정기|벙개|번개|연습|대회|리그|date|score|scores|total|avg|game|games|no|g)$/i;
 const parseScores = (t) => String(t || '').split(/[\s,;]+/).map(x => parseInt(x, 10)).filter(v => isFinite(v) && v >= 0 && v <= 300);
 function textLineToRec(line, ctx) {
   let s = String(line || '').replace(/[|｜]/g, ' ').replace(/\s+/g, ' ').trim(); if (!s) return null; let date = '', m;
@@ -1403,7 +1457,7 @@ function textLineToRec(line, ctx) {
   if ((m = s.match(/최고\s*[:=]?\s*(\d{2,3})/))) { hi = +m[1]; s = s.replace(m[0], ' '); }
   s = s.replace(/(\d{1,2})[Gg](\d{2,3})/g, '$1G $2').replace(/(?:^|\s)[Gg]\s*\d{1,2}(?=\s|$)|(?:^|\s)\d{1,2}\s*[Gg](?=\s|$)|\d{1,2}\s*(?:번째|게임째)|(?:합계|총점|총|계)\s*\d{2,4}/g, ' ');
   const scores = [], words = [];
-  s.split(/[\s,;]+/).filter(Boolean).forEach(t => { if (/^\d{2,3}$/.test(t)) { if (+t >= 20 && +t <= 300) scores.push(+t); } else if (/^\d{2,3}\.\d$/.test(t)) { if (!ever && +t >= 50 && +t <= 300) ever = +t; } else { const w = t.replace(/정모|정기|연습|대회|리그|토너먼트|토너/g, ''); if (/[가-힣A-Za-z]{2,}/.test(w) && !STOPW.test(w)) words.push(w); } });
+  s.split(/[\s,;]+/).filter(Boolean).forEach(t => { if (/^\d{2,3}$/.test(t)) { if (+t >= 20 && +t <= 300) scores.push(+t); } else if (/^\d{2,3}\.\d$/.test(t)) { if (!ever && +t >= 50 && +t <= 300) ever = +t; } else { const w = t.replace(/정모|정기|벙개|번개|연습|대회|리그|토너먼트|토너/g, ''); if (/[가-힣A-Za-z]{2,}/.test(w) && !STOPW.test(w)) words.push(w); } });
   const alley = words.join(' ').trim(), kind = kindOf(line);
   if (!scores.length && !ever) { if (date) { ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind; } return null; }
   if (date) ctx.date = date; if (alley) ctx.alley = alley; if (kind) ctx.kind = kind;
@@ -1457,7 +1511,7 @@ async function ocrImageText(file, st) {
 }
 let RI = { rows: [], src: '파일', busy: false, sheets: [] };
 function openRi() { RI.rows = []; RI.sheets = []; $('riStatus').textContent = ''; $('riSheetPick').classList.add('hide'); riRender(); $('riSheet').classList.remove('hide'); }
-$('riClose').onclick = () => $('riSheet').classList.add('hide');
+$('riClose').onclick = () => { $('riSheet').classList.add('hide'); fixWide(); };
 $('riSheet').onclick = (e) => { if (e.target === $('riSheet')) $('riSheet').classList.add('hide'); };
 function riSetRows(list) { RI.rows = list.map(r => Object.assign({}, r, { on: !!r.date && (r.k === 'g' ? r.scores.length > 0 : r.avg > 0) })); riRender(); }
 function riRender() {
@@ -1466,7 +1520,7 @@ function riRender() {
   box.innerHTML = rows.map((r, i) => {
     const bad = !r.date || (r.k === 'g' && !r.scores.length);
     return '<div class="rirow' + (bad ? ' bad' : '') + '" data-i="' + i + '"><label class="row"><input type="checkbox" class="rck" style="width:24px;height:24px"' + (r.on ? ' checked' : '') + '><b>' + (i + 1) + '번</b>' + (r.k === 'e' ? '<span class="kbadge ks">에버 입력</span>' : '') + (r.alley && !REC.alleys.some(a => a.name.toLowerCase() === r.alley.toLowerCase()) ? '<span class="kbadge k2">새 볼링장</span>' : '') + '<span class="grow"></span><button class="gray rdel" style="padding:6px 10px">빼기</button></label>'
-      + '<div class="row"><input type="date" class="rdate grow" value="' + esc(r.date) + '"><select class="rkind" style="width:92px">' + ['정모', '연습', '대회'].map(k => '<option' + ((r.kind || '연습') === k ? ' selected' : '') + '>' + k + '</option>').join('') + '</select></div>'
+      + '<div class="row"><input type="date" class="rdate grow" value="' + esc(r.date) + '"><select class="rkind" style="width:92px">' + ['정모', '벙개', '연습', '대회'].map(k => '<option' + ((r.kind || '연습') === k ? ' selected' : '') + '>' + k + '</option>').join('') + '</select></div>'
       + '<div class="row"><input type="text" class="ral grow" list="alleyDL" placeholder="볼링장 이름(선택)" value="' + esc(r.alley) + '"></div>'
       + (r.k === 'g' ? '<div class="row"><input type="text" class="rsc grow" inputmode="numeric" placeholder="점수들 (띄어쓰기로 구분)" value="' + esc(r.scores.join(' ')) + '"></div>' : '<div class="row"><div class="grow"><div class="lbl">에버</div><input type="number" class="rav" inputmode="decimal" value="' + r.avg + '"></div><div class="grow"><div class="lbl">게임 수</div><input type="number" class="rn" inputmode="numeric" value="' + r.n + '"></div></div>') + '</div>';
   }).join('');
