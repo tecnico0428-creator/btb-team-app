@@ -517,6 +517,7 @@ header .hrow{padding-right:92px}
 <div id="tab-team" class="hide">
   <div class="card">
     <div class="row"><button id="btnBuild" class="grow">팀 구성</button><button id="btnPrev" class="gray">이전안</button><button id="btnNext" class="sec">다음안</button><button id="btnNew" class="sec">새 조합</button></div>
+    <div class="row" style="margin-top:8px"><button id="btnTeamReset" class="gray grow">이번 참석·편성 초기화 (크루는 그대로)</button><button id="btnHistView" class="sec">편성 기록 보기</button></div>
     <div class="small" id="buildInfo"></div>
   </div>
   <div id="swapHint" class="small hide" style="margin:2px 4px 6px">두 사람을 차례로 누르면 자리를 바꿉니다. 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 구성하세요.</div>
@@ -525,6 +526,7 @@ header .hrow{padding-right:92px}
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
     <div class="row" style="margin-top:8px"><select id="histKind" style="width:96px" aria-label="편성 종류"><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select><button id="btnHistSave" class="sec grow">팀 편성 기록 저장 (다음에 같은 팀 피하기용)</button></div>
+    <div class="row" style="margin-top:6px"><button id="btnHistView2" class="gray grow">저장한 편성 기록 보기·삭제</button></div>
     
   </div>
 </div>
@@ -597,6 +599,7 @@ header .hrow{padding-right:92px}
   <div class="card"><div class="ttl">AI 판독 연결</div><div class="small" id="aiStat"></div><div class="small" style="margin-top:4px">점수표 사진 판독이 더 정확해지려면 AI를 연결하세요. 연결하지 않아도 기본 판독은 됩니다.</div><button id="btnAiSet" style="width:100%;margin-top:8px">AI 연결 설정</button></div>
   <div class="card"><div class="ttl">백업과 복원</div><div class="small">기록과 크루 명단은 이 폰 안에만 저장됩니다. 앱을 지우거나 폰을 바꾸면 사라지니 가끔 백업 파일을 저장해 두세요.</div><div class="row" style="margin-top:8px"><button id="btnBk" class="grow">백업 파일 저장</button><button id="btnRs" class="sec grow">백업에서 복원</button></div><div class="row" style="margin-top:8px"><button id="btnBkTxt" class="sec grow">백업 글로 복사</button><button id="btnRsTxt" class="sec grow">글 붙여넣어 복원</button></div><div class="small" style="margin-top:4px">파일 저장이 안 되는 폰에서는 "백업 글로 복사"를 눌러 카톡 나와의 채팅 등에 붙여 두세요.</div><textarea id="bkTxt" rows="4" class="hide" style="margin-top:8px" placeholder="복사해 둔 백업 글을 여기에 붙여 넣으세요"></textarea><button id="btnRsGo" class="hide" style="width:100%;margin-top:6px">이 글로 복원</button><input type="file" id="fileRs" accept=".json,application/json" class="hide"></div>
   <div class="card"><div class="ttl">사용 안내</div><ul class="small" style="margin:6px 0 0;padding-left:18px"><li>홈의 "게임 시작": 오늘 친 점수를 입력합니다.</li><li>기록: 기간별 에버와 통계, 볼링장별 에버를 봅니다.</li><li>에버는 점수에서 자동 계산됩니다. 지난 기록은 "에버 입력"이나 파일·사진 "가져오기"로 넣을 수 있습니다.</li><li>크루: 정모 팀 짜기(에버, 시드, 남녀 균형).</li></ul></div>
+  <div class="card"><button id="btnSetupAgain" class="sec" style="width:100%">처음 설정 다시 보기 (내 정보 → 볼링장 → 크루)</button></div>
   <div class="card"><button id="btnWipe" class="danger">내 점수 기록 모두 지우기</button><div class="small" style="margin-top:6px">크루 명단은 지워지지 않습니다.</div></div>
   <div class="appver verline" style="margin-bottom:12px"></div>
 </section>
@@ -604,6 +607,40 @@ header .hrow{padding-right:92px}
 <nav class="bnav" id="bnav"><button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>홈</span></button><button data-v="rec"><svg viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M10 20V8"/><path d="M15 20v-9"/><path d="M20 20V4"/></svg><span>기록</span></button><button data-v="crew"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2.2"/><circle cx="19" cy="10" r="2.2"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M2 18c0-2 1.3-3.4 3-3.4"/><path d="M22 18c0-2-1.3-3.4-3-3.4"/></svg><span>크루</span></button><button data-v="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg><span>마이</span></button></nav>
 
 <button id="btnHelp" class="helpbtn" aria-label="도움말과 개발자 요청"><b>?</b><span>도움말</span></button>
+<div id="hsSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
+  <h2>팀 편성 기록</h2>
+  <div class="small" id="hsSub"></div>
+  <div class="chips" id="hsKinds" style="margin:8px 0"></div>
+  <div id="hsList"></div>
+  <div class="row savebar" style="margin-top:10px"><button id="hsAll" class="sec">전체 선택</button><button id="hsDel" class="danger grow">선택한 기록 삭제</button><button id="hsClose" class="gray">닫기</button></div>
+</div></div>
+<div id="suSheet" class="sheetbg hide" style="z-index:35"><div class="sheet">
+  <div class="small" id="suStep" style="font-weight:800;letter-spacing:.05em"></div>
+  <div id="su1">
+    <h2>내 정보 등록</h2>
+    <div class="small">점수표 사진에서 내 줄을 찾고, 크루 명단의 내 에버를 맞출 때 씁니다.</div>
+    <div class="lbl">이름</div><input type="text" id="suName" placeholder="이름">
+    <div class="lbl">닉네임 (선택, 여러 개면 쉼표로)</div><input type="text" id="suNick" placeholder="예: 햄토리, 서현이">
+    <button id="suRestore" class="gray" style="width:100%;margin-top:10px">예전에 저장한 백업 파일이 있으면 복원하기</button>
+    <label class="row" style="margin-top:10px"><input type="checkbox" id="suMeSkip" style="width:22px;height:22px"> <span style="flex:1">사용 안함 (내 점수 기록은 쓰지 않고 팀 짜기만 씀)</span></label>
+  </div>
+  <div id="su2" class="hide">
+    <h2>볼링장 등록</h2>
+    <div class="small">자주 가는 볼링장을 등록하면 점수 기록과 사진 판독에 씁니다. 볼링장 등록 창의 "내 정보 그대로 반영"으로 이름을 다시 적지 않아도 됩니다.</div>
+    <div id="suAlleys" style="margin:8px 0"></div>
+    <button id="suAlAdd" class="sec" style="width:100%">+ 볼링장 등록</button>
+    <label class="row" style="margin-top:10px"><input type="checkbox" id="suAlSkip" style="width:22px;height:22px"> <span style="flex:1">사용 안함 (나중에 마이 탭에서 등록)</span></label>
+  </div>
+  <div id="su3" class="hide">
+    <h2>크루 등록</h2>
+    <div class="small">팀을 짤 크루(동호회)를 등록하세요. 팀원 명단은 나중에 크루 탭의 명단에서 넣습니다.</div>
+    <div id="suCrews" style="margin:8px 0"></div>
+    <div class="row"><input type="text" id="suCrewName" class="grow" placeholder="크루 이름"><button id="suCrewAdd">등록</button></div>
+    <label class="row" style="margin-top:10px"><input type="checkbox" id="suCrewNone" style="width:22px;height:22px"> <span style="flex:1">크루 없음 (혼자 기록만 씀)</span></label>
+  </div>
+  <div class="row savebar" style="margin-top:14px"><button id="suPrev" class="gray">‹ 이전</button><button id="suNext" class="grow">다음</button></div>
+  <div class="small" style="text-align:center;margin-top:6px">처음 한 번만 나옵니다. 마이 탭 "처음 설정 다시 보기"로 다시 열 수 있습니다.</div>
+</div></div>
 <div id="hpSheet" class="sheetbg hide"><div class="sheet">
   <h2>도움말</h2>
   <button class="hpitem" id="hpGuide"><span class="hpt">앱 사용 설명서</span><span class="small">처음 쓰는 방법과 기능별 사용법</span></button>
@@ -1214,7 +1251,7 @@ $('btnHistSave').onclick = () => {
     cl.hist = hs.concat([{ id: uid(), t: Date.now(), date, kind, teams, joint: J ? jointTitle(J) : '' }]).slice(-HIST_MAX); saved++;
   }
   if (!saved) return alert('저장할 편성이 없습니다(같은 크루 사람이 2명 이상 있는 팀이 없거나 저장을 취소했습니다).');
-  if (!save()) { clubs.forEach(cl => { if (histBefore[cl.id]) cl.hist = histBefore[cl.id]; }); return; } alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
+  if (!save()) { clubs.forEach(cl => { if (histBefore[cl.id]) cl.hist = histBefore[cl.id]; }); return; } HIST_SAVED_SIG = teamSig(); alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
 };
 
 // ===== 팀 구성 =====
@@ -2225,7 +2262,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 31, APP_DATE = '2026.11.08';
+const APP_VER = 32, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2690,11 +2727,74 @@ $('ciDel').onclick = () => { const c = C(); if (!c) return; delete c.img; save()
 ['ciFileCam', 'ciFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ciPick(f); });
 function setHeadAv() { const el = $('hAv'); const c = (typeof curView !== 'undefined' && curView === 'crew' && DB.cur) ? C() : null; if (c && c.img) { el.src = c.img; el.classList.remove('hide'); } else el.classList.add('hide'); }
 
+
+// ===== 팀 구성 초기화: 선택한 크루는 그대로 두고 참석 체크와 팀 구성만 지운다 =====
+let HIST_SAVED_SIG = '';
+const teamSig = () => curTeams ? curTeams.map(t => t.map(m => m.id).sort().join(',')).sort().join('|') : '';
+$('btnTeamReset').onclick = () => {
+  const c = C(); if (!c) return; const J = jointOf(c); const n = c.present.length + (J ? J.clubs.slice(1).reduce((a, cl) => a + jpres(c, cl).length, 0) : 0);
+  const unsaved = curTeams && teamSig() !== HIST_SAVED_SIG;
+  if (!confirm('"' + c.name + '" 크루의 참석 체크 ' + n + '명' + (J ? '(합동 참석 포함)' : '') + '과 지금 팀 구성을 지울까요?\n\n선택한 크루·명단·저장한 편성 기록은 그대로입니다.' + (unsaved ? '\n※ 지금 팀 구성은 아직 "팀 편성 기록 저장"을 하지 않았습니다. 저장하려면 취소하고 먼저 저장하세요.' : ''))) return;
+  const keepP = c.present.slice(), keepJ = c.joint && c.joint.present ? JSON.parse(JSON.stringify(c.joint.present)) : null;
+  c.present = []; if (c.joint && c.joint.present) c.joint.present = {}; if (!save()) { c.present = keepP; if (keepJ) c.joint.present = keepJ; return; }
+  result = null; curTeams = null; sel = null; manual = false; HIST_SAVED_SIG = '';
+  $('teamOut').innerHTML = '<div class="card small">초기화했습니다. 참석 탭에서 오늘 참석자를 체크하세요.</div>'; $('buildInfo').textContent = ''; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide');
+  tab('att');
+};
+// ===== 팀 편성 기록 보기·삭제 =====
+let HS = { kind: '', sel: new Set() };
+function openHist() { HS = { kind: '', sel: new Set() }; renderHist(); $('hsSheet').classList.remove('hide'); }
+function renderHist() {
+  const c = C(); if (!c) return; const hs = histOf(c); const nm = (id) => { const x = c.members.find(y => y.id === id); return x ? dn(x) : '(지운 팀원)'; };
+  const kinds = ['', '정모', '벙개', '대회', '연습']; $('hsKinds').innerHTML = kinds.map(k => '<button class="chip' + (HS.kind === k ? ' on' : '') + '" data-k="' + k + '">' + (k || '전체') + ' ' + hs.filter(h => !k || h.kind === k).length + '</button>').join('');
+  $('hsKinds').querySelectorAll('.chip').forEach(b => b.onclick = () => { HS.kind = b.dataset.k; renderHist(); });
+  const list = hs.filter(h => !HS.kind || h.kind === HS.kind).slice().sort((a, b) => (b.date < a.date ? -1 : b.date > a.date ? 1 : 0) || ((b.t || 0) - (a.t || 0)));
+  $('hsSub').textContent = c.name + ' · 저장한 편성 ' + hs.length + '개 (최근 것이 위). 날짜를 누르면 팀 구성을 볼 수 있습니다.';
+  let lastD = ''; $('hsList').innerHTML = list.length ? list.map(h => { const dh = h.date !== lastD ? '<div class="lbl" style="margin-top:10px"><b>' + esc(fmtD(h.date)) + '</b></div>' : ''; lastD = h.date; return dh + '<div class="hist" style="align-items:flex-start"><input type="checkbox" data-id="' + h.id + '"' + (HS.sel.has(h.id) ? ' checked' : '') + ' style="width:22px;height:22px;flex:none;margin-top:2px" aria-label="' + esc(fmtD(h.date) + ' ' + h.kind) + ' 선택"><details style="flex:1"><summary><b>' + esc(h.kind || '구분 없음') + '</b> · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + (h.t ? ' <span class="small">' + new Date(h.t).toTimeString().slice(0, 5) + '</span>' : '') + '</summary><div class="small" style="padding:4px 0">' + h.teams.map((t, i) => '<div><b>' + (i + 1) + '팀</b> ' + t.map(id => esc(nm(id))).join(', ') + '</div>').join('') + '</div></details></div>'; }).join('') : '<div class="small" style="padding:10px 0">저장한 편성 기록이 없습니다. 팀을 짠 뒤 "팀 편성 기록 저장"을 누르면 여기에 날짜별로 쌓입니다.</div>';
+  $('hsList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { if (ck.checked) HS.sel.add(ck.dataset.id); else HS.sel.delete(ck.dataset.id); $('hsDel').textContent = '선택한 기록 삭제' + (HS.sel.size ? ' (' + HS.sel.size + ')' : ''); });
+  $('hsDel').textContent = '선택한 기록 삭제' + (HS.sel.size ? ' (' + HS.sel.size + ')' : '');
+}
+$('btnHistView').onclick = openHist; $('btnHistView2').onclick = openHist;
+$('hsClose').onclick = () => { $('hsSheet').classList.add('hide'); if (!$('tab-att').classList.contains('hide')) renderAvoid(); };
+$('hsAll').onclick = () => { const c = C(); const list = histOf(c).filter(h => !HS.kind || h.kind === HS.kind); const all = list.every(h => HS.sel.has(h.id)); list.forEach(h => all ? HS.sel.delete(h.id) : HS.sel.add(h.id)); renderHist(); };
+$('hsDel').onclick = () => { const c = C(); if (!HS.sel.size) return alert('지울 기록을 체크해 주세요.'); const hs = histOf(c); const pick = hs.filter(h => HS.sel.has(h.id)); const n = pick.length; if (!confirm('체크한 편성 기록 ' + n + '개를 지울까요?\n' + pick.slice(0, 6).map(h => '· ' + fmtD(h.date) + ' ' + (h.kind || '') + ' ' + h.teams.length + '팀').join('\n') + (n > 6 ? '\n· 외 ' + (n - 6) + '개' : '') + '\n\n지운 기록은 "최근 같은 팀 피하기" 계산에서도 빠지고 되돌릴 수 없습니다.')) return; c.hist = hs.filter(h => !HS.sel.has(h.id)); if (!save()) { c.hist = hs; return; } HS.sel = new Set(); renderHist(); };
+// ===== 처음 설정: 내 정보 → 볼링장 → 크루 (안 쓰는 항목은 "사용 안함") =====
+const SU_KEY = 'btbTeams.setup.v1';
+function suState() { try { const o = JSON.parse(localStorage.getItem(SU_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+function suSave(o) { try { localStorage.setItem(SU_KEY, JSON.stringify(o)); return true; } catch (e) { alert('설정을 저장하지 못했습니다(저장 공간 부족 등). 다음에 앱을 열 때 처음 설정이 다시 나올 수 있습니다.'); return false; } }
+function suDone(i) { const st = suState(); if (i === 1) return !!(REC.me.name || '').trim() || st.me === 'skip'; if (i === 2) return REC.alleys.length > 0 || st.alley === 'skip'; return DB.clubs.length > 0 || st.crew === 'none'; }
+let SU = 1;
+function suShow() {
+  const st = suState(); [1, 2, 3].forEach(i => $('su' + i).classList.toggle('hide', i !== SU)); $('suStep').textContent = '처음 설정 ' + SU + ' / 3'; $('suPrev').classList.toggle('hide', SU === 1); $('suNext').textContent = SU === 3 ? '완료' : '다음';
+  if (SU === 1) { $('suName').value = REC.me.name || ''; $('suNick').value = REC.me.nick || ''; $('suMeSkip').checked = st.me === 'skip'; $('suName').disabled = $('suNick').disabled = $('suMeSkip').checked; }
+  if (SU === 2) { $('suAlleys').innerHTML = REC.alleys.length ? REC.alleys.map(a => '<div class="hist">✔ ' + esc(a.name) + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '</div>').join('') : '<div class="small">아직 등록한 볼링장이 없습니다.</div>'; $('suAlSkip').checked = st.alley === 'skip'; }
+  if (SU === 3) { $('suCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => '<div class="hist">✔ ' + esc(c.name) + ' <span class="small">팀원 ' + c.members.length + '명</span></div>').join('') : '<div class="small">아직 등록한 크루가 없습니다.</div>'; $('suCrewNone').checked = st.crew === 'none'; }
+  setTimeout(() => { const f = SU === 1 && !$('suName').disabled && !$('suName').value ? $('suName') : SU === 3 && !$('suCrewNone').checked && !DB.clubs.length ? $('suCrewName') : null; if (f) try { f.focus(); } catch (e) {} }, 150);
+}
+function openSetup(step) { SU = step || ([1, 2, 3].find(i => !suDone(i)) || 1); suShow(); $('suSheet').classList.remove('hide'); }
+$('suMeSkip').onchange = () => { $('suName').disabled = $('suNick').disabled = $('suMeSkip').checked; };
+$('suAlAdd').onclick = () => openAl(null, () => { const st = suState(); delete st.alley; suSave(st); suShow(); });
+$('suCrewAdd').onclick = () => { const n = $('suCrewName').value.trim(); if (!n) { alert('크루 이름을 입력해 주세요.'); return false; } if (DB.clubs.some(c => c.name === n)) { alert('같은 이름의 크루가 이미 있습니다.'); return false; } const nc = { id: uid(), name: n, members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: SEED_DEFAULT() }; DB.clubs.push(nc); if (!save()) { DB.clubs = DB.clubs.filter(c => c !== nc); return false; } $('suCrewName').value = ''; const st = suState(); delete st.crew; suSave(st); suShow(); return true; };
+$('suPrev').onclick = () => { if (SU > 1) { SU--; suShow(); } };
+$('suNext').onclick = () => {
+  const st = suState();
+  if (SU === 1) { if ($('suMeSkip').checked) st.me = 'skip'; else { const nm = $('suName').value.trim(); if (!nm) return alert('이름을 넣거나 "사용 안함"을 체크해 주세요.'); REC.me.name = nm; REC.me.nick = $('suNick').value.trim(); delete st.me; saveRec(); } }
+  if (SU === 2) { if ($('suAlSkip').checked) st.alley = 'skip'; else { if (!REC.alleys.length) return alert('볼링장을 하나 이상 등록하거나 "사용 안함"을 체크해 주세요.'); delete st.alley; } }
+  if (SU === 3) { if ($('suCrewNone').checked) st.crew = 'none'; else { if ($('suCrewName').value.trim() && !$('suCrewAdd').onclick()) return; if (!DB.clubs.length) return alert('크루를 하나 이상 등록하거나 "크루 없음"을 체크해 주세요.'); delete st.crew; } }
+  st.v = 1; suSave(st);
+  const next = [1, 2, 3].find(i => i > SU && !suDone(i)) || (SU < 3 ? SU + 1 : 0);
+  if (next && next <= 3) { SU = next; suShow(); return; }
+  $('suSheet').classList.add('hide'); const nc = DB.clubs.find(c => !c.members.length && st.crew !== 'none');
+  if (nc && confirm('"' + nc.name + '" 크루에 팀원이 아직 없습니다. 지금 명단을 넣을까요?')) { view('crew'); openClub(nc.id); tab('mem'); } else view(curView === 'me' ? 'me' : 'home');
+};
+$('btnSetupAgain').onclick = () => openSetup(1);
+$('suRestore').onclick = () => { $('suSheet').classList.add('hide'); $('btnRs').click(); };
 // ===== 시작 =====
 (async () => {
   const m = location.hash.match(/^#r=([A-Za-z0-9_-]+)/);
   if (m) { try { const t = await decodeRoster(m[1]); applyRosterText(t, '비투비'); } catch (e) { alert('명단 링크를 읽지 못했습니다.'); } try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} return; }
   view('home');
+  if (![1, 2, 3].every(suDone)) setTimeout(() => openSetup(), 350); // 처음 쓰는 사람: 비어 있는 칸부터 자동으로 연다
 })();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
