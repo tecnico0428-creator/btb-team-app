@@ -58,6 +58,10 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .ok{color:var(--ok)}.warn{color:var(--warn)}
 .lbl{font-size:13px;color:var(--sub);margin:6px 0 2px}
 .small{font-size:13px;color:var(--sub)}
+.hdbox{border:2px solid var(--ink);border-radius:14px;padding:10px;margin:8px 0;background:#fff}
+.hdbox input[type=checkbox]{width:22px;height:22px}
+.hist{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.hist:last-child{border-bottom:0}
 .jcrew{display:flex;align-items:center;gap:8px;border:2px solid rgba(16,65,61,.35);border-radius:14px;padding:8px 10px;margin-top:6px;font-size:17px}
 .jcrew.on{border-color:var(--ink);background:#fff}
 .jcrew input{width:22px;height:22px;flex:none}
@@ -362,6 +366,18 @@ header .hrow{padding-right:92px}
       <div class="small" style="margin-top:8px">같은 편 지정은 목표 합계 차이를 못 맞춰도 풀지 않고 지킵니다(합계 차이가 크면 결과 위에 안내가 나옵니다).</div>
     </div>
   </div>
+  <div class="card" id="avoidCard">
+    <label class="row"><input type="checkbox" id="avoidOn" style="width:22px;height:22px"> <b>최근 같은 팀이었던 사람끼리 피하기</b></label>
+    <div id="avoidBox" class="hide">
+      <div class="small" style="margin-top:6px">팀 구성 탭에서 "팀 편성 기록 저장"을 누른 편성표를 기준으로, 최근 몇 번 안에 같은 팀이었던 사람끼리는 되도록 다른 팀에 넣습니다. 에버 합계 목표 안에서 피하고, 못 피한 쌍은 결과 위에 알려 줍니다.</div>
+      <div class="row" style="margin-top:8px">
+        <div class="grow"><div class="lbl">최근 몇 회까지 피할까요</div><select id="avoidN"></select></div>
+        <div class="grow"><div class="lbl">어떤 기록 기준</div><select id="avoidKind"><option value="">모든 종류</option><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select></div>
+      </div>
+      <div class="lbl" style="margin-top:10px"><b>저장된 팀 편성</b> <span class="small" id="histCnt"></span></div>
+      <div id="histList"></div>
+    </div>
+  </div>
   <div class="card hide" id="jointWayCard">
     <b>합동 팀 나누는 방식</b> <span class="small">하나를 체크하세요</span>
     <label class="wayck" data-w="vs"><input type="checkbox" data-w="vs"><span><b>크루 대항전</b><span class="small">같은 크루끼리 한 팀을 만들고 모든 팀의 에버 합계를 맞춥니다. 크루별 팀 수는 인원대로 정하고, 남는 인원은 어느 팀이든 넣어서 팀을 만듭니다.</span></span></label>
@@ -403,6 +419,7 @@ header .hrow{padding-right:92px}
   <div class="card hide stick" id="copyBox">
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
+    <div class="row" style="margin-top:8px"><select id="histKind" style="width:96px" aria-label="편성 종류"><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select><button id="btnHistSave" class="sec grow">팀 편성 기록 저장 (다음에 같은 팀 피하기용)</button></div>
     
   </div>
 </div>
@@ -535,6 +552,14 @@ header .hrow{padding-right:92px}
     <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div><div id="aiBox"></div>
   </div>
   <div id="rcG">
+    <div id="rcHd" class="hdbox hide">
+      <label class="row"><input type="checkbox" id="hdInc"> <b class="grow">이미지 점수에 핸디가 포함돼 있음</b></label>
+      <div class="row" style="margin-top:6px"><div class="grow small">게임당 핸디 점수<br>잘못 읽었으면 여기서 고쳐 주세요</div><input type="number" id="hdVal" inputmode="numeric" min="0" max="100" placeholder="0" style="width:90px;text-align:right" aria-label="게임당 핸디"></div>
+      <div class="small" id="hdFound" style="margin-top:4px"></div>
+      <div class="lbl">개인 기록(에버)에 넣는 점수</div>
+      <div class="chips" id="hdMode"><button type="button" class="chip on" data-m="sub">핸디 빼고 (내 실력 점수)</button><button type="button" class="chip" data-m="add">핸디 포함 (가산 점수)</button></div>
+      <div class="small" id="hdPrev" style="margin-top:6px"></div>
+    </div>
     <div class="lbl" id="rcGLbl">게임 점수 (0~300)</div>
     <div id="rcScores"></div>
     <div class="row"><button class="sec" id="rcMore">+ 게임 추가</button><button class="gray" id="rcLess">마지막 게임 칸 삭제</button><div class="grow live" id="rcLive"></div></div>
@@ -617,6 +642,10 @@ function seedViolOf(teams, seedSet, gm) {
 }
 // ===== 크루 합동: JX = null(일반) | {way:'mix'} | {way:'vs', owners:[팀별 크루 id], minMis:어쩔 수 없이 다른 크루 팀에 들어가는 인원} =====
 let JX = null;
+// 최근 같은 팀 피하기: HX = Map('id1|id2' → 최근 N회 중 같은 팀이었던 횟수), 없으면 null
+let HX = null;
+const hxKey = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+function histViolOf(teams) { if (!HX || !HX.size) return 0; let v = 0; teams.forEach(t => { for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) { const w = HX.get(hxKey(t[i].id, t[j].id)); if (w) v += w; } }); return v; }
 function crewViolOf(teams, gm) {
   if (!JX) return 0;
   if (JX.way === 'vs') { let mis = 0; teams.forEach((t, i) => t.forEach(m => { if (m.cr !== JX.owners[i]) mis++; })); return Math.max(0, mis - (JX.minMis || 0)); }
@@ -646,8 +675,8 @@ function evaluateTeams(teams, maxSize, pairs, gm, seedSet) {
   }
   const seedViol = seedViolOf(teams, seedSet, gm).total; const viol = pairViol + seedViol;
   let fpen = 0; if (gm === 'balanced' && teams.length > 1) { const fc = teams.map(t => t.filter(m => m.gender === 'F').length); fpen = Math.max(0, Math.max.apply(null, fc) - Math.min.apply(null, fc) - 1) * 300; }
-  const crewViol = crewViolOf(teams, gm);
-  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, pairViol, seedViol, crewViol, fpen, score: spreadAvg * 4 + 12 * gp + 1000 * viol + fpen + crewViol * (JX && JX.way === 'vs' ? 5000 : 250) };
+  const crewViol = crewViolOf(teams, gm), histViol = histViolOf(teams);
+  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, pairViol, seedViol, crewViol, fpen, histViol, score: spreadAvg * 4 + 12 * gp + 1000 * viol + fpen + histViol * 160 + crewViol * (JX && JX.way === 'vs' ? 5000 : 250) };
 }
 function allocateCounts(total, sizes, r) {
   const n = sizes.reduce((a, b) => a + b, 0);
@@ -806,10 +835,10 @@ function computeVs(ppl, c, J, pairs, togPairs, sepPairs, seedSet, gm, togSkip) {
   let out = run(pairs, seedSet), relaxed = false;
   if ((sepPairs.length || seedSet.length) && o.relax && out.used.results[0].ev.spreadAvg > o.goal + 1e-9) { const free = run(togPairs, []); if (free.used.results[0].ev.spreadAvg < out.used.results[0].ev.spreadAvg - 1e-9) { out = free; relaxed = true; } }
   JX = out.jx;
-  return { plan: { k: out.jx.owners.length }, used: out.used, relaxed, pairs, seedSet, gm, togSkip, jx: out.jx };
+  return { plan: { k: out.jx.owners.length }, used: out.used, relaxed, pairs, seedSet, gm, togSkip, jx: out.jx, hx: HX };
 }
 function computeResult(ppl, c) {
-  const o = c.opts, gm = o.genderMode || 'balanced'; const J = jointOf(c); JX = (J && J.way === 'mix') ? { way: 'mix' } : null;
+  const o = c.opts, gm = o.genderMode || 'balanced'; const J = jointOf(c); JX = (J && J.way === 'mix') ? { way: 'mix' } : null; HX = buildHX(c, J);
   const nF = ppl.filter(p => p.gender === 'F').length, nM = ppl.length - nF;
   if (J && J.way === 'vs') { const ids0 = new Set(ppl.map(p => p.id)); const ps = activePairs(ppl); const sp = ps.filter(p => p[2] !== 't'); let tp = ps.filter(p => p[2] === 't'); let skip = 0; if (gm === 'split') { const g = (id) => (ppl.find(x => x.id === id) || {}).gender === 'F'; const keep = tp.filter(p => g(p[0]) === g(p[1])); skip = tp.length - keep.length; tp = keep; } void ids0; return computeVs(ppl, c, J, sp.concat(tp), tp, sp, c.pairOn ? (c.seedSep || []).filter(x => ['A', 'B', 'C', 'D'].includes(x)) : [], gm, skip); }
   const plan = planTeams(ppl.length, o.teamSize, o.mode, o.teamCount, gm === 'split' && !(o.teamCount > 0) ? 'split' : gm === 'split' ? 'balanced' : gm, nM, nF);
@@ -829,7 +858,7 @@ function computeResult(ppl, c) {
     const free = buildAny(ppl, plan, o2, seed, togPairs, []);
     if (free.results[0].ev.spreadAvg < used.results[0].ev.spreadAvg - 1e-9) { used = free; relaxed = true; }
   }
-  return { plan, used, relaxed, pairs, seedSet, gm: effGm, togSkip, jx: JX };
+  return { plan, used, relaxed, pairs, seedSet, gm: effGm, togSkip, jx: JX, hx: HX };
 }
 
 // ===== 저장소 =====
@@ -900,7 +929,7 @@ function tab(t) {
   ['att', 'team', 'mem'].forEach(x => { $('tab-' + x).classList.toggle('hide', x !== t); });
   document.querySelectorAll('.subtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   window.scrollTo(0, 0);
-  if (t === 'att') { renderSeedCfg(); renderAtt(); syncOpts(); showPlan(); }
+  if (t === 'att') { renderSeedCfg(); renderAtt(); renderAvoid(); syncOpts(); showPlan(); }
   if (t === 'mem') renderMem();
 }
 document.querySelectorAll('.subtabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
@@ -1019,7 +1048,7 @@ function people() {
     const pid = J ? cl.id + ':' + m.id : m.id; // 합동 때는 크루ID:팀원ID(ID에는 ':'가 들어갈 수 없어 겹치지 않음, 같은 편 조건도 같은 규칙으로 바꿈)
     const base = (seed && o.floor) ? Math.max(raw, floorOf(seed)) : raw;
     const g = m.gender === 'F' ? 'F' : 'M'; const hd = num(g === 'F' ? o.hdF : o.hdM, 0) || 0;
-    return { id: pid, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest, cr: cl.id, crN: cl.name, crI: ci };
+    return { id: pid, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest, cr: cl.id, crN: cl.name, crI: ci, mid: m.id };
   })));
   const dN = list.filter(p => (p.seed || GRADE(p.base)) === 'D').length;
   list.forEach(p => { p.grade = p.seed || GRADE(p.base); if (p.grade === 'D' && dN === 1) p.grade = 'C'; });
@@ -1035,6 +1064,40 @@ function showPlan() {
   $('planInfo').textContent = '참가 ' + n + '명 (남 ' + (n - nF) + ' / 여 ' + nF + ')' + (poss.length ? ' · 나누어떨어지는 구성: ' + poss.slice(0, 8).join(', ') + (poss.length > 8 ? ' 외' : '') : '');
 }
 $('goTeam').onclick = () => { tab('team'); build(true); };
+
+// ===== 팀 편성 기록 · 최근 같은 팀 피하기 =====
+const HIST_MAX = 60;
+function histOf(c) { return Array.isArray(c.hist) ? c.hist : []; }
+function buildHX(c, J) {
+  const o = c.opts; if (!o.avoidOn) return null; const n = Math.max(1, Math.min(10, parseInt(o.avoidN, 10) || 3)), kind = o.avoidKind || '';
+  const m = new Map();
+  (J ? J.clubs : [c]).forEach(cl => { const k = (id) => J ? cl.id + ':' + id : id; histOf(cl).filter(h => !kind || h.kind === kind).slice(-n).forEach(h => h.teams.forEach(t => { for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) { const key = hxKey(k(t[i]), k(t[j])); m.set(key, (m.get(key) || 0) + 1); } })); });
+  return m.size ? m : null;
+}
+function renderAvoid() {
+  const c = C(); const o = c.opts; const hs = histOf(c);
+  if (!$('avoidN').options.length) { let h = ''; for (let i = 1; i <= 10; i++) h += '<option value="' + i + '">최근 ' + i + '회</option>'; $('avoidN').innerHTML = h; }
+  $('avoidOn').checked = !!o.avoidOn; $('avoidBox').classList.toggle('hide', !o.avoidOn); $('avoidN').value = String(Math.max(1, Math.min(10, parseInt(o.avoidN, 10) || 3))); $('avoidKind').value = o.avoidKind || '';
+  $('histCnt').textContent = hs.length ? hs.length + '개' : '';
+  const nm = (id) => { const x = c.members.find(y => y.id === id); return x ? dn(x) : '(삭제됨)'; };
+  $('histList').innerHTML = hs.length ? hs.slice().reverse().map(h => '<details class="hist" style="display:block"><summary><b>' + esc(fmtD(h.date)) + '</b> ' + esc(h.kind) + ' · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + ' <a href="#" class="hdel" data-id="' + h.id + '" style="color:#dc2626;font-size:13px;margin-left:6px">삭제</a></summary><div class="small" style="padding:4px 0 2px">' + h.teams.map((t, i) => (i + 1) + '팀: ' + t.map(id => esc(nm(id))).join(', ')).join('<br>') + '</div></details>').join('') : '<div class="small" style="padding:6px 0">아직 저장된 편성이 없습니다. 팀을 짠 뒤 팀 구성 탭 아래 "팀 편성 기록 저장"을 눌러 주세요.</div>';
+  $('histList').querySelectorAll('.hdel').forEach(a => a.onclick = (e) => { e.preventDefault(); const h = hs.find(x => x.id === a.dataset.id); if (!h || !confirm(fmtD(h.date) + ' ' + h.kind + ' 편성 기록을 지울까요?')) return; c.hist = hs.filter(x => x.id !== h.id); save(); renderAvoid(); });
+}
+$('avoidOn').onchange = (e) => { C().opts.avoidOn = e.target.checked; save(); renderAvoid(); };
+$('avoidN').onchange = (e) => { C().opts.avoidN = parseInt(e.target.value, 10) || 3; save(); };
+$('avoidKind').onchange = (e) => { C().opts.avoidKind = e.target.value; save(); };
+$('btnHistSave').onclick = () => {
+  if (!curTeams) return; const c = C(); const J = jointOf(c); const kind = $('histKind').value; const date = isoToday(); const clubs = J ? J.clubs : [c]; let saved = 0;
+  const same = (a, b) => a.length === b.length && a.every((t, i) => t.join(',') === b[i].join(','));
+  for (const cl of clubs) {
+    const teams = curTeams.map(t => t.filter(m => m.cr === cl.id).map(m => m.mid || m.id)).filter(t => t.length >= 2).map(t => t.slice().sort());
+    if (!teams.length) continue; const hs = histOf(cl); const last = hs[hs.length - 1];
+    if (last && last.date === date && same(last.teams, teams) && !confirm('"' + cl.name + '"에 오늘 같은 편성이 이미 저장돼 있습니다. 한 번 더 저장할까요?')) continue;
+    cl.hist = hs.concat([{ id: uid(), t: Date.now(), date, kind, teams, joint: J ? jointTitle(J) : '' }]).slice(-HIST_MAX); saved++;
+  }
+  if (!saved) return alert('저장할 편성이 없습니다(같은 크루 사람이 2명 이상 있는 팀이 없거나 저장을 취소했습니다).');
+  save(); alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
+};
 
 // ===== 팀 구성 =====
 function build(fresh) {
@@ -1057,13 +1120,13 @@ function pickList() {
   const res2 = isVsR ? keepC(res) : res;
   const base0 = result.relaxed ? res2 : res2.filter(r => r.ev.viol === 0); let base = base0; if (!isVsR && base0.length) { const mf = Math.min(...base0.map(r => r.ev.fpen || 0)); base = keepC(base0.filter(r => (r.ev.fpen || 0) === mf)); } // 섞기: 성비가 가장 좋은 후보 안에서만 크루 섞기를 따진다
   const pool = base.length ? base : res2;
-  const ok = pool.filter(r => r.ev.spreadAvg <= goal + 1e-9).sort((a, b) => (a.ev.gp - b.ev.gp) || (a.ev.spreadAvg - b.ev.spreadAvg));
+  const ok = pool.filter(r => r.ev.spreadAvg <= goal + 1e-9).sort((a, b) => ((a.ev.histViol || 0) - (b.ev.histViol || 0)) || (a.ev.gp - b.ev.gp) || (a.ev.spreadAvg - b.ev.spreadAvg));
   return (ok.length ? ok : pool).slice(0, 30);
 }
 function show() { const list = pickList(); if (idx >= list.length) idx = 0; if (idx < 0) idx = list.length - 1; render(list[idx].teams.map(t => t.slice()), list.length); }
 function activePairs(all) { const c = C(); const J = jointOf(c); const ids = new Set(all.map(p => p.id)); let sep = [], tog = []; (J ? J.clubs : [c]).forEach(cl => { const k = (id) => J ? cl.id + ':' + id : id; const ok = (p) => Array.isArray(p) && ids.has(k(p[0])) && ids.has(k(p[1])); if (cl.pairOn) sep = sep.concat((cl.pairs || []).filter(ok).map(p => [k(p[0]), k(p[1])])); if (cl.togOn) tog = tog.concat((cl.tog || []).filter(ok).map(p => [k(p[0]), k(p[1]), 't'])); }); return sep.concat(tog); }
 function activeSeeds() { const c = C(); return c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : []; }
-function metrics(teams) { JX = (result && result.jx) || null; const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
+function metrics(teams) { JX = (result && result.jx) || null; HX = (result && result.hx) || null; const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
 function render(teams, nCand) {
   const c = C(); const o = c.opts;
   curTeams = teams; const ev = metrics(teams); const goal = o.goal; const okg = ev.spreadAvg <= goal + 1e-9;
@@ -1086,6 +1149,7 @@ function render(teams, nCand) {
     + (gm === 'balanced' && fDiff > 1 ? '<br><span class="warn">여성 수 차이가 ' + fDiff + '명입니다.</span>' : '')
     + (togN && !apartNames.length ? '<br>같은 편 지정 ' + togN + '쌍을 모두 같은 팀에 넣었습니다.' : '') + (apartNames.length ? '<br><span class="warn">같은 편 조건을 못 지킨 쌍(다른 팀): ' + esc(apartNames.join(', ')) + '</span>' : '') + ((result && result.togSkip) ? '<br><span class="warn">남자팀·여자팀 나누기에서는 남녀가 섞인 같은 편 지정 ' + result.togSkip + '쌍을 적용할 수 없습니다.</span>' : '') + (togetherNames.length ? '<br><span class="warn">분리 조건을 풀었습니다: ' + esc(togetherNames.join(', ')) + ' 같은 팀</span>' : '') + (seedBad.length ? '<br><span class="warn">같은 시드가 한 팀에 몰린 곳이 있습니다: ' + seedBad.join(', ') + ' 시드</span>' : '')
     + (J ? '<br>크루 합동(' + esc(jointTitle(J)) + ') · ' + JW_NAME[J.way] + ' · 시드는 에버로 통일' + (isVs ? (() => { const mx = Math.max(...teams.map(z => z.length)); const nrm = (t) => t.reduce((x, m) => x + m.avg, 0) * (mx / t.length); const ins = J.clubs.map(cl => { const v = teams.filter((t, i) => jx.owners[i] === cl.id && t.length).map(nrm); return v.length > 1 ? cl.name + ' ' + r1(Math.max(...v) - Math.min(...v)) + '점' : ''; }).filter(Boolean); return '<br>크루 대항전은 크루 실력 차이가 팀 합계 차이에 그대로 나옵니다.' + (ins.length ? ' 같은 크루 팀끼리 차이: ' + esc(ins.join(', ')) : ''); })() : '') + (isVs && jx.minMis ? '<br>남는 ' + jx.minMis + '명은 다른 크루 팀에 넣었습니다("용병" 표시).' : '') + (isVs && (o.mode === 'same' || o.teamCount > 0) ? '<br>크루 대항전은 크루별 인원으로 팀 수를 정해서 "동일 인원만"·"팀 수" 설정은 쓰지 않습니다.' : '') : '')
+    + ((result && result.hx) ? (ev.histViol ? '<br><span class="warn">최근 같은 팀이었던 쌍 ' + (() => { const all = teams.reduce((a, t) => a.concat(t), []); const nmOf = (id) => { const x = all.find(m => m.id === id); return x ? dn(x) : ''; }; const ls = []; teams.forEach(t => { for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) { if (result.hx.get(hxKey(t[i].id, t[j].id))) ls.push(nmOf(t[i].id) + '·' + nmOf(t[j].id)); } }); return ls.length + '개가 다시 같은 팀입니다: ' + esc(ls.slice(0, 8).join(', ')) + (ls.length > 8 ? ' 외' : '') + '. 팀 수가 지난번과 비슷하면 전부 피할 수 없어서, 에버 목표 안에서 가장 적게 겹치는 안을 골랐습니다. "다음안"으로 다른 후보도 볼 수 있습니다.'; })() + '</span>' : '<br>최근 ' + (parseInt(o.avoidN, 10) || 3) + '회 편성에서 같은 팀이었던 사람끼리는 모두 다른 팀으로 나눴습니다.') : '')
     + (ev.crewViol ? '<br><span class="warn">' + (isVs ? '크루가 섞인 팀이 있습니다.' : '크루 인원이 고르지 않은 팀이 있습니다.') + '</span>' : '')
     + (!okg ? '<br>목표 이내로 맞추지 못했습니다. "새 조합"을 눌러 다른 후보를 비교해 보세요.' : '');
   let vsHtml = ''; if (isVs) { const avgOf = (id) => { const ts = teams.filter((t, i) => jx.owners[i] === id && t.length); return ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (Math.max(...teams.map(z => z.length)) / t.length), 0) / ts.length : 0; }; vsHtml = '<div class="vsbox">' + J.clubs.filter(cl => jx.owners.includes(cl.id)).map(cl => '<div style="background:' + crewCol(ci(cl.id)) + '">' + esc(cl.name) + ' ' + jx.owners.filter(x => x === cl.id).length + '팀<b>' + r1(avgOf(cl.id)) + '</b><span style="font-size:11px">팀당 에버 합 평균</span></div>').join('') + '</div>'; }
@@ -1595,7 +1659,7 @@ function rcShow() {
   const ph = RC.mode === 'p', ready = ph && !!(RP && RP.applied);
   $('rcP').classList.toggle('hide', !ph); $('rcG').classList.toggle('hide', !(RC.mode === 'g' || ready)); $('rcE').classList.toggle('hide', RC.mode !== 'e');
   $('rcSave').classList.toggle('hide', ph && !ready); $('rcSave').textContent = ph ? '확인하고 저장' : '저장';
-  $('rcGLbl').textContent = ph ? '판독한 점수 (틀린 칸은 고쳐 주세요)' : '게임 점수 (0~300)';
+  $('rcGLbl').textContent = ph ? '판독한 점수 (사진에 적힌 그대로, 틀린 칸은 고쳐 주세요)' : '게임 점수 (0~300)'; hdShow();
 }
 function rcSetMode(m) {
   if (m === 'c' || m === 'i') { RC.mode = 'p'; RC.pick = m; } else RC.mode = m;
@@ -1610,11 +1674,11 @@ function rcBuild(vals) {
   box.querySelectorAll('input').forEach(inp => inp.oninput = () => { RC.edited = true; rcLive(); }); rcLive();
 }
 const rcVals = () => [...$('rcScores').querySelectorAll('input')].map(i => i.value.trim());
-function rcLive() { const v = rcVals().filter(x => x !== '').map(Number).filter(x => isFinite(x)); const sm = v.reduce((a, b) => a + b, 0); $('rcLive').textContent = v.length ? v.length + '게임 · 합계 ' + sm + ' · 평균 ' + fmtA(sm / v.length) : ''; }
+function rcLive() { const v = rcVals().filter(x => x !== '').map(Number).filter(x => isFinite(x)); const sm = v.reduce((a, b) => a + b, 0); $('rcLive').textContent = v.length ? v.length + '게임 · 합계 ' + sm + ' · 평균 ' + fmtA(sm / v.length) : ''; if (RC.mode === 'p') hdShow(); }
 $('rcMore').onclick = () => { const v = rcVals(); v.push(''); rcBuild(v); const ins = $('rcScores').querySelectorAll('input'); ins[ins.length - 1].focus(); };
 $('rcLess').onclick = () => { const v = rcVals(); if (v.length > 1) v.pop(); rcBuild(v); };
 function openRc(id, mode) {
-  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null; RC.src = ''; RC.edited = false; RP = { res: null, chosen: -1, meta: null, busy: false, applied: false }; $('rpRes').innerHTML = ''; $('rpStatus').textContent = '';
+  const r = id ? REC.recs.find(x => x.id === id) : null; RC.id = r ? r.id : null; RC.src = ''; RC.edited = false; RP = { res: null, chosen: -1, meta: null, busy: false, applied: false }; hdReset(); $('rpRes').innerHTML = ''; $('rpStatus').textContent = '';
   $('rcTitle').textContent = r ? '기록 고치기' : (mode === 'e' ? '에버 입력' : '개인 점수 등록');
   rcSetMode(r ? r.k : (mode || 'g'));
   $('rcDate').value = r ? r.date : isoToday(); $('rcKind').value = r ? (r.kind || '연습') : (REC.lastKind || '정모');
@@ -1629,12 +1693,13 @@ $('rcSheet').onclick = (e) => { if (e.target === $('rcSheet')) $('rcSheet').clas
 $('rcAddAlley').onclick = () => openAl(null, (id) => fillAlleySel($('rcAlley'), id));
 $('rcSave').onclick = () => {
   const photo = RC.mode === 'p'; if (photo && !(RP && RP.applied)) return alert('먼저 점수표 사진을 읽어 주세요.');
-  const date = $('rcDate').value || isoToday(); const alleyId = $('rcAlley').value, kind = $('rcKind').value, note = $('rcNote').value.trim(); let rec;
+  const date = $('rcDate').value || isoToday(); const alleyId = $('rcAlley').value, kind = $('rcKind').value; let note = $('rcNote').value.trim(); let rec;
   if (RC.mode === 'g' || photo) {
     const raw = rcVals().filter(x => x !== ''); if (!raw.length) return alert('점수를 한 게임 이상 넣어 주세요.');
-    const sc = raw.map(Number); if (sc.some(x => !Number.isInteger(x) || x < 0 || x > 300)) return alert('점수는 0~300 사이 정수로 넣어 주세요.');
-    if (photo) { const sm = sumA(sc); const dupe = REC.recs.some(r => r.k === 'g' && r.id !== RC.id && r.date === date && r.scores.join(',') === sc.join(',')); const al = alleyId ? alleyName(alleyId) : '볼링장 선택 안 함'; if (!confirm('판독한 점수를 저장할까요?\n\n' + sc.length + '게임: ' + sc.join(', ') + '\n합계 ' + sm + ' · 평균 ' + fmtA(sm / sc.length) + '\n날짜 ' + fmtD(date) + ' · ' + kind + ' · ' + al + (dupe ? '\n\n※ 같은 날짜에 같은 점수 기록이 이미 있습니다.' : ''))) return; rpLearn(); }
-    rec = { k: 'g', scores: sc };
+    const sc = raw.map(Number); if (sc.some(x => !Number.isInteger(x) || x < 0 || x > (photo ? 400 : 300))) return alert(photo ? '사진 점수는 0~300(핸디가 더해진 점수는 400까지) 사이 정수로 넣어 주세요.' : '점수는 0~300 사이 정수로 넣어 주세요.');
+    let hdNote = ''; if (photo) { const h = hdNum(); if (isNaN(h)) return alert('핸디는 0~100 사이 정수로 넣어 주세요.'); if (hdFinalRaw(sc).some(x => x < 0 || x > 300)) return alert('핸디를 반영한 점수가 0~300을 벗어납니다(' + hdFinalRaw(sc).join(', ') + '). "이미지 점수에 핸디가 포함돼 있음" 체크와 핸디 점수, 저장 방식을 확인해 주세요.'); const fin = hdFinal(sc); const d = sumA(fin) - sumA(sc); if (h && d) { hdNote = '핸디 ' + h + '점 ' + (d < 0 ? '뺌' : '더함') + '(사진 ' + sc.join('/') + ')'; sc.splice(0, sc.length, ...fin); } else if (h && HD.inc) hdNote = '핸디 ' + h + '점 포함 점수'; }
+    if (photo) { const sm = sumA(sc); const dupe = REC.recs.some(r => r.k === 'g' && r.id !== RC.id && r.date === date && r.scores.join(',') === sc.join(',')); const al = alleyId ? alleyName(alleyId) : '볼링장 선택 안 함'; if (!confirm('판독한 점수를 저장할까요?\n\n' + sc.length + '게임: ' + sc.join(', ') + '\n합계 ' + sm + ' · 평균 ' + fmtA(sm / sc.length) + (hdNote ? '\n' + hdNote : '') + '\n날짜 ' + fmtD(date) + ' · ' + kind + ' · ' + al + (dupe ? '\n\n※ 같은 날짜에 같은 점수 기록이 이미 있습니다.' : ''))) return; rpLearn(); }
+    rec = { k: 'g', scores: sc }; if (hdNote && note.indexOf(hdNote) < 0) note = (note ? note + ' · ' : '') + hdNote;
   } else {
     const avg = parseFloat($('reAvg').value), n = parseInt($('reN').value, 10), hi = parseInt($('reHi').value, 10);
     if (!(avg >= 1 && avg <= 300)) return alert('에버는 1~300 사이로 넣어 주세요.'); if (!(n >= 1 && n <= 5000)) return alert('게임 수를 넣어 주세요.');
@@ -1784,9 +1849,9 @@ function findHeader(rows) {
   return null;
 }
 function mapByHeader(p, hdr) {
-  if (!hdr || p.vals.length !== hdr.length) return null; const games = [], gconf = []; let total = null, avg = null;
-  hdr.forEach((c, i) => { const v = p.vals[i]; if (c.k === 'g') { games.push(v.v); gconf.push(v.c); } else if (c.k === 't') total = v.v; else if (c.k === 'a') avg = v.v; });
-  if (games.some(g => g > 300 || g < 0)) return null; return { games, gconf, total, avg, by: '표 머리글 칸 순서' };
+  if (!hdr || p.vals.length !== hdr.length) return null; const games = [], gconf = []; let total = null, avg = null, hd = null;
+  hdr.forEach((c, i) => { const v = p.vals[i]; if (c.k === 'g') { games.push(v.v); gconf.push(v.c); } else if (c.k === 't') total = v.v; else if (c.k === 'a') avg = v.v; else if (c.k === 'h' && !v.dec && v.v >= 0 && v.v <= 100) hd = v.v; });
+  if (games.some(g => g > (hd != null ? 400 : 300) || g < 0)) return null; return { games, gconf, total, avg, hd, by: '표 머리글 칸 순서' };
 }
 // 머리글이 없어도: 게임 수만큼 이어진 점수의 합이 같은 줄의 다른 숫자(총점)와 같으면 그 구간을 게임 칸으로 본다
 function sumSearch(p, ng) {
@@ -1811,18 +1876,19 @@ function mergeFragments(P, hdr) {
   });
 }
 // AI가 읽은 줄(이름, 게임 점수, 합계, 평균)을 분석기가 쓰는 모양으로 바꾼다
-function aiRowParts(ai) { const mk = (v, dec) => ({ v, dec: !!dec, raw: String(v), c: 1 }); const vals = ai.games.map(g => mk(g, false)); if (ai.total != null) vals.push(mk(ai.total, false)); if (ai.avg != null) vals.push(mk(ai.avg, true)); return { name: ai.name, vals, gh: 0, pre: [] }; }
+function aiRowParts(ai) { const mk = (v, dec) => ({ v, dec: !!dec, raw: String(v), c: 1 }); const vals = ai.games.map(g => mk(g, false)); if (ai.total != null) vals.push(mk(ai.total, false)); if (ai.avg != null) vals.push(mk(ai.avg, true)); const o = { name: ai.name, vals, gh: 0, pre: [], aiDirect: { games: ai.games, total: ai.total, avg: ai.avg } }; if (ai.hd > 0 && ai.hd <= 100) { o.hd = ai.hd; o.hdFrom = 'AI 판독'; o.hdInc = ai.inc; } return o; }
 function analyzeScoreSheet(rows, crewId, alleyIds) {
   const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => r.ai ? Object.assign({ i }, aiRowParts(r.ai)) : Object.assign({ i }, parseRowTokens(r.texts, r.confs))); mergeFragments(P, findHeader(rows));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
   const mode = (arr) => { const c = {}; arr.forEach(x => c[x] = (c[x] || 0) + 1); let b = 0, bn = 0; Object.keys(c).forEach(k => { if (c[k] > bn) { bn = c[k]; b = +k; } }); return b; };
   let ng = Math.max.apply(null, [0].concat(P.map(p => p.gh))), ngFrom = ng ? '표 머리글' : '';
-  const data = P.filter(p => p.name && p.vals.filter(v => !v.dec && v.v <= 300).length >= 2);
+  const hasH = (findHeader(rows) || []).some(c => c.k === 'h'); const lim = (p) => (p.hd > 0 || hasH) ? 400 : 300; // 핸디가 더해진 표는 게임 점수가 300을 넘을 수 있다
+  const data = P.filter(p => p.name && (p.aiDirect ? p.aiDirect.games.length >= 1 : p.vals.filter(v => !v.dec && v.v <= lim(p)).length >= 2));
   if (!ng) { const ks = []; data.forEach(p => { const iv = p.vals.filter(v => !v.dec).map(v => v.v); for (let k = Math.min(iv.length - 1, 10); k >= 2; k--) { if (iv[k] === sumA(iv.slice(0, k))) { ks.push(k); break; } } }); if (ks.length >= 2) { ng = mode(ks); ngFrom = '합계 칸 검산'; } }
   if (!ng) { ng = Math.min(10, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
   const HDR = findHeader(rows);
   data.forEach(p => {
-    const mp = mapByHeader(p, HDR) || sumSearch(p, ng); if (mp) { p.games = mp.games; p.gconf = mp.gconf; p.total = mp.total; p.avg = mp.avg; p.colBy = mp.by; }
+    const mp = (p.aiDirect && p.hd > 0 && p.aiDirect.games.some(g => g > 300) && p.aiDirect.games.every(g => g >= 0 && g <= 400)) ? { games: p.aiDirect.games.slice(), gconf: p.aiDirect.games.map(() => 1), total: p.aiDirect.total, avg: p.aiDirect.avg, by: 'AI 판독(핸디 포함 점수)' } : (mapByHeader(p, HDR) || sumSearch(p, ng)); if (mp) { p.games = mp.games; p.gconf = mp.gconf; p.total = mp.total; p.avg = mp.avg; p.colBy = mp.by; if (mp.hd != null && mp.hd > 0) { p.hd = mp.hd; p.hdFrom = '표의 핸디 칸'; } }
     const ivo = p.vals.filter(v => !v.dec); const iv = ivo.map(v => v.v); const decs = p.vals.filter(v => v.dec).map(v => v.v);
     if (!mp) {
     const cut = iv.findIndex(v => v > 300); const head = cut >= 0 ? iv.slice(0, cut) : iv.slice(); let games = head.slice(0, ng);
@@ -1830,6 +1896,7 @@ function analyzeScoreSheet(rows, crewId, alleyIds) {
     p.games = games; p.gconf = ivo.slice(0, games.length).map(v => v.c); p.total = null; p.avg = null; const sum = sumA(games); const rest = iv.slice(games.length).concat(decs);
     rest.forEach(v => { if (p.total == null && (v > 300 || v === sum)) p.total = v; else if (p.avg == null && Math.abs(v - sum / Math.max(1, games.length)) <= 1) p.avg = v; });
     }
+    if (p.hd > 0 && p.total != null && p.games && p.games.length && p.total === sumA(p.games) + p.hd * p.games.length) { p.total = sumA(p.games); p.hdInTotal = true; } // 합계에만 핸디가 더해진 표: 게임 점수는 핸디 없음
     const sum = sumA(p.games);
     p.sumOk = p.total != null ? (p.total === sum) : null; p.avgOk = p.avg != null ? (Math.abs(p.avg - sum / Math.max(1, p.games.length)) <= 1) : null;
     if ((p.sumOk === false || p.avgOk === false) && p.games.length) { const fx = tryRepair(p.games, p.total, p.avg, p.gconf); if (fx && fx.alts) p.alts = fx.alts; else p.fix = fx; }
@@ -1910,14 +1977,35 @@ function rpRender() {
 }
 // 읽은 점수를 입력칸에 자동으로 채운다(게임 수만큼 칸을 만든다). 저장은 사용자가 확인한 뒤에만 한다.
 function rpApply() {
-  const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || !p.games.length) { RP.applied = false; rcShow(); return; }
+  const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || !p.games.length) { RP.applied = false; hdReset(); rcShow(); return; }
   const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
   const vals = g.map(String); while (vals.length < res.ng && vals.length < 10) vals.push('');
   rcBuild(vals); RC.edited = false;
   if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId;
   RC.src = '사진'; RP.applied = true; if (!p.nameless && (!$('rcNote').value || /^사진 판독: /.test($('rcNote').value))) $('rcNote').value = '사진 판독: ' + p.name.trim();
-  rcShow(); try { $('rcG').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+  hdInit(p); rcShow(); try { $('rcG').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
 }
+// ----- 사진 점수의 핸디 처리: 사진 점수에 핸디가 들어 있으면 빼거나, 핸디 포함 점수로 저장 -----
+let HD = { inc: false, v: '', m: 'sub', det: 0, from: '' };
+function hdReset() { HD = { inc: false, v: '', m: REC.hdMode === 'add' ? 'add' : 'sub', det: 0, from: '' }; }
+function hdInit(p) { hdReset(); const det = p && p.hd > 0 ? p.hd : 0; HD.det = det; HD.from = det ? (p.hdFrom || '') : ''; HD.v = det ? String(det) : ''; HD.incBy = !det ? '' : (p.hdInc === true ? 'yes' : (p.hdInc === false || p.hdInTotal) ? 'no' : 'unk'); HD.inc = HD.incBy === 'yes'; hdShow(); } // 포함 여부를 모르면 자동으로 빼지 않는다
+function hdNum() { const t = String(HD.v || '').trim(); if (t === '') return 0; const x = Number(t); return Number.isInteger(x) && x >= 0 && x <= 100 ? x : NaN; }
+function hdFinalRaw(sc) { const h = hdNum() || 0; return sc.map(x => x - (HD.inc ? h : 0) + (HD.m === 'add' ? h : 0)); }
+function hdFinal(sc) { return hdFinalRaw(sc).map(x => Math.max(0, Math.min(300, x))); }
+function hdShow() {
+  const box = $('rcHd'); if (!box) return; const on = RC.mode === 'p' && !!(RP && RP.applied); box.classList.toggle('hide', !on); if (!on) return;
+  $('hdInc').checked = HD.inc; if (document.activeElement !== $('hdVal')) $('hdVal').value = HD.v;
+  $('hdFound').textContent = HD.det ? '사진에서 핸디 ' + HD.det + '점을 찾았습니다(' + HD.from + '). ' + (HD.incBy === 'yes' ? '게임 점수에 핸디가 더해져 있다고 읽어서 위를 체크했습니다.' : HD.incBy === 'no' ? '게임 점수에는 핸디가 없고 합계에만 더해진 표로 읽었습니다.' : '게임 점수에 핸디가 더해져 있는지는 알 수 없어 체크하지 않았습니다. 사진 점수에 핸디가 들어 있으면 위를 체크해 주세요.') + ' 다르면 체크와 숫자를 고쳐 주세요.' : '사진에서 핸디를 찾지 못했습니다. 핸디가 들어간 점수라면 위를 체크하고 게임당 핸디 점수를 넣어 주세요.';
+  $('hdMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === HD.m));
+  const h = hdNum(); if (isNaN(h)) { $('hdPrev').innerHTML = '<span class="warn">핸디는 0~100 사이 정수로 넣어 주세요.</span>'; return; }
+  const raw = rcVals().filter(x => x !== '').map(Number).filter(x => Number.isInteger(x) && x >= 0 && x <= 400); if (!raw.length) { $('hdPrev').textContent = ''; return; }
+  if (hdFinalRaw(raw).some(x => x < 0 || x > 300)) { $('hdPrev').innerHTML = '<span class="warn">핸디를 반영하면 0~300을 벗어나는 점수가 있습니다(' + hdFinalRaw(raw).join(', ') + '). 체크·핸디·저장 방식을 확인해 주세요.</span>'; return; }
+  const fin = hdFinal(raw), d = sumA(fin) - sumA(raw);
+  $('hdPrev').innerHTML = !h ? (HD.inc ? '<span class="warn">핸디 점수를 넣어 주세요. 지금은 사진 점수 그대로 저장됩니다.</span>' : '사진 점수 그대로 저장합니다.') : '저장될 점수: <b>' + fin.join(', ') + '</b>' + (d < 0 ? ' (사진 점수에서 게임마다 핸디 ' + h + '점을 뺐습니다)' : d > 0 ? ' (사진 점수에 게임마다 핸디 ' + h + '점을 더했습니다)' : ' (사진 점수 그대로' + (HD.inc ? ', 핸디 포함 점수' : '') + ')');
+}
+$('hdInc').onchange = (e) => { HD.inc = e.target.checked; hdShow(); };
+$('hdVal').oninput = (e) => { HD.v = e.target.value.trim(); hdShow(); };
+$('hdMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { HD.m = b.dataset.m; REC.hdMode = HD.m; saveRec(); hdShow(); });
 // 확인 후 저장할 때만: 사진에 적힌 이름을 별칭으로 기억(다음부터 정확히 찾기)
 function rpLearn() {
   const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || p.nameless) return; const m = RP.meta || {};
@@ -1927,7 +2015,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 25, APP_DATE = '2026.11.08';
+const APP_VER = 26, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -1976,7 +2064,7 @@ const AIP = {
   openai: { name: 'OpenAI (ChatGPT 회사)', short: 'OpenAI', keyUrl: 'https://platform.openai.com/api-keys', def: 'gpt-5.4-mini', desc: 'API 키 필요(ChatGPT 구독과 요금 따로)', note: 'ChatGPT 구독과 별개로 API 결제 수단이 필요합니다. 사진 한 장에 대략 몇 원 수준입니다.' },
   claude: { name: '앤트로픽 클로드', short: '클로드', keyUrl: 'https://console.anthropic.com/settings/keys', def: 'claude-haiku-4-5', desc: 'API 키 필요(클로드 구독과 요금 따로)', note: '클로드 구독과 별개로 API 결제 수단이 필요합니다. 사진 한 장에 대략 몇 원 수준입니다.' }
 };
-const AI_PROMPT = '이 이미지는 볼링 점수표입니다. 표에 있는 모든 사람의 줄을 읽어서 아래 JSON 형식으로만 답하세요. 설명이나 마크다운 코드 표시는 쓰지 마세요.\n{"games": 게임 수(숫자), "date": "YYYY-MM-DD 또는 null", "place": "볼링장 이름 또는 null", "rows": [{"name": "이름", "scores": [1게임 점수, 2게임 점수, ...], "total": 합계 또는 null, "avg": 평균 또는 null}]}\n규칙: 1) 이름은 사진에 적힌 그대로 쓰세요. 2) scores에는 게임 점수만 게임 순서대로(1G, 2G, ...) 정수로 넣고, 칸이 비었거나 안 보이면 null을 넣으세요. 3) 순번, 레인, 핸디, 총점, 평균 칸은 scores에 넣지 마세요. 4) 합계(total)가 적혀 있으면 그대로 옮기고, scores의 합과 맞는지 한 번 더 확인해서 맞지 않으면 사진을 다시 보고 숫자를 바로잡으세요. 5) 추측해서 만들지 마세요.';
+const AI_PROMPT = '이 이미지는 볼링 점수표입니다. 표에 있는 모든 사람의 줄을 읽어서 아래 JSON 형식으로만 답하세요. 설명이나 마크다운 코드 표시는 쓰지 마세요.\n{"games": 게임 수(숫자), "date": "YYYY-MM-DD 또는 null", "place": "볼링장 이름 또는 null", "rows": [{"name": "이름", "scores": [1게임 점수, 2게임 점수, ...], "total": 합계 또는 null, "avg": 평균 또는 null, "handicap": 게임당 핸디 점수 또는 null, "scoresIncludeHandicap": 게임 점수에 핸디가 이미 더해져 있으면 true, 아니면 false, 모르면 null}]}\n규칙: 1) 이름은 사진에 적힌 그대로 쓰세요. 2) scores에는 게임 점수만 게임 순서대로(1G, 2G, ...) 정수로 넣고, 칸이 비었거나 안 보이면 null을 넣으세요. 3) 순번, 레인, 핸디, 총점, 평균 칸은 scores에 넣지 마세요. 4) 합계(total)가 적혀 있으면 그대로 옮기고, scores의 합(합계에 핸디가 더해진 표면 합계에서 핸디×게임 수를 뺀 값)과 맞는지 한 번 더 확인해서 맞지 않으면 사진을 다시 보고 숫자를 바로잡으세요. 5) 핸디 칸이나 "핸디", "H/C" 표시가 있으면 그 사람의 게임당 핸디를 handicap에 넣고, 게임 점수 칸에 핸디가 이미 더해져 있는지(scoresIncludeHandicap) 표시하세요. 6) 추측해서 만들지 마세요.';
 function aiCfg() { const d = { p: 'none', keys: {}, models: {}, when: 'manual', consent: false }; try { const c = JSON.parse(localStorage.getItem(AIKEY) || 'null'); if (c && typeof c === 'object') return Object.assign(d, c, { keys: Object.assign({}, c.keys), models: Object.assign({}, c.models) }); } catch (e) {} return d; }
 function aiSave(c) { try { localStorage.setItem(AIKEY, JSON.stringify(c)); } catch (e) { alert('저장에 실패했습니다.'); } }
 const aiIsApi = (p) => p === 'gemini' || p === 'openai' || p === 'claude';
@@ -2030,11 +2118,11 @@ function aiParse(text) {
 }
 function aiToRows(j) {
   const rows = []; const num = (x) => (x == null || x === '' || !isFinite(+x)) ? null : +x;
-  const lists = j.rows.filter(r => r && r.name).map(r => ({ name: String(r.name).trim(), games: (Array.isArray(r.scores) ? r.scores : []).map(num).filter(x => x != null), total: num(r.total), avg: num(r.avg) }));
+  const lists = j.rows.filter(r => r && r.name).map(r => ({ name: String(r.name).trim(), games: (Array.isArray(r.scores) ? r.scores : []).map(num).filter(x => x != null), total: num(r.total), avg: num(r.avg), hd: num(r.handicap), inc: r.scoresIncludeHandicap === true ? true : (r.scoresIncludeHandicap === false ? false : null) }));
   const G = Math.max.apply(null, [parseInt(j.games, 10) || 0, 1].concat(lists.map(l => l.games.length)));
   const meta = [j.date ? String(j.date).replace(/-/g, '.') : '', j.place || ''].filter(Boolean).join(' '); if (meta) rows.push({ texts: [meta] });
   const hd = ['성명']; for (let i = 1; i <= G; i++) hd.push(i + 'G'); hd.push('합계', '평균'); rows.push({ texts: hd });
-  lists.forEach(l => rows.push({ texts: [l.name].concat(l.games.map(String), l.total == null ? [] : [String(l.total)], l.avg == null ? [] : [String(l.avg)]), ai: { name: l.name, games: l.games, total: l.total, avg: l.avg } }));
+  lists.forEach(l => rows.push({ texts: [l.name].concat(l.games.map(String), l.total == null ? [] : [String(l.total)], l.avg == null ? [] : [String(l.avg)]), ai: { name: l.name, games: l.games, total: l.total, avg: l.avg, hd: l.hd, inc: l.inc } }));
   return rows;
 }
 function aiApplyJson(j, label) {
@@ -2164,6 +2252,8 @@ function bkSanitize(d) {
     c.present = Array.isArray(c.present) ? c.present.filter(okId) : [];
     c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
+    if (c.hist != null) { const seenH = new Set(); c.hist = Array.isArray(c.hist) ? c.hist.filter(h => { if (!isObj(h) || !okId(h.id) || seenH.has(h.id) || !str(h.date) || !/^\d{4}-\d{2}-\d{2}$/.test(h.date) || !Array.isArray(h.teams) || !h.teams.length) return false; const ppl = new Set(); for (const t of h.teams) { if (!Array.isArray(t)) return false; for (const id of t) { if (!okId(id) || ppl.has(id)) return false; ppl.add(id); } } seenH.add(h.id); return true; }).map(h => ({ id: h.id, t: typeof h.t === 'number' ? h.t : 0, date: h.date, kind: ['정모', '벙개', '대회', '연습'].includes(h.kind) ? h.kind : '', teams: h.teams, joint: str(h.joint) ? h.joint.slice(0, 120) : '' })).slice(-HIST_MAX) : []; }
+    if (isObj(c.opts)) { if (c.opts.avoidN != null) c.opts.avoidN = Math.max(1, Math.min(10, parseInt(c.opts.avoidN, 10) || 3)); if (c.opts.avoidOn != null) c.opts.avoidOn = c.opts.avoidOn === true; if (c.opts.avoidKind != null && !['', '정모', '벙개', '대회', '연습'].includes(c.opts.avoidKind)) c.opts.avoidKind = ''; }
     if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
   }
   const clubIds = new Set(d.db.clubs.map(c => c.id)); if (clubIds.size !== d.db.clubs.length) return '같은 ID의 크루가 두 번 들어 있습니다';
