@@ -2017,7 +2017,7 @@ function meIdentities(crewId, alleyIds) {
   const me = REC.me || {}; add(me.name, '이름'); splitAlias(me.nick).forEach(x => add(x, '닉네임'));
   const crew = crewId ? DB.clubs.find(x => x.id === crewId) : null; let memId = '';
   if (crew) {
-    const cfg = (me.crew || {})[crewId] || {}; const mem = crew.members.find(m => m.id === cfg.mid) || (me.name ? crew.members.find(m => m.name === me.name) : null);
+    const cfg = crewMeCfg(crew); const mem = crew.members.find(m => m.id === cfg.mid) || (me.name ? crew.members.find(m => m.name === me.name) : null);
     if (mem) { memId = mem.id; add(mem.name, '이름(크루 명단)'); splitAlias(mem.nick).forEach(x => add(x, '닉네임(크루 명단)')); }
     splitAlias(cfg.alias).forEach(x => add(x, '별칭'));
   }
@@ -2262,7 +2262,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 32, APP_DATE = '2026.11.08';
+const APP_VER = 33, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2462,15 +2462,29 @@ aiRefreshStat();
 function renderMe() {
   aiRefreshStat();
   $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
-  $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
-  $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); a.meSame = a.myName === (REC.me.name || '').trim() && a.myNick === (REC.me.nick || '').trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
-  $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 햄토리, 서현이"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
-  $('meCrews').querySelectorAll('.mecrew').forEach(el => { const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: el.querySelector('.mcm').value, alias: el.querySelector('.mca').value.trim() }; saveRec(); }; el.querySelector('.mcm').onchange = save1; el.querySelector('.mca').onchange = save1; });
+  $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<label class="row" style="margin-top:4px"><input type="checkbox" class="mas" style="width:22px;height:22px"' + (a.meSame ? ' checked' : '') + '> <span style="flex:1">내 정보 그대로 반영</span></label><div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"' + (a.meSame ? ' disabled' : '') + '><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"' + (a.meSame ? ' disabled' : '') + '></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
+  $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); a.meSame = el.querySelector('.mas').checked; saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv;
+    const ck = el.querySelector('.mas'); ck.onchange = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; const man = el.querySelector('.man'), mak = el.querySelector('.mak'); man.disabled = mak.disabled = ck.checked; if (ck.checked) { man.value = (REC.me.name || '').trim(); mak.value = (REC.me.nick || '').trim(); a.myName = man.value; a.myNick = mak.value; } a.meSame = ck.checked; saveRec(); }; });
+  $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); const on = crewMeAuto(cfg); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><label class="row" style="margin-top:4px"><input type="checkbox" class="mcs" style="width:22px;height:22px"' + (on ? ' checked' : '') + '> <span style="flex:1">내 정보 그대로 반영</span></label><div class="small mcn"></div><div class="lbl">이 크루에서의 나</div><select class="mcm"' + (on ? ' disabled' : '') + '>' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 햄토리, 서현이"' + (on ? ' disabled' : '') + '></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
+  $('meCrews').querySelectorAll('.mecrew').forEach(el => {
+    const c = DB.clubs.find(x => x.id === el.dataset.id); const sel = el.querySelector('.mcm'), ali = el.querySelector('.mca'), ck = el.querySelector('.mcs'), note = el.querySelector('.mcn');
+    const fillMe = () => { const r = meForCrew(c); sel.value = r.mid; ali.value = r.alias; note.textContent = r.note; };
+    const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: sel.value, alias: ali.value.trim(), meSame: ck.checked }; saveRec(); };
+    if (ck.checked) fillMe();
+    ck.onchange = () => { sel.disabled = ali.disabled = ck.checked; if (ck.checked) fillMe(); else note.textContent = ''; save1(); };
+    sel.onchange = save1; ali.onchange = save1;
+  });
   $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
   $('meAlleys').querySelectorAll('button[data-ed]').forEach(b => b.onclick = () => openAl(b.dataset.ed));
 }
-$('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); saveRec(); };
-$('meNick').onchange = (e) => { REC.me.nick = e.target.value.trim(); saveRec(); };
+// "내 정보 그대로 반영": 크루 명단에서 내 이름(없으면 닉네임)과 같은 팀원을 "나"로 고르고, 닉네임을 사진용 이름으로 넣는다
+function meForCrew(c) { const nm = (REC.me.name || '').trim(), nk = (REC.me.nick || '').trim(); const nks = splitAlias(nk); let m = c ? c.members.find(x => nm && x.name === nm) : null; if (!m && c) { const hit = c.members.filter(x => (x.nick && nks.includes(x.nick)) || nks.includes(x.name)); if (hit.length === 1) m = hit[0]; } return { mid: m ? m.id : '', alias: nk, note: !nm && !nk ? '마이 탭 "내 정보"에 이름을 먼저 넣어 주세요.' : m ? '명단의 "' + m.name + '"을(를) 나로 골랐습니다.' : '이 크루 명단에 내 이름(' + (nm || nk) + ')이 없어 "나"는 비워 두었습니다. 닉네임으로 내 줄을 찾습니다.' }; }
+// 화면과 사진 판독이 같은 "나"를 쓰도록: "내 정보 그대로"(저장된 체크 또는 처음 기본 체크)면 매번 명단에서 다시 찾는다
+function crewMeAuto(cfg) { return cfg.meSame === true || (cfg.meSame !== false && !cfg.mid && !cfg.alias && !!((REC.me.name || '').trim() || (REC.me.nick || '').trim())); }
+function crewMeCfg(c) { const cfg = ((REC.me || {}).crew || {})[c.id] || {}; if (!crewMeAuto(cfg)) return cfg; const r = meForCrew(c); return { mid: r.mid, alias: r.alias, meSame: true }; }
+function applyMeSame() { const cr = REC.me.crew || {}; Object.keys(cr).forEach(id => { if (cr[id] && cr[id].meSame) { const c = DB.clubs.find(x => x.id === id); const r = meForCrew(c); cr[id].mid = r.mid; cr[id].alias = r.alias; } }); REC.alleys.forEach(a => { if (a.meSame) { a.myName = (REC.me.name || '').trim(); a.myNick = (REC.me.nick || '').trim(); } }); }
+$('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); applyMeSame(); saveRec(); renderMe(); };
+$('meNick').onchange = (e) => { REC.me.nick = e.target.value.trim(); applyMeSame(); saveRec(); renderMe(); };
 $('btnAlNew').onclick = () => openAl(null);
 $('btnWipe').onclick = () => { if (!REC.recs.length) return alert('지울 기록이 없습니다.'); if (!confirm('내 점수 기록 ' + REC.recs.length + '건을 모두 지울까요? 되돌릴 수 없습니다. (볼링장 목록과 크루 명단은 남습니다)')) return; REC.recs = []; saveRec(); renderMe(); alert('기록을 모두 지웠습니다.'); };
 const isCancel = (e) => !!e && (e.name === 'AbortError' || /cancel/i.test(String(e.message || '')) || /cancel/i.test(String(e.code || '')));
@@ -2518,7 +2532,7 @@ function bkSanitize(d) {
     r.kind = ['정모', '벙개', '연습', '대회'].includes(r.kind) ? r.kind : '연습'; if (r.hda != null) r.hda = Number.isInteger(r.hda) && r.hda >= 1 && r.hda <= 100 ? r.hda : 0; r.note = str(r.note) ? r.note.slice(0, 300) : ''; r.src = str(r.src) ? r.src.slice(0, 20) : '직접'; if (r.alleyId != null && !str(r.alleyId)) r.alleyId = ''; if (r.t != null && typeof r.t !== 'number') r.t = 0;
   }
   if (!isObj(d.rec.me)) d.rec.me = { name: '' };
-  { const me = d.rec.me; me.name = str(me.name) ? me.name.slice(0, 40) : ''; me.nick = str(me.nick) ? me.nick.slice(0, 200) : ''; const cr = {}; if (isObj(me.crew)) Object.keys(me.crew).forEach(k => { const v = me.crew[k]; if (okId(k) && isObj(v)) cr[k] = { mid: okId(v.mid) ? v.mid : '', alias: str(v.alias) ? v.alias.slice(0, 200) : '' }; }); me.crew = cr; }
+  { const me = d.rec.me; me.name = str(me.name) ? me.name.slice(0, 40) : ''; me.nick = str(me.nick) ? me.nick.slice(0, 200) : ''; const cr = {}; if (isObj(me.crew)) Object.keys(me.crew).forEach(k => { const v = me.crew[k]; if (okId(k) && isObj(v)) cr[k] = { mid: okId(v.mid) ? v.mid : '', alias: str(v.alias) ? v.alias.slice(0, 200) : '', meSame: v.meSame === true }; }); me.crew = cr; }
   ['lastAlley', 'lastKind', 'lastPhotoCrew', 'hdMode'].forEach(k => { if (d.rec[k] != null && !str(d.rec[k])) delete d.rec[k]; });
   return '';
 }
@@ -2778,7 +2792,7 @@ $('suCrewAdd').onclick = () => { const n = $('suCrewName').value.trim(); if (!n)
 $('suPrev').onclick = () => { if (SU > 1) { SU--; suShow(); } };
 $('suNext').onclick = () => {
   const st = suState();
-  if (SU === 1) { if ($('suMeSkip').checked) st.me = 'skip'; else { const nm = $('suName').value.trim(); if (!nm) return alert('이름을 넣거나 "사용 안함"을 체크해 주세요.'); REC.me.name = nm; REC.me.nick = $('suNick').value.trim(); delete st.me; saveRec(); } }
+  if (SU === 1) { if ($('suMeSkip').checked) st.me = 'skip'; else { const nm = $('suName').value.trim(); if (!nm) return alert('이름을 넣거나 "사용 안함"을 체크해 주세요.'); REC.me.name = nm; REC.me.nick = $('suNick').value.trim(); applyMeSame(); delete st.me; saveRec(); } }
   if (SU === 2) { if ($('suAlSkip').checked) st.alley = 'skip'; else { if (!REC.alleys.length) return alert('볼링장을 하나 이상 등록하거나 "사용 안함"을 체크해 주세요.'); delete st.alley; } }
   if (SU === 3) { if ($('suCrewNone').checked) st.crew = 'none'; else { if ($('suCrewName').value.trim() && !$('suCrewAdd').onclick()) return; if (!DB.clubs.length) return alert('크루를 하나 이상 등록하거나 "크루 없음"을 체크해 주세요.'); delete st.crew; } }
   st.v = 1; suSave(st);
