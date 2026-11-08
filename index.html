@@ -217,7 +217,10 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .crewcard .tx span{font-size:14px;opacity:.92}
 .crewcard svg.pin{width:44px;height:44px;flex:none}
 .savebar{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom));background:var(--bg);padding:10px 0 calc(12px + env(safe-area-inset-bottom));margin-top:14px;z-index:5;border-top:1.5px solid rgba(16,65,61,.25)}
-#copyBox.stick{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:6;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+/* 공유·기록 메뉴는 팀 배정 맨 아래에 두고(화면을 가리지 않음), 화면 아래에는 한 줄짜리 얇은 바만 띄운다 */
+#teamDock{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:8px;padding:8px;margin:4px 0 10px;background:rgba(255,244,222,.97);border:1.5px solid rgba(16,65,61,.8);border-radius:16px;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+#teamDock button{padding:9px 10px;font-size:14px}
+#copyBox .boxttl{font-weight:800;margin-bottom:6px}
 details.rpall>summary{cursor:pointer;font-weight:700;padding:8px 0;color:var(--pri)}
 .bnav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1.5px solid rgba(16,65,61,.35);padding-bottom:env(safe-area-inset-bottom);z-index:8}
 .bnav button{flex:1;background:transparent;color:var(--ink);border-radius:0;padding:10px 4px 9px;font-size:13px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
@@ -527,7 +530,9 @@ header .hrow{padding-right:92px}
   <div id="multiBar" class="chips hide" style="margin:0 2px 8px"></div>
   <div id="swapHint" class="small hide" style="margin:2px 4px 6px">두 사람을 차례로 누르면 자리를 바꿉니다. 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 구성하세요.</div>
   <div id="teamOut"></div>
-  <div class="card hide stick" id="copyBox">
+  <div id="teamDock" class="hide"><button id="dockImage" class="grow">이미지로 만들기</button><button id="dockMenu" class="sec">공유·기록 메뉴 ↓</button></div>
+  <div class="card hide" id="copyBox">
+    <div class="boxttl">팀 배정을 확인했으면 공유·기록</div>
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
     <div class="hide" id="multiExport" style="margin-top:8px">
@@ -1367,7 +1372,7 @@ function render(teams, nCand) {
   let vsHtml = ''; if (isVs) { const avgOf = (id) => { const ts = teams.filter((t, i) => jx.owners[i] === id && t.length); return ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (Math.max(...teams.map(z => z.length)) / t.length), 0) / ts.length : 0; }; vsHtml = '<div class="vsbox">' + J.clubs.filter(cl => jx.owners.includes(cl.id)).map(cl => '<div style="background:' + crewCol(ci(cl.id)) + '">' + esc(cl.name) + ' ' + jx.owners.filter(x => x === cl.id).length + '팀<b>' + r1(avgOf(cl.id)) + '</b><span style="font-size:11px">팀당 에버 합 평균</span></div>').join('') + '</div>'; }
   const crTag = (m, ti) => { if (!J) return ''; if (isVs) return m.cr !== jx.owners[ti] ? ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">용병 · ' + esc(m.crN) + '</span>' : ''; return ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">' + esc(m.crN) + '</span>'; };
   $('teamOut').innerHTML = vsHtml + teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 ' + (isVs ? '<span class="ctag" style="background:' + crewCol(ci(jx.owners[ti])) + '">' + esc(cn(jx.owners[ti])) + '</span> ' : '') + '<span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + crTag(m, ti) + (m.floored ? ' <span class="nick">하한 적용(원래 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
-  $('copyBox').classList.remove('hide'); $('swapHint').classList.remove('hide');
+  $('copyBox').classList.remove('hide'); dockSync(); $('swapHint').classList.remove('hide');
   $('teamOut').querySelectorAll('.pm').forEach(el => el.onclick = () => { const t = +el.dataset.t, m = +el.dataset.m; if (!sel) { sel = { t, m }; render(curTeams, nCand); return; } if (sel.t === t && sel.m === m) { sel = null; render(curTeams, nCand); return; } if (sel.t === t) { sel = { t, m }; render(curTeams, nCand); return; } const a = curTeams[sel.t][sel.m]; curTeams[sel.t][sel.m] = curTeams[t][m]; curTeams[t][m] = a; sel = null; manual = true; render(curTeams, nCand); });
 }
 $('btnBuild').onclick = () => build(true);
@@ -2368,7 +2373,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 35, APP_DATE = '2026.11.08';
+const APP_VER = 36, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2909,6 +2914,13 @@ $('suNext').onclick = () => {
 };
 $('btnSetupAgain').onclick = () => openSetup(1);
 $('suRestore').onclick = () => { $('suSheet').classList.add('hide'); $('btnRs').click(); };
+// 얇은 고정 바: 공유·기록 메뉴가 화면에 보이면 숨기고, 팀 배정을 보는 동안만 보인다
+function dockSync() { const show = !$('copyBox').classList.contains('hide') && !$('tab-team').classList.contains('hide'); $('teamDock').classList.toggle('hide', !show || DOCK_IN); }
+let DOCK_IN = false;
+try { new MutationObserver(dockSync).observe($('copyBox'), { attributes: true, attributeFilter: ['class'] }); new MutationObserver(dockSync).observe($('tab-team'), { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
+try { new IntersectionObserver((es) => { es.forEach(e => { DOCK_IN = e.isIntersecting; }); dockSync(); }, { rootMargin: '0px 0px -60px 0px' }).observe($('copyBox')); } catch (e) {}
+$('dockImage').onclick = () => $('btnImage').click();
+$('dockMenu').onclick = () => { try { $('copyBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { $('copyBox').scrollIntoView(); } };
 // ===== 시작 =====
 (async () => {
   const m = location.hash.match(/^#r=([A-Za-z0-9_-]+)/);
