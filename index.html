@@ -141,6 +141,9 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .crewcard b{display:block;font-size:20px;font-weight:900}
 .crewcard .tx span{font-size:14px;opacity:.92}
 .crewcard svg.pin{width:44px;height:44px;flex:none}
+.savebar{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom));background:var(--bg);padding:10px 0 calc(12px + env(safe-area-inset-bottom));margin-top:14px;z-index:5;border-top:1.5px solid rgba(16,65,61,.25)}
+#copyBox.stick{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:6;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+details.rpall>summary{cursor:pointer;font-weight:700;padding:8px 0;color:var(--pri)}
 .bnav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1.5px solid rgba(16,65,61,.35);padding-bottom:env(safe-area-inset-bottom);z-index:8}
 .bnav button{flex:1;background:transparent;color:var(--ink);border-radius:0;padding:10px 4px 9px;font-size:13px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
 .bnav button svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -255,7 +258,7 @@ header .hrow{padding-right:92px}
   </div>
   <div class="ticket">
     <div class="tkt">나의 볼링 기록</div>
-    <div class="tkcols"><div><small>평균</small><b id="hsAvg">-</b></div><div><small>최고</small><b id="hsMax">-</b></div><div><small>게임</small><b id="hsCnt">0</b></div></div>
+    <div class="tkcols"><div><small>에버</small><b id="hsAvg">-</b></div><div><small>최고</small><b id="hsMax">-</b></div><div><small>게임</small><b id="hsCnt">0</b></div></div>
   </div>
   <button class="bigbtn" id="btnStart"><span>게임 시작</span><span class="circ"><svg class="ar" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg></span></button>
   <div class="cap">오늘의 기록을 남겨보세요</div>
@@ -289,8 +292,8 @@ header .hrow{padding-right:92px}
   <div class="card">
     <b>새 크루 등록</b>
     <div class="small" style="margin-bottom:8px">크루 이름을 넣고 등록하면 팀원 등록 화면으로 넘어갑니다.</div>
-    <div class="imgrow"><div class="imgprev" id="ncPrev">+</div><button class="sec" id="ncCam">사진 찍기</button><button class="sec" id="ncPic">앨범에서</button><button class="gray hide" id="ncDel">지우기</button><span class="small">크루 이미지(선택)</span></div><input type="file" id="ncFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="ncFilePic" accept="image/*" class="hide">
     <div class="row"><input type="text" id="newClub" placeholder="크루 이름" class="grow"><button id="btnNewClub">등록</button></div>
+    <div class="imgrow" style="margin-top:8px"><div class="imgprev" id="ncPrev">+</div><button class="sec" id="ncCam">사진 찍기</button><button class="sec" id="ncPic">앨범에서</button><button class="gray hide" id="ncDel">지우기</button><span class="small">크루 이미지(선택)</span></div><input type="file" id="ncFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="ncFilePic" accept="image/*" class="hide">
   </div>
   <div class="small" style="text-align:center;margin:10px 0">명단은 이 폰 안에만 저장되고 어디로도 전송되지 않습니다.</div>
 </section>
@@ -367,11 +370,12 @@ header .hrow{padding-right:92px}
     <div class="row"><button id="btnBuild" class="grow">팀 구성</button><button id="btnPrev" class="gray">이전안</button><button id="btnNext" class="sec">다음안</button><button id="btnNew" class="sec">새 조합</button></div>
     <div class="small" id="buildInfo"></div>
   </div>
+  <div id="swapHint" class="small hide" style="margin:2px 4px 6px">두 사람을 차례로 누르면 자리를 바꿉니다. 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 구성하세요.</div>
   <div id="teamOut"></div>
-  <div class="card hide" id="copyBox">
+  <div class="card hide stick" id="copyBox">
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
-    <div class="small" style="margin-top:6px">이미지 맨 위에 만든 날짜가 들어갑니다. 두 사람을 차례로 누르면 자리를 바꾸고, 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 구성하세요.</div>
+    
   </div>
 </div>
 
@@ -493,9 +497,11 @@ header .hrow{padding-right:92px}
   <div class="lbl">볼링장</div>
   <div class="row"><select id="rcAlley" class="grow"></select><button class="sec" id="rcAddAlley">볼링장 등록</button></div>
   <div id="rcP" class="hide">
+    <details id="rpSetBox" open><summary class="small" style="cursor:pointer;font-weight:700;padding:6px 0">판독 설정 (크루·내 이름 확인)</summary>
     <div class="small" id="rpIntro" style="margin:6px 0">점수표 사진에서 게임 수와 내 점수를 읽어 아래 입력칸에 자동으로 채웁니다. 읽은 결과를 확인한 뒤 "확인하고 저장"을 눌러야 저장됩니다.</div>
     <div class="lbl">어느 크루의 점수표인가요?</div><select id="rpCrew"></select>
     <div class="small" id="rpWho" style="margin:6px 0"></div>
+    </details>
     <div class="row"><button id="rpAgain" class="grow sec">사진 다시 찍기</button></div>
     <input type="file" id="rpFileCam" accept="image/*" capture="environment" class="hide"><input type="file" id="rpFilePic" accept="image/*" class="hide">
     <div id="rpStatus" class="small" style="margin-top:6px"></div><div id="rpRes"></div><div id="aiBox"></div>
@@ -503,14 +509,14 @@ header .hrow{padding-right:92px}
   <div id="rcG">
     <div class="lbl" id="rcGLbl">게임 점수 (0~300)</div>
     <div id="rcScores"></div>
-    <div class="row"><button class="sec" id="rcMore">+ 게임 추가</button><button class="gray" id="rcLess">마지막 삭제</button><div class="grow live" id="rcLive"></div></div>
+    <div class="row"><button class="sec" id="rcMore">+ 게임 추가</button><button class="gray" id="rcLess">마지막 게임 칸 삭제</button><div class="grow live" id="rcLive"></div></div>
   </div>
   <div id="rcE" class="hide">
     <div class="small" style="margin:6px 0">이미 알고 있는 에버(평균)와 게임 수를 그대로 넣습니다. 통계에는 "에버 × 게임 수"로 반영됩니다.</div>
     <div class="row"><div class="grow"><div class="lbl">에버(평균)</div><input type="number" id="reAvg" inputmode="decimal" placeholder="예: 178"></div><div class="grow"><div class="lbl">게임 수</div><input type="number" id="reN" inputmode="numeric" placeholder="예: 32"></div><div class="grow"><div class="lbl">최고점(선택)</div><input type="number" id="reHi" inputmode="numeric" placeholder="예: 246"></div></div>
   </div>
   <div class="lbl">메모(선택)</div><input type="text" id="rcNote">
-  <div class="row" style="margin-top:14px"><button id="rcSave" class="grow">저장</button><button id="rcDel" class="danger hide">삭제</button><button id="rcClose" class="gray">닫기</button></div>
+  <div class="row savebar"><button id="rcSave" class="grow">저장</button><button id="rcDel" class="danger hide">삭제</button><button id="rcClose" class="gray">닫기</button></div>
 </div></div>
 
 <div id="alSheet" class="sheetbg hide" style="z-index:40"><div class="sheet">
@@ -768,7 +774,7 @@ function go(scr) {
   window.scrollTo(0, 0);
 }
 function renderHome() {
-  $('clubList').innerHTML = DB.clubs.map(c => '<div class="clubrow"><button class="clubbtn" data-id="' + c.id + '"><span class="cav">' + (c.img ? '<img src="' + c.img + '" alt="">' : '<span class="ballmark"></span>') + '</span><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button><button class="clubdel" data-del="' + c.id + '" aria-label="' + esc(c.name) + ' 삭제"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span>삭제</span></button></div>').join('') || '<div class="small">등록된 크루가 없습니다. 아래에서 새 크루를 등록하세요.</div>';
+  $('clubList').innerHTML = (DB.clubs.map(c => '<div class="clubrow"><button class="clubbtn" data-id="' + c.id + '"><span class="cav">' + (c.img ? '<img src="' + c.img + '" alt="">' : '<span class="ballmark"></span>') + '</span><span class="grow">' + esc(c.name) + '</span><span class="small">' + c.members.length + '명</span></button></div>').join('') || '<div class="small">등록된 크루가 없습니다. 아래에서 새 크루를 등록하세요.</div>') + (DB.clubs.length ? '<div class="small" style="margin-top:4px">크루 삭제는 크루를 연 뒤 명단 탭 맨 아래 "이 크루 삭제"에서 합니다.</div>' : '');
   $('clubList').querySelectorAll('.clubbtn').forEach(b => b.onclick = () => openClub(b.dataset.id));
   $('clubList').querySelectorAll('.clubdel').forEach(b => b.onclick = () => delClub(b.dataset.del));
 }
@@ -909,12 +915,12 @@ $('goTeam').onclick = () => { tab('team'); build(true); };
 // ===== 팀 구성 =====
 function build(fresh) {
   const c = C(); const ppl = people(); manual = false; sel = null;
-  if (ppl.length < 2) { $('teamOut').innerHTML = '<div class="card">참가 인원이 2명 이상이어야 합니다. 참석 탭에서 체크해 주세요.</div>'; $('copyBox').classList.add('hide'); $('buildInfo').textContent = ''; result = null; return; }
+  if (ppl.length < 2) { $('teamOut').innerHTML = '<div class="card">참가 인원이 2명 이상이어야 합니다. 참석 탭에서 체크해 주세요.</div>'; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide'); $('buildInfo').textContent = ''; result = null; return; }
   if (fresh || !result) {
     $('buildInfo').textContent = '계산 중...';
     setTimeout(() => {
       const res = computeResult(ppl, c);
-      if (!res.plan.k) { result = null; curTeams = null; $('teamOut').innerHTML = '<div class="card warn">' + esc(res.plan.msg) + '</div>'; $('copyBox').classList.add('hide'); $('buildInfo').textContent = ''; return; }
+      if (!res.plan.k) { result = null; curTeams = null; $('teamOut').innerHTML = '<div class="card warn">' + esc(res.plan.msg) + '</div>'; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide'); $('buildInfo').textContent = ''; return; }
       result = res; idx = 0; show();
     }, 30); return;
   }
@@ -952,8 +958,8 @@ function render(teams, nCand) {
     + (gm === 'balanced' && fDiff > 1 ? '<br><span class="warn">여성 수 차이가 ' + fDiff + '명입니다.</span>' : '')
     + (togN && !apartNames.length ? '<br>같은 편 지정 ' + togN + '쌍을 모두 같은 팀에 넣었습니다.' : '') + (apartNames.length ? '<br><span class="warn">같은 편 조건을 못 지킨 쌍(다른 팀): ' + esc(apartNames.join(', ')) + '</span>' : '') + ((result && result.togSkip) ? '<br><span class="warn">남자팀·여자팀 나누기에서는 남녀가 섞인 같은 편 지정 ' + result.togSkip + '쌍을 적용할 수 없습니다.</span>' : '') + (togetherNames.length ? '<br><span class="warn">분리 조건을 풀었습니다: ' + esc(togetherNames.join(', ')) + ' 같은 팀</span>' : '') + (seedBad.length ? '<br><span class="warn">같은 시드가 한 팀에 몰린 곳이 있습니다: ' + seedBad.join(', ') + ' 시드</span>' : '')
     + (!okg ? '<br>목표 이내로 맞추지 못했습니다. "새 조합"을 눌러 다른 후보를 비교해 보세요.' : '');
-  $('teamOut').innerHTML = teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 <span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + (m.floored ? ' <span class="nick">하한 적용(원 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
-  $('copyBox').classList.remove('hide');
+  $('teamOut').innerHTML = teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 <span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + (m.floored ? ' <span class="nick">하한 적용(원래 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
+  $('copyBox').classList.remove('hide'); $('swapHint').classList.remove('hide');
   $('teamOut').querySelectorAll('.pm').forEach(el => el.onclick = () => { const t = +el.dataset.t, m = +el.dataset.m; if (!sel) { sel = { t, m }; render(curTeams, nCand); return; } if (sel.t === t && sel.m === m) { sel = null; render(curTeams, nCand); return; } if (sel.t === t) { sel = { t, m }; render(curTeams, nCand); return; } const a = curTeams[sel.t][sel.m]; curTeams[sel.t][sel.m] = curTeams[t][m]; curTeams[t][m] = a; sel = null; manual = true; render(curTeams, nCand); });
 }
 $('btnBuild').onclick = () => build(true);
@@ -1018,7 +1024,7 @@ $('btnImage').onclick = async () => {
 $('btnImgClose').onclick = () => $('imgModal').classList.add('hide');
 $('btnShare').onclick = async () => {
   if (!lastBlob) return; const file = new File([lastBlob], 'team-' + todayStr().slice(0, 10).replace(/\./g, '') + '.png', { type: 'image/png' });
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: C().name + ' 팀 편성' }); } else alert('이 기기에서는 바로 공유할 수 없습니다. 이미지를 길게 눌러 저장한 뒤 카톡·밴드에 올려 주세요.'); } catch (e) { if (!e || e.name !== 'AbortError') alert('공유하지 못했습니다. 이미지를 길게 눌러 저장해 주세요.'); }
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: C().name + ' 팀 편성' }); } else alert('이 기기에서는 바로 공유할 수 없습니다. 이미지를 길게 눌러 저장한 뒤 카톡·밴드에 올려 주세요.'); } catch (e) { if (!isCancel(e)) alert('공유하지 못했습니다. 이미지를 길게 눌러 저장해 주세요.'); }
 };
 $('btnImgCopy').onclick = async () => {
   if (!lastBlob) return;
@@ -1289,7 +1295,7 @@ async function runOcr(file) {
     impRows = parseOcrText(text, C().members); sortImp(true);
     st.textContent = impRows.length ? '이미지에서 ' + impRows.length + '명을 읽었습니다(' + engine + '). 틀린 곳이 없는지 이름·에버를 확인한 뒤 등록하세요.' : '이름과 에버를 찾지 못했습니다. 표가 또렷하게 나온 이미지로 다시 시도하거나 엑셀·CSV 파일을 써 주세요.';
     renderPrev();
-  } catch (e) { st.textContent = '이미지를 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
+  } catch (e) { const m = (e && e.message ? e.message : String(e)); st.textContent = '이미지를 분석하지 못했습니다: ' + m + (/불러오지|load|fetch|network/i.test(m) ? ' — 처음 한 번은 분석 도구를 내려받아야 합니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.' : ''); }
   ocrBusy = false;
 }
 let impSheets = [];
@@ -1729,7 +1735,7 @@ async function rpHandle(file) {
       RP.rows = buildRows(o.items, o.text.split(/\r?\n/)); RP.ocrRows = RP.rows; RP.ocrRaw = RP.raw; rpReanalyze(true);
       if (aiReady() && A.when === 'auto' && aiNeeded(RP.res)) await rpAI();
     }
-  } catch (e) { st.textContent = '사진을 분석하지 못했습니다: ' + (e && e.message ? e.message : e); }
+  } catch (e) { const m = (e && e.message ? e.message : String(e)); st.textContent = '사진을 분석하지 못했습니다: ' + m + (/불러오지|load|fetch|network/i.test(m) ? ' — 처음 한 번은 분석 도구(약 28MB)를 내려받아야 합니다. 인터넷 연결(와이파이)을 확인한 뒤 다시 시도해 주세요.' : ''); }
   RP.busy = false; aiRender();
 }
 function rpReanalyze(first) {
@@ -1750,19 +1756,19 @@ function rpChecks(p, res) {
   return out.join('');
 }
 function rpRender() {
-  const res = RP.res, box = $('rpRes'); if (!res || !res.data.length) { box.innerHTML = ''; return; }
+  const res = RP.res, box = $('rpRes'); if (!res || !res.data.length) { box.innerHTML = ''; const sb0 = $('rpSetBox'); if (sb0) sb0.open = true; return; }
   const p = RP.chosen >= 0 ? res.rows[RP.chosen] : null; let h = '';
   if (p) {
     const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
     h += '<div class="rpmine"><div class="gnum">' + g.length + '게임으로 판단했습니다</div><div class="small">게임 수 근거: ' + esc(res.ngFrom) + (g.length < res.ng ? ' · 표는 ' + res.ng + '게임인데 이 줄에서 ' + g.length + '개만 읽었습니다' : '') + '</div><div class="ttl" style="margin-top:6px">' + (p.nameless ? '이름 없이 읽은 점수' : '내 점수로 판단한 줄: ' + esc(p.name)) + '</div><div class="rpg">' + g.map((s, i) => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + (i + 1) + 'G ' + s + '</span>').join('') + '</div>' + rpChecks(p, res) + '</div>';
-    const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : ' wn') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '! 사진에서 날짜를 못 찾았습니다. 위 날짜(' + fmtD($('rcDate').value) + ')가 맞는지 확인하고 고쳐 주세요') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
+    const al = m.alleyId ? alleyName(m.alleyId) : ''; h += '<div class="ck' + (m.date ? ' ok' : ' wn') + '">' + (m.date ? '✔ 날짜 ' + fmtD(m.date) : '! 사진에서 날짜를 못 찾았습니다. 경기 날짜를 확인해 주세요: <input type="date" id="rpDate" aria-label="경기 날짜" value="' + esc($('rcDate').value) + '" style="width:auto;display:inline-block;padding:4px 6px;margin-left:4px">') + (al ? ' · 볼링장 ' + esc(al) : (m.hint ? ' · 볼링장 후보 ' + esc(m.hint[0]) + ' (' + esc(m.hint[1] + ' ' + m.hint[2]) + ')' : '')) + (m.kind ? ' · ' + esc(m.kind) : '') + '</div>';
     if (!al && m.hint) h += '<button id="rpAl" class="sec" style="width:100%;margin-top:6px">후보 볼링장 "' + esc(m.hint[0]) + '" 등록하고 선택</button>';
-    h += '<div class="rpconf">읽은 결과를 사진과 비교해 맞는지 확인하세요. 아래 "판독한 점수" 칸에 이미 채워 두었고, 틀린 칸은 고칠 수 있습니다. 맞으면 맨 아래 "확인하고 저장"을 누르세요.</div>';
+    h += '<div class="rpconf">읽은 결과를 사진과 비교해 맞는지 확인하세요. 아래 "판독한 점수" 칸에 이미 채워 두었고, 틀린 칸은 고칠 수 있습니다. 맞으면 아래 고정된 "확인하고 저장"을 누르세요. 다른 사람 줄은 접어 두었습니다.</div>';
   } else {
     h += '<div class="rpmine"><div class="ttl">내 줄을 자동으로 정하지 못했습니다</div><div class="small">' + (res.why === 'multi' ? '내 이름과 비슷한 줄이 여러 개입니다.' : '내 이름·닉네임과 맞는 줄이 없습니다.') + ' 아래에서 내 줄을 눌러 주세요. 한 번 고르면 저장할 때 사진에 적힌 이름을 기억해서 다음에는 자동으로 찾습니다.</div></div>';
   }
-  h += '<div class="lbl" style="margin-top:8px">사진에서 읽은 줄 (누르면 내 줄로 바꿈)</div>' + res.data.slice(0, 40).map(r => '<div class="rpr' + (r.i === RP.chosen ? ' on' : '') + (r.isMine ? ' mine' : '') + '" data-i="' + r.i + '"><b>' + esc(r.name) + '</b>' + (r.isMine ? '<span class="kbadge k2">내 이름과 비슷</span>' : '') + '<div>' + r.games.map(s => '<span class="sc">' + s + '</span>').join('') + (r.total != null ? '<span class="small"> 합계 ' + r.total + '</span>' : '') + '</div></div>').join('');
-  box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; RC.edited = false; rpApply(); rpRender(); }); const ab = $('rpAl'); if (ab) ab.onclick = () => { const r = RP.meta.hint; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); let a = REC.alleys.find(x => x.name === r[0] && (x.area || '') === area); if (!a) { a = { id: uid(), name: r[0], area, memo: [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · '), fav: false }; REC.alleys.push(a); saveRec(); } RP.meta.alleyId = a.id; fillAlleySel($('rcAlley'), a.id); rpRender(); };
+  h += '<details class="rpall"' + (p ? '' : ' open') + '><summary>사진에서 읽은 줄 ' + res.data.length + '개 ' + (p ? '보기 (내 줄이 틀렸으면 눌러서 바꾸기)' : '(내 줄을 눌러 주세요)') + '</summary>' + res.data.slice(0, 40).map(r => '<div class="rpr' + (r.i === RP.chosen ? ' on' : '') + (r.isMine ? ' mine' : '') + '" data-i="' + r.i + '"><b>' + esc(r.name) + '</b>' + (r.isMine ? '<span class="kbadge k2">내 이름과 비슷</span>' : '') + '<div>' + r.games.map(s => '<span class="sc">' + s + '</span>').join('') + (r.total != null ? '<span class="small"> 합계 ' + r.total + '</span>' : '') + '</div></div>').join('');
+  h += '</details>'; const sb = $('rpSetBox'); if (sb) sb.open = !p; box.innerHTML = h; box.querySelectorAll('.rpr').forEach(el => el.onclick = () => { RP.chosen = +el.dataset.i; RC.edited = false; rpApply(); rpRender(); }); const rd = $('rpDate'); if (rd) rd.onchange = () => { if (rd.value) $('rcDate').value = rd.value; }; $('rcDate').oninput = $('rcDate').onchange = () => { const r2 = $('rpDate'); if (r2) r2.value = $('rcDate').value; }; const ab = $('rpAl'); if (ab) ab.onclick = () => { const r = RP.meta.hint; const area = [r[1], r[2], r[3]].filter(Boolean).join(' '); let a = REC.alleys.find(x => x.name === r[0] && (x.area || '') === area); if (!a) { a = { id: uid(), name: r[0], area, memo: [r[4], r[5] ? r[5] + '레인' : ''].filter(Boolean).join(' · '), fav: false }; REC.alleys.push(a); saveRec(); } RP.meta.alleyId = a.id; fillAlleySel($('rcAlley'), a.id); rpRender(); };
 }
 // 읽은 점수를 입력칸에 자동으로 채운다(게임 수만큼 칸을 만든다). 저장은 사용자가 확인한 뒤에만 한다.
 function rpApply() {
@@ -1783,7 +1789,8 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 23, APP_DATE = '2026.11.06';
+const APP_VER = 24, APP_DATE = '2026.11.08';
+setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
 const GUIDE = [
@@ -1835,7 +1842,8 @@ const AI_PROMPT = '이 이미지는 볼링 점수표입니다. 표에 있는 모
 function aiCfg() { const d = { p: 'none', keys: {}, models: {}, when: 'manual', consent: false }; try { const c = JSON.parse(localStorage.getItem(AIKEY) || 'null'); if (c && typeof c === 'object') return Object.assign(d, c, { keys: Object.assign({}, c.keys), models: Object.assign({}, c.models) }); } catch (e) {} return d; }
 function aiSave(c) { try { localStorage.setItem(AIKEY, JSON.stringify(c)); } catch (e) { alert('저장에 실패했습니다.'); } }
 const aiIsApi = (p) => p === 'gemini' || p === 'openai' || p === 'claude';
-function aiReady() { const c = aiCfg(); return aiIsApi(c.p) && !!String(c.keys[c.p] || '').trim() && !!c.consent; }
+function aiConsentOk(c) { return !!c.consent && (c.consentP || c.p) === c.p; }
+function aiReady() { const c = aiCfg(); return aiIsApi(c.p) && !!String(c.keys[c.p] || '').trim() && aiConsentOk(c); }
 function aiLabel() { const c = aiCfg(); if (aiIsApi(c.p)) return aiReady() ? '연결됨: ' + AIP[c.p].name + ' (' + (c.models[c.p] || AIP[c.p].def) + ')' : AIP[c.p].name + ' 선택됨(키나 동의가 없어 사용 안 함)'; if (c.p === 'chat') return '연결됨: 내 AI 앱으로 보내기(구독 그대로 사용)'; return '연결 안 됨(기본 판독만 사용)'; }
 function aiRefreshStat() { const e = $('aiStat'); if (e) e.textContent = '현재: ' + aiLabel(); }
 async function aiFetch(url, init, ms) {
@@ -1910,16 +1918,17 @@ function aiNeeded(res) {
 }
 async function aiShare() {
   if (!RP.file) return alert('먼저 위에서 점수표 사진을 고르세요.');
-  try { await navigator.clipboard.writeText(AI_PROMPT); } catch (e) {}
+  let copied = false; try { await navigator.clipboard.writeText(AI_PROMPT); copied = true; } catch (e) {}
   let b64; try { b64 = await aiImageB64(RP.file); } catch (e) { return alert('사진을 준비하지 못했습니다.'); }
-  const msg = '질문은 복사해 두었습니다. AI 앱 입력칸에 질문이 안 들어와 있으면 붙여 넣기 해서 보내세요.';
+  const msg = copied ? '질문은 복사해 두었습니다. AI 앱 입력칸에 질문이 안 들어와 있으면 붙여 넣기 해서 보내세요.' : '사진을 보냈습니다. 질문 자동 복사는 이 기기에서 안 됐습니다. 이어서 뜨는 창의 질문 전체를 복사해 AI 앱에 붙여 넣어 보내세요("답 적용"은 이 질문 형식의 답만 읽습니다).';
+  const showPrompt = () => { if (!copied) { try { prompt('아래 질문 전체를 길게 눌러 복사한 뒤 AI 앱에 붙여 넣으세요.', AI_PROMPT); } catch (e) {} } };
   try {
     const cap = window.Capacitor && window.Capacitor.Plugins;
-    if (cap && cap.Share && cap.Filesystem) { const w = await cap.Filesystem.writeFile({ path: 'score-share.jpg', data: b64, directory: 'CACHE' }); await cap.Share.share({ title: '볼링 점수표', text: AI_PROMPT, files: [w.uri] }); alert(msg); return; }
+    if (cap && cap.Share && cap.Filesystem) { const w = await cap.Filesystem.writeFile({ path: 'score-share.jpg', data: b64, directory: 'CACHE' }); await cap.Share.share({ title: '볼링 점수표', text: AI_PROMPT, files: [w.uri] }); alert(msg); showPrompt(); return; }
     const blob = await (await fetch('data:image/jpeg;base64,' + b64)).blob(); const f = new File([blob], 'score.jpg', { type: 'image/jpeg' });
-    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: '볼링 점수표', text: AI_PROMPT }); alert(msg); return; }
-  } catch (e) { if (e && e.name === 'AbortError') return; }
-  alert('이 기기에서는 사진을 바로 보낼 수 없습니다. 질문은 복사해 두었으니, 구독 중인 AI 앱에서 점수표 사진을 직접 첨부하고 질문을 붙여 넣어 보내세요.');
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: '볼링 점수표', text: AI_PROMPT }); alert(msg); showPrompt(); return; }
+  } catch (e) { if (isCancel(e)) return; }
+  alert('이 기기에서는 사진을 바로 보낼 수 없습니다. ' + (copied ? '질문은 복사해 두었으니,' : '질문은 이어서 뜨는 창에서 복사해,') + ' 구독 중인 AI 앱에서 점수표 사진을 직접 첨부하고 질문을 붙여 넣어 보내세요.'); showPrompt();
 }
 function aiRender() {
   const box = $('aiBox'); if (!box) return; const c = aiCfg(); let h = '';
@@ -1945,7 +1954,7 @@ function aiOpen() { AIS = aiCfg(); aiSheetRender(); $('aiSheet').classList.remov
 function aiSheetRender() {
   const s = AIS; const picks = [['gemini', AIP.gemini], ['openai', AIP.openai], ['claude', AIP.claude]];
   $('aiPicks').innerHTML = picks.map(([k, v]) => '<button class="aip' + (s.p === k ? ' on' : '') + '" data-p="' + k + '">' + esc(v.name) + '<small>' + esc(v.desc) + '</small></button>').join('') + '<button class="aip' + (s.p === 'chat' ? ' on' : '') + '" data-p="chat">내 AI 앱으로 보내기<small>구독 중인 ChatGPT·클로드·제미나이 앱을 그대로 사용(키 불필요, 수동 단계 있음)</small></button><button class="aip' + (s.p === 'none' ? ' on' : '') + '" data-p="none">사용 안 함<small>기본 판독만 사용</small></button>';
-  $('aiPicks').querySelectorAll('.aip').forEach(b => b.onclick = () => { aiReadForm(); AIS.p = b.dataset.p; aiSheetRender(); });
+  $('aiPicks').querySelectorAll('.aip').forEach(b => b.onclick = () => { aiReadForm(); AIS.testTok = 0; if (AIS.p !== b.dataset.p && (AIS.consentP || '') !== b.dataset.p) AIS.consent = false; AIS.p = b.dataset.p; aiSheetRender(); });
   let d = '';
   if (aiIsApi(s.p)) {
     const v = AIP[s.p];
@@ -1955,21 +1964,22 @@ function aiSheetRender() {
       + '<div class="small" style="margin-top:6px">' + esc(v.note) + '</div>'
       + '<details style="margin-top:6px"><summary class="small">고급: 모델 이름</summary><input type="text" id="aiModel" placeholder="' + esc(v.def) + '" value="' + esc(s.models[s.p] || '') + '"><div class="small">비워 두면 "연결 시험" 때 쓸 수 있는 최신 모델을 자동으로 고릅니다.</div></details>'
       + '<div class="lbl">AI를 쓰는 때</div><select id="aiWhen"><option value="manual"' + (s.when === 'manual' ? ' selected' : '') + '>버튼을 눌렀을 때만</option><option value="auto"' + (s.when === 'auto' ? ' selected' : '') + '>기본 판독이 의심스러울 때 자동으로</option><option value="always"' + (s.when === 'always' ? ' selected' : '') + '>항상 AI로 읽기</option></select>'
-      + '<label class="row" style="margin-top:10px"><input type="checkbox" id="aiConsent" style="width:22px;height:22px"' + (s.consent ? ' checked' : '') + '> <span class="small" style="flex:1">AI로 읽을 때 점수표 사진이 선택한 AI 회사(' + esc(v.short) + ')로 전송되는 것에 동의합니다. 앱 개발자는 사진과 키를 받지 않습니다.</span></label>'
-      + '<button id="aiTest" class="sec" style="width:100%;margin-top:8px">연결 시험</button><div id="aiTestMsg" class="small" style="margin-top:4px"></div>';
+      + '<label class="row" style="margin-top:10px"><input type="checkbox" id="aiConsent" style="width:22px;height:22px"' + (aiConsentOk(s) ? ' checked' : '') + '> <span class="small" style="flex:1">AI로 읽을 때 점수표 사진이 선택한 AI 회사(' + esc(v.short) + ')로 전송되는 것에 동의합니다. 앱 개발자는 사진과 키를 받지 않습니다.</span></label>'
+      + '<button id="aiTest" class="sec" style="width:100%;margin-top:8px">연결 시험</button><div class="small" style="margin-top:4px">연결 시험은 사진 없이 짧은 글("OK")만 보내 키가 맞는지 확인합니다.</div><div id="aiTestMsg" class="small" style="margin-top:4px"></div>';
   } else if (s.p === 'chat') {
     d += '<div class="small" style="margin-top:8px">구독 중인 AI 앱을 그대로 쓰는 방법입니다. 사진을 읽을 때 "내 AI 앱으로 읽기" 칸이 나타납니다.<br>① 사진과 질문을 AI 앱으로 보내기(공유 창에서 ChatGPT·클로드·제미나이 등을 고름)<br>② AI의 답을 복사해 붙여 넣고 "답 적용"<br>사진은 내가 고른 AI 앱으로만 전달되며, 이 앱은 사진을 외부로 보내지 않습니다. 기기에 따라 사진 공유가 안 되면 AI 앱에서 직접 첨부하면 됩니다.</div>';
   } else d += '<div class="small" style="margin-top:8px">AI 없이 기본 판독만 씁니다.</div>';
   $('aiDetail').innerHTML = d;
   const t = $('aiTest'); if (t) t.onclick = async () => {
-    aiReadForm(); const k = String(AIS.keys[AIS.p] || '').trim(); const msg = $('aiTestMsg'); if (!k) { msg.textContent = '키를 먼저 넣어 주세요.'; return; }
-    t.disabled = true; msg.textContent = '연결을 시험하는 중...'; try { const model = AIS.models[AIS.p] || await aiPickModel(AIS.p, k); const r = await aiAsk(AIS.p, k, model, '다음 단어만 그대로 답하세요: OK'); AIS.models[AIS.p] = model; $('aiModel').value = model; msg.textContent = '연결됐습니다. 모델: ' + model + ' (답: ' + String(r).trim().slice(0, 20) + ')'; } catch (e) { msg.textContent = '연결하지 못했습니다: ' + e.message; } t.disabled = false;
+    aiReadForm(); const p0 = AIS.p, k = String(AIS.keys[p0] || '').trim(), m0 = AIS.models[p0] || ''; const msg = $('aiTestMsg'); if (!k) { msg.textContent = '키를 먼저 넣어 주세요.'; return; }
+    const tok = AIS.testTok = Math.random(); const still = () => AIS && AIS.testTok === tok && AIS.p === p0 && !$('aiSheet').classList.contains('hide');
+    t.disabled = true; msg.textContent = '연결을 시험하는 중...'; try { const model = m0 || await aiPickModel(p0, k); if (!still()) return; const r = await aiAsk(p0, k, model, '다음 단어만 그대로 답하세요: OK'); if (!still()) return; AIS.models[p0] = model; const mi = $('aiModel'); if (mi) mi.value = model; msg.textContent = '연결됐습니다. 모델: ' + model + ' (답: ' + String(r).trim().slice(0, 20) + ')'; } catch (e) { if (still()) msg.textContent = '연결하지 못했습니다: ' + e.message; } if (still() || $('aiTest') === t) t.disabled = false;
   };
 }
-function aiReadForm() { if (!AIS) return; const k = $('aiKey'); if (k && aiIsApi(AIS.p)) AIS.keys[AIS.p] = k.value.trim(); const m = $('aiModel'); if (m && aiIsApi(AIS.p)) AIS.models[AIS.p] = m.value.trim(); const w = $('aiWhen'); if (w) AIS.when = w.value; const c = $('aiConsent'); if (c) AIS.consent = c.checked; }
-$('btnAiSet').onclick = aiOpen; $('aiClose').onclick = () => $('aiSheet').classList.add('hide'); $('aiSheet').onclick = (e) => { if (e.target === $('aiSheet')) $('aiSheet').classList.add('hide'); };
+function aiReadForm() { if (!AIS) return; const k = $('aiKey'); if (k && aiIsApi(AIS.p)) AIS.keys[AIS.p] = k.value.trim(); const m = $('aiModel'); if (m && aiIsApi(AIS.p)) AIS.models[AIS.p] = m.value.trim(); const w = $('aiWhen'); if (w) AIS.when = w.value; const c = $('aiConsent'); if (c) { AIS.consent = c.checked; AIS.consentP = c.checked ? AIS.p : ''; } }
+$('btnAiSet').onclick = aiOpen; $('aiClose').onclick = () => { if (AIS) AIS.testTok = 0; $('aiSheet').classList.add('hide'); }; $('aiSheet').onclick = (e) => { if (e.target === $('aiSheet')) $('aiSheet').classList.add('hide'); };
 $('aiSave').onclick = () => {
-  aiReadForm(); const s = AIS; if (aiIsApi(s.p)) { if (!String(s.keys[s.p] || '').trim()) return alert('API 키를 넣어 주세요. 키가 없으면 "내 AI 앱으로 보내기"를 고르거나 키 받는 곳에서 먼저 발급받으세요.'); if (!s.consent) return alert('사진이 AI 회사로 전송되는 것에 동의하는 체크가 필요합니다.'); }
+  aiReadForm(); const s = AIS; if (aiIsApi(s.p)) { if (!String(s.keys[s.p] || '').trim()) return alert('API 키를 넣어 주세요. 키가 없으면 "내 AI 앱으로 보내기"를 고르거나 키 받는 곳에서 먼저 발급받으세요.'); if (!aiConsentOk(s)) return alert('사진이 ' + AIP[s.p].short + '(으)로 전송되는 것에 동의하는 체크가 필요합니다. AI 회사를 바꾸면 동의를 다시 받습니다.'); }
   aiSave(s); aiRefreshStat(); aiRender(); $('aiSheet').classList.add('hide'); alert('저장했습니다. ' + aiLabel());
 };
 $('aiOff').onclick = () => { if (!confirm('AI 연결을 해제하고 저장된 키를 모두 지울까요?')) return; aiSave({ p: 'none', keys: {}, models: {}, when: 'manual', consent: false }); AIS = aiCfg(); aiRefreshStat(); aiRender(); aiSheetRender(); };
@@ -1990,31 +2000,83 @@ $('meName').onchange = (e) => { REC.me.name = e.target.value.trim(); saveRec(); 
 $('meNick').onchange = (e) => { REC.me.nick = e.target.value.trim(); saveRec(); };
 $('btnAlNew').onclick = () => openAl(null);
 $('btnWipe').onclick = () => { if (!REC.recs.length) return alert('지울 기록이 없습니다.'); if (!confirm('내 점수 기록 ' + REC.recs.length + '건을 모두 지울까요? 되돌릴 수 없습니다. (볼링장 목록과 크루 명단은 남습니다)')) return; REC.recs = []; saveRec(); renderMe(); alert('기록을 모두 지웠습니다.'); };
+const isCancel = (e) => !!e && (e.name === 'AbortError' || /cancel/i.test(String(e.message || '')) || /cancel/i.test(String(e.code || '')));
 $('btnBk').onclick = async () => {
-  const data = JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC }); const name = '오늘도스트라이크_백업_' + isoToday() + '.json';
+  const data = bkData(); const name = '오늘도스트라이크_백업_' + isoToday() + '.json';
   const file = new File([data], name, { type: 'application/json' });
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  let shareFailed = false;
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (isCancel(e)) return; shareFailed = true; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
-  if (/Android/i.test(navigator.userAgent) && !(navigator.canShare && navigator.canShare({ files: [file] }))) setTimeout(() => alert('이 폰에서는 파일 저장이 안 될 수 있습니다. 바로 아래 "백업 글로 복사"를 함께 이용해 주세요.'), 600);
+  if (shareFailed || (/Android/i.test(navigator.userAgent) && !(navigator.canShare && navigator.canShare({ files: [file] })))) setTimeout(() => alert('이 폰에서는 백업 파일 저장이 안 됐을 수 있습니다. 바로 아래 "백업 글로 복사"를 눌러 카톡 나와의 채팅이나 메모에 보관해 주세요.'), 600);
 };
 $('btnRs').onclick = () => $('fileRs').click();
-const bkData = () => JSON.stringify({ app: 'btb-team', v: 1, saved: new Date().toISOString(), db: DB, rec: REC });
+const bkData = () => JSON.stringify({ app: 'btb-team', v: 1, av: APP_VER, saved: new Date().toISOString(), db: DB, rec: REC });
+const BK_ID = /^[A-Za-z0-9_-]{1,64}$/, BK_IMG = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+\/=]+$/;
+// 가져온 백업의 구조·값을 검사하고 정리한다. 문제가 있으면 오류 문구를, 없으면 ''를 돌려준다(통과한 값만 저장).
+function bkSanitize(d) {
+  const isObj = (o) => o && typeof o === 'object' && !Array.isArray(o), str = (v) => typeof v === 'string', okId = (v) => str(v) && BK_ID.test(v);
+  if (d.saved != null && !str(d.saved)) return '저장 날짜 형식이 맞지 않습니다';
+  if (d.av != null && typeof d.av !== 'number') return '앱 버전 표시가 맞지 않습니다';
+  if (!isObj(d.db) || !isObj(d.rec)) return '구조가 맞지 않습니다';
+  for (const c of d.db.clubs) {
+    if (!isObj(c) || !okId(c.id) || !str(c.name)) return '크루 정보가 손상됐습니다';
+    if (c.img != null && !(str(c.img) && BK_IMG.test(c.img))) delete c.img;
+    if (!Array.isArray(c.members)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 목록이 손상됐습니다';
+    for (const m of c.members) { if (!isObj(m) || !okId(m.id) || !str(m.name)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 정보가 손상됐습니다'; if (m.gender !== 'M' && m.gender !== 'F') m.gender = 'M'; if (m.avg !== '' && typeof m.avg !== 'number') m.avg = ''; if (m.nick != null && !str(m.nick)) m.nick = ''; if (m.seed != null && !str(m.seed)) m.seed = ''; }
+    c.present = Array.isArray(c.present) ? c.present.filter(okId) : [];
+    c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
+    if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
+    if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
+  }
+  if (d.db.cur != null && !okId(d.db.cur)) d.db.cur = null;
+  if (!Array.isArray(d.rec.alleys)) d.rec.alleys = [];
+  for (const a of d.rec.alleys) { if (!isObj(a) || !okId(a.id) || !str(a.name)) return '볼링장 정보가 손상됐습니다'; }
+  for (const r of d.rec.recs) {
+    if (!isObj(r) || !okId(r.id) || !str(r.date)) return '점수 기록이 손상됐습니다';
+    if (r.k === 'g') { if (!Array.isArray(r.scores) || !r.scores.every(x => Number.isInteger(x) && x >= 0 && x <= 300)) return '점수 기록의 점수가 손상됐습니다'; }
+    else if (r.k === 'e') { if (typeof r.avg !== 'number' || typeof r.n !== 'number') return '에버 기록이 손상됐습니다'; }
+    else return '점수 기록 종류가 맞지 않습니다';
+    if (r.alleyId && !okId(r.alleyId)) r.alleyId = '';
+  }
+  if (!isObj(d.rec.me)) d.rec.me = { name: '' };
+  return '';
+}
+function bkCheck(d) { if (!d || d.app !== 'btb-team' || !d.db || !Array.isArray(d.db.clubs) || !d.rec || !Array.isArray(d.rec.recs)) return 'notapp'; if (d.v !== 1) return 'ver'; const bad = bkSanitize(d); if (bad) return 'bad:' + bad; if (d.av && d.av > APP_VER) return 'newer'; return ''; }
+function doRestore(d, src) {
+  const why = bkCheck(d);
+  if (why === 'notapp') return alert('이 앱의 백업 ' + src + '이 아닙니다. ' + (src === '글' ? '복사한 글 전체를 붙여 넣었는지 확인해 주세요.' : '"오늘도스트라이크_백업_날짜.json" 파일을 골라 주세요.'));
+  if (why === 'ver') return alert('알 수 없는 형식의 백업입니다. 앱을 최신 버전으로 업데이트한 뒤 다시 시도해 주세요.');
+  if (why.indexOf('bad:') === 0) return alert('이 백업은 복원할 수 없습니다: ' + why.slice(4) + '. 지금 폰의 내용은 바뀌지 않았습니다.');
+  const nC = d.db.clubs.length, nR = d.rec.recs.length, nM = d.db.clubs.reduce((a, c) => a + ((c && c.members) ? c.members.length : 0), 0);
+  let msg = '백업 ' + src + '(' + (d.saved || '').slice(0, 10) + (d.av ? ', 앱 버전 ' + d.av : '') + ')로 복원합니다.\n\n· 백업 내용: 크루 ' + nC + '곳(팀원 ' + nM + '명), 기록 ' + nR + '건\n· 지금 폰: 크루 ' + DB.clubs.length + '곳, 기록 ' + REC.recs.length + '건\n\n지금 폰의 내용은 백업 내용으로 바뀝니다. 지금 내용이 필요하면 취소하고 먼저 "백업 파일 저장"을 눌러 두세요.';
+  if (why === 'newer') msg = '이 백업은 더 새 버전의 앱(버전 ' + d.av + ')에서 만든 것이라 일부 내용이 빠질 수 있습니다.\n\n' + msg;
+  if (!nC && !nR) msg = '⚠ 이 백업에는 크루도 기록도 없습니다(빈 백업). 복원하면 지금 폰의 크루와 기록이 모두 사라집니다.\n\n' + msg;
+  if (!confirm(msg + '\n\n계속할까요?')) return;
+  const old2 = localStorage.getItem(KEY2);
+  try { localStorage.setItem(KEY2, JSON.stringify(d.db)); } catch (e) { return alert('복원하지 못했습니다: 폰의 저장 공간이 부족하거나 브라우저가 저장을 막았습니다. 지금 내용은 바뀌지 않았습니다.'); }
+  try { localStorage.setItem(KEYR, JSON.stringify(d.rec)); } catch (e) {
+    try { if (old2 === null) localStorage.removeItem(KEY2); else localStorage.setItem(KEY2, old2); } catch (e2) {}
+    let back = false; try { back = localStorage.getItem(KEY2) === old2; } catch (e3) {}
+    if (back) return alert('복원하지 못했습니다: 기록을 저장하지 못했습니다(저장 공간 부족 등). 크루 명단도 원래대로 되돌려서 지금 폰의 내용은 그대로입니다.');
+    alert('복원하지 못했고, 크루 명단을 원래대로 되돌리는 것도 실패했습니다. 크루 명단은 백업 내용으로, 기록은 지금 내용으로 남아 있을 수 있습니다. 다시 복원을 시도하거나 저장해 둔 백업으로 복원해 주세요.'); return location.reload(); }
+  try { sessionStorage.setItem('btbRestored', nC + '|' + nR); } catch (e) {}
+  location.reload();
+}
 $('btnBkTxt').onclick = async () => { const s = bkData(); try { await navigator.clipboard.writeText(s); alert('백업 글을 복사했습니다(' + s.length + '자). 카톡 나와의 채팅이나 메모에 붙여 넣어 보관하세요.'); } catch (e) { $('bkTxt').classList.remove('hide'); $('btnRsGo').classList.add('hide'); $('bkTxt').value = s; try { $('bkTxt').select(); } catch (e2) {} alert('자동 복사가 안 됩니다. 아래 칸의 글을 길게 눌러 전체 복사해 주세요.'); } };
 $('btnRsTxt').onclick = () => { const hid = $('bkTxt').classList.toggle('hide'); $('btnRsGo').classList.toggle('hide', hid); if (!hid) { $('bkTxt').value = ''; $('bkTxt').focus(); } };
 $('btnRsGo').onclick = () => {
   try {
-    const d = JSON.parse($('bkTxt').value.trim()); if (!d || d.app !== 'btb-team' || !d.db || !Array.isArray(d.db.clubs) || !d.rec || !Array.isArray(d.rec.recs)) return alert('이 앱의 백업 글이 아닙니다. 복사한 글 전체를 붙여 넣었는지 확인해 주세요.');
-    if (!confirm('백업 글(' + (d.saved || '').slice(0, 10) + ')로 복원합니다. 지금 폰에 있는 크루 ' + DB.clubs.length + '곳과 기록 ' + REC.recs.length + '건이 백업 내용으로 바뀝니다. 계속할까요?')) return;
-    localStorage.setItem(KEY2, JSON.stringify(d.db)); localStorage.setItem(KEYR, JSON.stringify(d.rec)); location.reload();
-  } catch (err) { alert('백업 글을 읽지 못했습니다.'); }
+    const t = $('bkTxt').value.trim(); if (!t) return alert('백업 글을 먼저 붙여 넣어 주세요.');
+    let d; try { d = JSON.parse(t); } catch (e) { return alert('백업 글을 읽지 못했습니다. 글이 중간에 잘렸을 수 있습니다. 카톡이라면 "전체 보기"를 연 뒤 전체를 복사해 붙여 넣어 주세요.'); }
+    doRestore(d, '글');
+  } catch (err) { alert('복원 중 문제가 생겼습니다: ' + (err && err.message ? err.message : err)); }
 };
 $('fileRs').onchange = async (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
   try {
-    const d = JSON.parse(await f.text()); if (!d || d.app !== 'btb-team' || !d.db || !Array.isArray(d.db.clubs) || !d.rec || !Array.isArray(d.rec.recs)) return alert('이 앱의 백업 파일이 아닙니다.');
-    if (!confirm('백업 파일(' + (d.saved || '').slice(0, 10) + ')로 복원합니다. 지금 폰에 있는 크루 ' + DB.clubs.length + '곳과 기록 ' + REC.recs.length + '건이 백업 내용으로 바뀝니다. 계속할까요?')) return;
-    localStorage.setItem(KEY2, JSON.stringify(d.db)); localStorage.setItem(KEYR, JSON.stringify(d.rec)); location.reload();
-  } catch (err) { alert('백업 파일을 읽지 못했습니다.'); }
+    let d; try { d = JSON.parse(await f.text()); } catch (e) { return alert('백업 파일을 읽지 못했습니다. 파일이 손상됐거나 이 앱의 백업 파일(.json)이 아닙니다.'); }
+    doRestore(d, '파일');
+  } catch (err) { alert('복원 중 문제가 생겼습니다: ' + (err && err.message ? err.message : err)); }
 };
 
 // ----- 점수·에버 가져오기(파일, 사진) -----
