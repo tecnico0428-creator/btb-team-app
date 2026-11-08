@@ -571,8 +571,9 @@ header .hrow{padding-right:92px}
   </div>
   <div class="card">
     <b>글로 붙여 넣기</b>
-    <div class="small">명단 링크를 통째로 붙여 넣고 "명단 바꾸기"를 눌러도 됩니다. 직접 넣을 때는 한 줄에 한 명: 이름,성별(남/여),에버,별명,시드(A~D),구분(회원/게스트).</div>
-    <textarea id="csvBox" rows="4" placeholder="홍길동,남,195,길동이,B,회원&#10;김영희,여,172"></textarea>
+    <div class="small">한 줄에 한 명씩 붙여 넣으세요. 순서와 구분 기호(쉼표·띄어쓰기·마침표·따옴표·탭·슬래시)는 자유이고, 앞의 번호(1. 2) ① 등)는 빼고 읽습니다. 이름과 에버만 써도 되고, 성별(남/여)·별명(괄호 안 또는 두 번째 이름)·시드(A~D, 마스터·에이스·챌린지·루키)·게스트는 있으면 알아서 찾습니다. 성별·별명·시드를 안 쓴 사람은 같은 이름이 이미 명단에 있으면 그 값을 그대로 씁니다. 명단 링크를 통째로 붙여 넣어도 됩니다.</div>
+    <textarea id="csvBox" rows="5" placeholder="1. 홍길동 195&#10;2) 김영희(영희) 여 172 B&#10;&quot;이철수&quot;, 남, 에버 188"></textarea>
+    <div id="csvPrev" class="small" style="margin-top:6px"></div>
     <div class="row" style="margin-top:8px"><button id="btnImpReplace">명단 바꾸기</button><button id="btnImpAdd" class="sec">추가로 넣기</button><button id="btnExp" class="gray">현재 명단 보기</button></div>
   </div>
   <div class="card">
@@ -1407,13 +1408,80 @@ $('hdM').onchange = e => { C().opts.hdM = num(e.target.value, 0) || 0; save(); }
 $('hdF').onchange = e => { C().opts.hdF = num(e.target.value, 0) || 0; save(); };
 $('clubName').onchange = e => { const n = e.target.value.trim(); const c = C(); if (!n) { e.target.value = c.name; return; } if (DB.clubs.some(x => x !== c && x.name === n)) { alert('같은 이름의 크루가 이미 있습니다.'); e.target.value = c.name; return; } c.name = n; $('hTitle').textContent = n; save(); };
 $('btnDelClub').onclick = () => { const c = C(); if (confirm('"' + c.name + '" 크루와 팀원 ' + c.members.length + '명을 모두 지울까요? 되돌릴 수 없습니다.')) { DB.clubs = DB.clubs.filter(x => x !== c); DB.cur = null; save(); go('home'); } };
-function parseCsv(t) {
-  const ls = t.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (ls.length && /이름|성명|name/i.test(ls[0]) && /에버|평균|avg|성별|별명|시드|구분/i.test(ls[0])) ls.shift();
-  return ls.map(l => { const p = l.split(/[,\t]/).map(s => s.trim()); const g = /^(여|F|f|female)/.test(p[1] || '') ? 'F' : 'M'; return { id: uid(), name: p[0], gender: g, avg: p[2] === undefined || p[2] === '' ? '' : num(p[2], ''), nick: p[3] || '', seed: /^[ABCD]$/i.test(p[4] || '') ? p[4].toUpperCase() : '', guest: /게스트|guest/i.test(p[5] || '') }; }).filter(m => m.name);
+// ===== 명단 글 인식: 순서·구분 기호·번호·따옴표가 제각각이어도 이름과 에버를 찾아낸다 =====
+// 머리글(이름/성별/에버…)이 있으면 그 칸 순서를 쓰고, 없으면 칸마다 생김새로 판단한다.
+const RS_G = /^(남|남자|남성|여|여자|여성|m|f|male|female|♂|♀)$/i;
+const rsGender = (t) => /^(여|여자|여성|f|female|♀)$/i.test(t) ? 'F' : 'M';
+const rsSeed = (t) => { const x = t.replace(/시드|조|등급/g, ''); if (/^[ABCD]$/i.test(x)) return x.toUpperCase(); return /^(마스터|master)$/i.test(t) ? 'A' : /^(에이스|ace)$/i.test(t) ? 'B' : /^(챌린지|첼린지|challenge)$/i.test(t) ? 'C' : /^(루키|rookie)$/i.test(t) ? 'D' : ''; };
+const RS_HDR = { name: /^(이름|성명|회원명|name)$/i, gender: /^(성별|남녀|gender|sex)$/i, avg: /^(에버|평균|에버리지|avg|average|애버)$/i, nick: /^(별명|닉네임|닉|nick|nickname)$/i, seed: /^(시드|등급|seed)$/i, kind: /^(구분|회원구분|type)$/i, no: /^(번호|순번|no|#)$/i };
+function rsStripNo(l) { return String(l).replace(/^\s*(?:no\.?\s*[0-9]{1,3}\s*[.)\]:\-번]?\s*|(?:[0-9]{1,3}\s*[.)\]:\-번]|[①-⑳])\s*)(?=\D)/i, ''); }
+const rsUnq = (x) => String(x).trim().replace(/^["'“”‘’「『]+|["'“”‘’」』]+$/g, '').trim();
+// 쉼표 구분 줄을 따옴표 안 쉼표는 보존하며 나눈다(빈 칸 유지)
+function rsSplitDelim(line, delim) { if (delim !== ',') return line.split(delim).map(rsUnq); const out = []; let cur = '', q = ''; for (const ch of line) { if (q) { if (ch === q || (q === '“' && ch === '”')) q = ''; else cur += ch; } else if (ch === '"' || ch === '“') q = ch; else if (ch === ',' || ch === '，') { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out.map(rsUnq); }
+function rsTokens(line) {
+  let l0 = String(line); if ((l0.match(/,/g) || []).length === 1 && /(^|[^\d])\d{2,3},\d(?!\d)/.test(l0)) l0 = l0.replace(/(\d{2,3}),(\d)(?!\d)/, '$1.$2'); // "195,5" = 소수점 쉼표
+  let l = l0.replace(/[\u201C\u201D\u2018\u2019"'`「」『』]/g, ' ').replace(/[，、;|·•]/g, ',').replace(/\t/g, ',');
+  l = rsStripNo(l).replace(/^\s*[-*•▶▷►]\s*/, '');
+  const nicks = []; l = l.replace(/[(\[{]([^)\]}]*)[)\]}]/g, (z, a) => { if (a.trim()) nicks.push(a.trim()); return ' '; });
+  l = l.replace(/(\d)\.(\d)/g, '$1\u0000$2').replace(/\./g, ',').replace(/\u0000/g, '.');
+  const toks = l.split(/[,\/\s]+/).map(x => x.trim()).filter(Boolean);
+  return { toks, nicks };
 }
-$('btnImpReplace').onclick = () => { if (handleRosterLink()) return; const c = C(); const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); if (!confirm('현재 명단 ' + c.members.length + '명을 지우고 ' + l.length + '명으로 바꿀까요?')) return; const oldNames = c.pairs.map(p => [(c.members.find(x => x.id === p[0]) || {}).name, (c.members.find(x => x.id === p[1]) || {}).name]); const oldTog = (c.tog || []).map(p => [(c.members.find(x => x.id === p[0]) || {}).name, (c.members.find(x => x.id === p[1]) || {}).name]); c.members = l; c.present = []; c.pairs = oldNames.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); c.tog = oldTog.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); save(); renderMem(); };
-$('btnImpAdd').onclick = () => { if (handleRosterLink()) return; const c = C(); const l = parseCsv($('csvBox').value); if (!l.length) return alert('붙여 넣은 내용이 없습니다'); c.members = c.members.concat(l); save(); renderMem(); };
+function rsNum(t) { const m = String(t).replace(/^(에버|평균|avg)[:=]?/i, '').replace(/(점|에버)$/, '').match(/^(\d{1,3}(?:\.\d+)?)$/); return m ? parseFloat(m[1]) : null; }
+function parseRoster(text, base) {
+  const lines = String(text || '').split(/\r?\n/).map(x => x.replace(/\s+$/, (z) => z.replace(/[^\t]/g, ''))).filter(x => x.trim()); let cols = null, delim = null; const out = [], skipped = [];
+  const multi = (base || []).map(x => x.name).filter(n => n && /\s/.test(n)).sort((a, b) => b.length - a.length);
+  if (lines.length) { const h0 = lines[0]; delim = /\t/.test(h0) ? '\t' : /[,，]/.test(h0) ? ',' : /;/.test(h0) ? ';' : null; const h = delim ? rsSplitDelim(h0, delim) : rsTokens(h0).toks; const map = h.map(t => { const k = Object.keys(RS_HDR).find(k => RS_HDR[k].test(t)); return k || null; }); if (map.filter(Boolean).length >= 2 && map.includes('name')) { cols = map; lines.shift(); } }
+  lines.forEach(line => {
+    // 앱이 내보낸 기존 형식(이름,성별,에버,별명,시드,구분)은 칸 순서 그대로 읽는다(숫자 별명 보호)
+    const f = rsSplitDelim(line.indexOf('\t') >= 0 ? line.replace(/\t/g, ',') : line, ','); if (f.length) f[0] = rsUnq(rsStripNo(f[0]));
+    if (!cols && f.length >= 3 && f[0] && /[가-힣A-Za-z]/.test(f[0]) && RS_G.test(f[1]) && (f[2] === '' || rsNum(f[2]) != null)) { const av = f[2] === '' ? '' : rsNum(f[2]); out.push({ name: f[0], gender: rsGender(f[1]), avg: av === '' ? '' : Math.round(av * 10) / 10, nick: f[3] || '', seed: rsSeed(f[4] || ''), guest: /게스트|guest/i.test(f[5] || ''), given: { gender: 1, nick: f.length > 3 ? 1 : 0, seed: f.length > 4 ? 1 : 0, kind: f.length > 5 && f[5] ? 1 : 0 } }); return; }
+    let lineP = line; multi.forEach(n => { if (lineP.includes(n)) lineP = lineP.replace(n, n.replace(/\s+/g, '\u0001')); });
+    const { toks: toks0, nicks } = rsTokens(lineP); const toks = toks0.map(t => t.replace(/\u0001/g, ' ')); if (!toks.length) return;
+    const m = { name: '', gender: '', avg: '', nick: nicks[0] || '', seed: '', guest: false, given: {} };
+    if (cols) {
+      // 머리글이 있으면 원래 칸(빈 칸·따옴표 이름 유지)을 머리글 위치대로 읽는다. 칸 수가 안 맞으면 확인 표시
+      const cells = delim ? rsSplitDelim(line, delim) : line.trim().split(/\s+/).map(rsUnq); if (cells.length !== cols.length) m.warn = '칸 수가 머리글과 다릅니다';
+      const rest = []; cells.forEach((t, i) => { if (t === '') return; const k = cols[i]; if (k === 'name' && !m.name) m.name = t; else if (k === 'gender' && RS_G.test(t)) { m.gender = rsGender(t); m.given.gender = 1; } else if (k === 'avg') { const tv = t.replace(/^(\d{1,3}),(\d{1,2})$/, '$1.$2'); if (rsNum(tv) != null) { m.avg = rsNum(tv); } else { m.warn = '에버 칸 "' + t + '"을(를) 숫자로 읽지 못했습니다'; m.avgBad = 1; } } else if (k === 'nick') { m.nick = m.nick || t; m.given.nick = 1; } else if (k === 'seed' && rsSeed(t)) { m.seed = rsSeed(t); m.given.seed = 1; } else if (k === 'kind') { m.guest = /게스트|guest/i.test(t); m.given.kind = 1; } else if (k === 'no') {} else rest.push(t); });
+      if (!m.name) { const w = rest.find(t => /[가-힣A-Za-z]/.test(t) && rsNum(t) == null && !RS_G.test(t)); if (w) m.name = w; }
+    } else {
+      const nums = [];
+      toks.forEach((t, ti) => {
+        if (RS_G.test(t)) { if (!m.given.gender) { m.gender = rsGender(t); m.given.gender = 1; } return; }
+        if (/^(게스트|guest|회원|정회원|member)$/i.test(t)) { m.guest = /게스트|guest/i.test(t); m.given.kind = 1; return; }
+        if (/^(에버|평균|avg|시드|성별|별명)$/i.test(t)) return;
+        const n = rsNum(t); if (n != null) { nums.push({ n, before: !m.name, int: Number.isInteger(n) }); return; }
+        const sd = rsSeed(t); if (sd && (t.length <= 3 || /시드|조|등급/.test(t) || !m.name)) { if (sd && (/^[ABCD]$/i.test(t.replace(/시드|조|등급/g, '')) || /마스터|에이스|챌린지|첼린지|루키|master|ace|challenge|rookie/i.test(t))) { m.seed = sd; m.given.seed = 1; return; } }
+        if (/[가-힣A-Za-z]/.test(t)) { if (!m.name) m.name = t; else if (!m.nick) { m.nick = t; } return; }
+      });
+      // 에버: 50~300 사이 숫자 중 첫 번째(번호·게임 수 같은 작은 숫자는 건너뜀), 없으면 1~300 중 마지막
+      // 이름 앞의 정수는 번호일 가능성이 커서 이름 뒤 숫자를 먼저 본다
+      const inR = (x) => x.n >= 50 && x.n <= 300; const after = nums.filter(x => !x.before), before = nums.filter(x => x.before);
+      const pick = after.find(inR) || (after.length ? null : before.filter(inR).pop()) || before.find(x => inR(x) && !x.int);
+      m.avg = pick ? pick.n : ((after.filter(x => x.n >= 1 && x.n <= 300).pop() || {}).n ?? '');
+      if (pick && pick.before) m.warn = '이름 앞 숫자 ' + pick.n + '을(를) 에버로 봤습니다(번호면 고쳐 주세요)'; else if (after.filter(x => x.n >= 1).length > 1) m.warn = '숫자가 여러 개라 ' + (pick ? pick.n : '') + '을(를) 에버로 골랐습니다';
+    }
+    if (m.nick) m.given.nick = 1; if (m.avg !== '') m.avg = Math.round(m.avg * 10) / 10;
+    if (m.name && /^[0-9.]+$/.test(m.name)) m.name = '';
+    if (m.name) out.push(m); else skipped.push(line);
+  });
+  return { list: out, skipped, header: !!cols };
+}
+// 같은 이름이 기존 명단에 있으면 안 적은 성별·별명·시드는 기존 값을 쓴다
+function parseCsv(t, base) {
+  const r = parseRoster(t, base); const old = (base || []); 
+  return r.list.map(m => { let o = old.find(x => x.name === m.name); if (!o) { const byNick = old.filter(x => x.nick && x.nick === m.name); if (byNick.length === 1) { o = byNick[0]; m.nick = m.nick || o.nick; m.given.nick = 1; m.name = o.name; } } return { id: uid(), name: m.name, gender: m.given.gender ? m.gender : (o ? o.gender : 'M'), avg: m.avg === '' ? (o && !m.avgBad ? o.avg : '') : m.avg, nick: m.given.nick ? m.nick : (o ? (o.nick || '') : ''), seed: m.given.seed ? m.seed : (o ? (o.seed || '') : ''), guest: m.given.kind ? !!m.guest : (o ? !!o.guest : false), _g: !!m.given.gender || !!o, _w: m.warn || '' }; });
+}
+function rosterPreview() {
+  const box = $('csvPrev'); if (!box) return; const t = $('csvBox').value; if (!t.trim() || /#r=/.test(t)) { box.innerHTML = ''; return; }
+  const c = C(); const r = parseRoster(t, c ? c.members : []); const l = parseCsv(t, c ? c.members : []); const nW = l.filter(m => m._w).length;
+  const noG = l.filter(m => !m._g).length, noA = l.filter(m => m.avg === '').length;
+  box.innerHTML = '<b>' + l.length + '명으로 읽었습니다</b>' + (r.header ? ' (머리글 순서 사용)' : '') + (noA ? ' · <span class="warn">에버 없음 ' + noA + '명(기본값 사용)</span>' : '') + (noG ? ' · 성별 없음 ' + noG + '명(남으로 둠, 명단에서 고칠 수 있음)' : '') + (nW ? ' · <span class="warn">확인 필요 ' + nW + '줄(⚠ 표시)</span>' : '') + (r.skipped.length ? '<br><span class="warn">이름을 못 찾은 줄 ' + r.skipped.length + '개: ' + esc(r.skipped.slice(0, 3).join(' / ')) + '</span>' : '')
+    + '<div style="max-height:180px;overflow:auto;margin-top:4px">' + l.slice(0, 60).map((m, i) => '<div>' + (i + 1) + '. <b>' + esc(m.name) + '</b> · ' + (m.gender === 'F' ? '여' : '남') + (m._g ? '' : '?') + ' · ' + (m.avg === '' ? '<span class="warn">에버 없음</span>' : m.avg) + (m.nick ? ' · 별명 ' + esc(m.nick) : '') + (/^[ABCD]$/.test(m.seed) ? ' · ' + m.seed + ' 시드' : '') + (m.guest ? ' · 게스트' : '') + (m._w ? ' <span class="warn">⚠ ' + esc(m._w) + '</span>' : '') + '</div>').join('') + '</div>';
+}
+let rpvT = null; $('csvBox').addEventListener('input', () => { clearTimeout(rpvT); rpvT = setTimeout(rosterPreview, 250); });
+$('btnImpReplace').onclick = () => { if (handleRosterLink()) return; const c = C(); const l = parseCsv($('csvBox').value, c.members).map(m => { delete m._g; delete m._w; return m; }); if (!l.length) return alert('이름을 찾지 못했습니다. 한 줄에 한 명씩 이름과 에버를 넣어 주세요.'); if (!confirm('현재 명단 ' + c.members.length + '명을 지우고 ' + l.length + '명으로 바꿀까요?\n(아래 미리보기에서 읽은 내용을 확인하세요)')) return; const oldNames = c.pairs.map(p => [(c.members.find(x => x.id === p[0]) || {}).name, (c.members.find(x => x.id === p[1]) || {}).name]); const oldTog = (c.tog || []).map(p => [(c.members.find(x => x.id === p[0]) || {}).name, (c.members.find(x => x.id === p[1]) || {}).name]); c.members = l; c.present = []; c.pairs = oldNames.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); c.tog = oldTog.map(p => { const a = l.find(x => x.name === p[0]), b = l.find(x => x.name === p[1]); return a && b ? [a.id, b.id] : null; }).filter(Boolean); save(); renderMem(); };
+$('btnImpAdd').onclick = () => { if (handleRosterLink()) return; const c = C(); const l = parseCsv($('csvBox').value, c.members).map(m => { delete m._g; delete m._w; return m; }); if (!l.length) return alert('이름을 찾지 못했습니다. 한 줄에 한 명씩 이름과 에버를 넣어 주세요.'); const dup = l.filter(m => c.members.some(x => x.name === m.name)); if (dup.length && !confirm('이미 명단에 있는 이름 ' + dup.length + '명(' + dup.slice(0, 5).map(m => m.name).join(', ') + ')이 있습니다. 그래도 ' + l.length + '명을 추가할까요?')) return; c.members = c.members.concat(l); save(); renderMem(); };
 $('btnExp').onclick = () => { $('csvBox').value = C().members.map(m => [m.name, m.gender === 'F' ? '여' : '남', m.avg, m.nick || '', m.seed || '', m.guest ? '게스트' : '회원'].join(',')).join('\n'); };
 
 // ===== 명단 링크 (#r=압축본) =====
@@ -1425,7 +1493,7 @@ async function decodeRoster(b64) {
 function applyRosterText(text, clubName) {
   const pl = [], cl = [], tl = [];
   text.split(/\r?\n/).forEach(l => { if (/^분리:/.test(l)) pl.push(l.split(':').slice(1).map(s => s.trim())); else if (/^같이:/.test(l)) tl.push(l.split(':').slice(1).map(s => s.trim())); else if (l.trim()) cl.push(l); });
-  const l = parseCsv(cl.join('\n')); if (!l.length) return false;
+  const l = parseCsv(cl.join('\n')).map(m => { delete m._g; delete m._w; return m; }); if (!l.length) return false;
   let c = DB.cur ? C() : null;
   if (!c) { c = DB.clubs.find(x => x.name === (clubName || '비투비')); if (!c) { c = { id: uid(), name: clubName || '비투비', members: [], present: [], pairs: [], pairOn: false, opts: defOpts(), seedCfg: { scheme: 'abcd', min: 151, cuts: [170, 190, 210] } }; DB.clubs.push(c); } }
   if (!confirm('"' + c.name + '" 크루에 명단 ' + l.length + '명' + (pl.length ? ', 분리 조건 ' + pl.length + '개' : '') + '을 불러와 현재 명단을 바꿀까요?')) return false;
@@ -2157,7 +2225,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 30, APP_DATE = '2026.11.08';
+const APP_VER = 31, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2390,7 +2458,7 @@ function bkSanitize(d) {
     if (!isObj(c) || !okId(c.id) || !str(c.name)) return '크루 정보가 손상됐습니다';
     if (c.img != null && !(str(c.img) && BK_IMG.test(c.img))) delete c.img;
     if (!Array.isArray(c.members)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 목록이 손상됐습니다';
-    for (const m of c.members) { if (!isObj(m) || !okId(m.id) || !str(m.name)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 정보가 손상됐습니다'; if (m.gender !== 'M' && m.gender !== 'F') m.gender = 'M'; if (m.avg !== '' && (typeof m.avg !== 'number' || !(m.avg >= 1 && m.avg <= 300))) m.avg = ''; if (m.nick != null && !str(m.nick)) m.nick = ''; if (m.seed != null && !str(m.seed)) m.seed = ''; }
+    for (const m of c.members) { if (!isObj(m) || !okId(m.id) || !str(m.name)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 정보가 손상됐습니다'; if (m.gender !== 'M' && m.gender !== 'F') m.gender = 'M'; if (m.avg !== '' && (typeof m.avg !== 'number' || !(m.avg >= 1 && m.avg <= 300))) m.avg = ''; if (m.nick != null && !str(m.nick)) m.nick = ''; if (m.seed != null) m.seed = (str(m.seed) && /^[ABCD]$/.test(m.seed)) ? m.seed : ''; }
     c.present = Array.isArray(c.present) ? c.present.filter(okId) : [];
     c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
