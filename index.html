@@ -89,6 +89,8 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));overflow:auto}
 .modal img{max-width:100%;height:auto;border-radius:10px;background:#fff}
 .modal .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;justify-content:center}
+.sepitem{background:rgba(255,255,255,.08);border-radius:14px;padding:10px;margin-bottom:14px}
+.sepitem .ttl{color:#fff;font-weight:800;margin-bottom:6px}
 .impr{border-bottom:1px solid var(--line);padding:8px 0}
 .impr input[type=text],.impr input[type=number],.impr select{padding:7px 8px}
 #attList .mem{font-size:20px;padding:12px 4px;gap:10px}
@@ -528,7 +530,13 @@ header .hrow{padding-right:92px}
   <div class="card hide stick" id="copyBox">
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
-    <div class="row hide" id="multiExport" style="margin-top:8px"><button id="btnImageAll" class="grow">인원별 안 모두 이미지 한 장으로</button><button id="btnCopyAll" class="gray">모두 글로 복사</button></div>
+    <div class="hide" id="multiExport" style="margin-top:8px">
+      <div class="small"><b>인원별 사진 따로 받기</b> · 받을 인원을 체크하세요</div>
+      <div class="chips" id="multiPick" style="margin:6px 0"></div>
+      <div class="row"><button id="btnImageSep" class="grow">체크한 인원 사진 따로 받기</button></div>
+      <div class="row" style="margin-top:6px"><button id="btnImageAll" class="sec grow">모두 이미지 한 장으로</button><button id="btnCopyAll" class="gray">모두 글로 복사</button></div>
+    </div>
+    <div id="histPickBox" class="hide" style="margin-top:8px"><div class="small"><b>기록할 인원</b> · 저장할 배정을 체크하세요(여러 개면 각각 따로 저장되고, "최근 같은 팀 피하기"에서 각각 1회로 셉니다)</div><div class="chips" id="histPick" style="margin-top:6px"></div></div>
     <div class="row" style="margin-top:8px"><select id="histKind" style="width:96px" aria-label="편성 종류"><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select><button id="btnHistSave" class="sec grow">팀 편성 기록 저장 (다음에 같은 팀 피하기용)</button></div>
     <div class="row" style="margin-top:6px"><button id="btnHistView2" class="gray grow">저장한 편성 기록 보기·삭제</button></div>
     
@@ -756,6 +764,11 @@ header .hrow{padding-right:92px}
 
 
 
+<div id="sepModal" class="modal hide">
+  <div class="bar"><button id="sepShareAll">모두 공유 (카톡·밴드)</button><button id="sepClose" class="gray">닫기</button></div>
+  <div class="small" style="color:#ddd;text-align:center;margin-bottom:6px">인원별 사진이 따로 만들어졌습니다. 각 사진의 버튼으로 하나씩 공유하거나, 사진을 길게 눌러 "사진에 저장"을 고르세요.</div>
+  <div id="sepList" style="width:100%;max-width:560px"></div>
+</div>
 <div id="imgModal" class="modal hide">
   <img id="imgOut" alt="팀 편성 이미지">
   <div class="bar"><button id="btnShare">공유 (카톡·밴드)</button><button id="btnImgCopy" class="sec" style="background:#fff">이미지 복사</button><button id="btnImgClose" class="gray">닫기</button></div>
@@ -1241,7 +1254,7 @@ function renderAvoid() {
   $('avoidOn').checked = !!o.avoidOn; $('avoidBox').classList.toggle('hide', !o.avoidOn); $('avoidN').value = String(Math.max(1, Math.min(10, parseInt(o.avoidN, 10) || 3))); $('avoidKind').value = o.avoidKind || '';
   $('histCnt').textContent = hs.length ? hs.length + '개' : '';
   const nm = (id) => { const x = c.members.find(y => y.id === id); return x ? dn(x) : '(삭제됨)'; };
-  $('histList').innerHTML = hs.length ? hs.slice().reverse().map(h => '<details class="hist" style="display:block"><summary><b>' + esc(fmtD(h.date)) + '</b> ' + esc(h.kind) + ' · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + ' <a href="#" class="hdel" data-id="' + h.id + '" style="color:#dc2626;font-size:13px;margin-left:6px">삭제</a></summary><div class="small" style="padding:4px 0 2px">' + h.teams.map((t, i) => (i + 1) + '팀: ' + t.map(id => esc(nm(id))).join(', ')).join('<br>') + '</div></details>').join('') : '<div class="small" style="padding:6px 0">아직 저장된 편성이 없습니다. 팀을 짠 뒤 팀 구성 탭 아래 "팀 편성 기록 저장"을 눌러 주세요.</div>';
+  $('histList').innerHTML = hs.length ? hs.slice().reverse().map(h => '<details class="hist" style="display:block"><summary><b>' + esc(fmtD(h.date)) + '</b> ' + esc(h.kind) + (h.size ? ' · ' + h.size + '명씩' : '') + ' · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + ' <a href="#" class="hdel" data-id="' + h.id + '" style="color:#dc2626;font-size:13px;margin-left:6px">삭제</a></summary><div class="small" style="padding:4px 0 2px">' + h.teams.map((t, i) => (i + 1) + '팀: ' + t.map(id => esc(nm(id))).join(', ')).join('<br>') + '</div></details>').join('') : '<div class="small" style="padding:6px 0">아직 저장된 편성이 없습니다. 팀을 짠 뒤 팀 구성 탭 아래 "팀 편성 기록 저장"을 눌러 주세요.</div>';
   $('histList').querySelectorAll('.hdel').forEach(a => a.onclick = (e) => { e.preventDefault(); const h = hs.find(x => x.id === a.dataset.id); if (!h || !confirm(fmtD(h.date) + ' ' + h.kind + ' 편성 기록을 지울까요?')) return; c.hist = hs.filter(x => x.id !== h.id); if (!save()) c.hist = hs; renderAvoid(); });
 }
 $('avoidOn').onchange = (e) => { C().opts.avoidOn = e.target.checked; save(); renderAvoid(); };
@@ -1250,14 +1263,19 @@ $('avoidKind').onchange = (e) => { C().opts.avoidKind = e.target.value; save(); 
 $('btnHistSave').onclick = () => {
   if (!curTeams) return; const c = C(); const J = jointOf(c); const kind = $('histKind').value; const histBefore = {}; (J ? J.clubs : [c]).forEach(cl => { histBefore[cl.id] = histOf(cl).slice(); }); const date = isoToday(); const clubs = J ? J.clubs : [c]; let saved = 0;
   const same = (a, b) => a.length === b.length && a.every((t, i) => t.join(',') === b[i].join(','));
-  for (const cl of clubs) {
-    const teams = curTeams.map(t => t.filter(m => m.cr === cl.id).map(m => m.mid || m.id)).filter(t => t.length >= 2).map(t => t.slice().sort());
-    if (!teams.length) continue; const hs = histOf(cl); const last = hs[hs.length - 1];
-    if (last && last.date === date && same(last.teams, teams) && !confirm('"' + cl.name + '"에 오늘 같은 편성이 이미 저장돼 있습니다. 한 번 더 저장할까요?')) continue;
-    cl.hist = hs.concat([{ id: uid(), t: Date.now(), date, kind, teams, joint: J ? jointTitle(J) : '' }]).slice(-HIST_MAX); saved++;
+  // 인원별 여러 안이면 "기록할 인원"에서 체크한 배정만, 아니면 지금 화면의 배정
+  let sets = [{ sz: 0, teams: curTeams }];
+  if (multiValid() && MULTI.hpick && !$('histPickBox').classList.contains('hide')) { const snaps = multiSnapshot().filter(sn => MULTI.hpick.has(sn.sz)); if (!snaps.length) return alert('기록할 인원을 하나 이상 체크해 주세요.'); sets = snaps.map(sn => ({ sz: sn.sz, teams: sn.teams })); }
+  else if (MULTI && MULTI.cur) sets = [{ sz: MULTI.cur, teams: curTeams }];
+  let t0 = Date.now(); const savedSigs = new Set(); const sigOf = (tm) => tm.map(t => t.map(m => m.id).sort().join(',')).sort().join('|');
+  for (const st of sets) for (const cl of clubs) {
+    const teams = st.teams.map(t => t.filter(m => m.cr === cl.id).map(m => m.mid || m.id)).filter(t => t.length >= 2).map(t => t.slice().sort());
+    if (!teams.length) continue; const hs = histOf(cl); const dupe = hs.some(h => h.date === date && same(h.teams, teams));
+    if (dupe && !confirm('"' + cl.name + '"에 오늘 같은 ' + (st.sz ? st.sz + '명씩 ' : '') + '편성이 이미 저장돼 있습니다. 한 번 더 저장할까요?')) continue;
+    cl.hist = hs.concat([{ id: uid(), t: t0++, date, kind, teams, joint: J ? jointTitle(J) : '', size: st.sz || 0 }]).slice(-HIST_MAX); saved++; savedSigs.add(sigOf(st.teams));
   }
   if (!saved) return alert('저장할 편성이 없습니다(같은 크루 사람이 2명 이상 있는 팀이 없거나 저장을 취소했습니다).');
-  if (!save()) { clubs.forEach(cl => { if (histBefore[cl.id]) cl.hist = histBefore[cl.id]; }); return; } HIST_SAVED_SIG = teamSig(); alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
+  if (!save()) { clubs.forEach(cl => { if (histBefore[cl.id]) cl.hist = histBefore[cl.id]; }); return; } if (savedSigs.has(teamSig())) HIST_SAVED_SIG = teamSig(); alert(fmtD(date) + ' ' + kind + ' 팀 편성' + (sets.length > 1 || sets[0].sz ? '(' + sets.map(x => x.sz + '명씩').join('·') + ')' : '') + '을 ' + (J ? '크루별로 ' : '') + saved + '건 저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
 };
 
 // ===== 팀 구성 =====
@@ -1269,10 +1287,17 @@ function multiSaveCur() { if (MULTI && MULTI.cur && MULTI.items[MULTI.cur] && MU
 function multiValid() { if (MULTI && MULTI.owner !== DB.cur) { MULTI = null; renderMultiBar(); } return !!MULTI; }
 function multiSelect(sz) { if (!multiValid() || !MULTI.items[sz] || !MULTI.items[sz].res) return; multiSaveCur(); const it = MULTI.items[sz]; MULTI.cur = sz; result = it.res; idx = it.idx || 0; sel = null; renderMultiBar(); if (it.teams) { manual = !!it.manual; render(it.teams.map(t => t.slice()), pickList().length); } else { manual = false; show(); } }
 function renderMultiBar() {
-  const bar = $('multiBar'), ex = $('multiExport'); if (!MULTI) { bar.classList.add('hide'); ex.classList.add('hide'); return; }
+  const bar = $('multiBar'), ex = $('multiExport'); if (!MULTI) { bar.classList.add('hide'); ex.classList.add('hide'); $('histPickBox').classList.add('hide'); return; }
   bar.classList.remove('hide'); const ok = MULTI.sizes.filter(sz => MULTI.items[sz].res); ex.classList.toggle('hide', ok.length < 2);
   bar.innerHTML = '<span class="small" style="align-self:center;margin-right:4px">인원별 안:</span>' + MULTI.sizes.map(sz => { const it = MULTI.items[sz]; return '<button class="chip' + (MULTI.cur === sz ? ' on' : '') + '" data-s="' + sz + '"' + (it.res ? '' : ' style="opacity:.5"') + '>' + sz + '명씩' + (it.res ? ' · ' + it.res.plan.k + '팀' : ' (불가)') + '</button>'; }).join('');
   bar.querySelectorAll('.chip').forEach(b => b.onclick = () => { const sz = +b.dataset.s, it = MULTI.items[sz]; if (!it.res) return alert(sz + '명씩은 만들 수 없습니다: ' + it.msg); multiSelect(sz); });
+  if (!MULTI.pick) MULTI.pick = new Set(ok);
+  $('multiPick').innerHTML = ok.map(sz => '<label class="chip' + (MULTI.pick.has(sz) ? ' on' : '') + '" style="display:inline-flex;align-items:center;gap:6px"><input type="checkbox" data-s="' + sz + '"' + (MULTI.pick.has(sz) ? ' checked' : '') + ' style="width:18px;height:18px"> ' + sz + '명씩 배정 사진</label>').join('');
+  $('multiPick').querySelectorAll('input').forEach(ck => ck.onchange = () => { const sz = +ck.dataset.s; if (ck.checked) MULTI.pick.add(sz); else MULTI.pick.delete(sz); ck.parentElement.classList.toggle('on', ck.checked); });
+  if (!MULTI.hpick) MULTI.hpick = new Set([MULTI.cur].filter(Boolean)); [...MULTI.hpick].forEach(sz => { if (!ok.includes(sz)) MULTI.hpick.delete(sz); });
+  $('histPickBox').classList.toggle('hide', ok.length < 2);
+  $('histPick').innerHTML = ok.map(sz => '<label class="chip' + (MULTI.hpick.has(sz) ? ' on' : '') + '" style="display:inline-flex;align-items:center;gap:6px"><input type="checkbox" data-s="' + sz + '"' + (MULTI.hpick.has(sz) ? ' checked' : '') + ' style="width:18px;height:18px"> ' + sz + '명씩 배정 기록</label>').join('');
+  $('histPick').querySelectorAll('input').forEach(ck => ck.onchange = () => { const sz = +ck.dataset.s; if (ck.checked) MULTI.hpick.add(sz); else MULTI.hpick.delete(sz); ck.parentElement.classList.toggle('on', ck.checked); });
 }
 // 인원별 안의 지금 모습을 복사해 둔다(화면 상태는 건드리지 않음 → 내보내는 동안 다른 조작을 해도 섞이지 않음)
 function multiSnapshot() { if (!multiValid()) return []; multiSaveCur(); return MULTI.sizes.filter(sz => MULTI.items[sz].res).map(sz => { const it = MULTI.items[sz]; const pl = pickList(it.res); const tm = it.teams ? it.teams : pl[Math.min(it.idx || 0, pl.length - 1)].teams; return { sz, res: it.res, teams: tm.map(t => t.slice()) }; }); }
@@ -1435,6 +1460,38 @@ $('btnImageAll').onclick = async () => {
     const outBlob = await new Promise(res => cv.toBlob(b => res(b), 'image/png')); if (changed()) return; lastBlob = outBlob; if (lastUrl) URL.revokeObjectURL(lastUrl); lastUrl = URL.createObjectURL(lastBlob); $('imgOut').src = lastUrl; $('imgModal').classList.remove('hide');
   } catch (e) { alert('이미지를 만들지 못했습니다: ' + (e && e.message ? e.message : e)); }
 };
+// 인원별 사진 따로 받기
+let SEP = [];
+let SHARE_BUSY = false;
+async function shareFiles(items) {
+  if (SHARE_BUSY) return alert('공유 창이 아직 열려 있습니다. 끝낸 뒤 다시 눌러 주세요.'); SHARE_BUSY = true;
+  try { return await shareFiles0(items); } finally { SHARE_BUSY = false; }
+}
+async function shareFiles0(items) {
+  const files = items.map(it => new File([it.blob], it.name, { type: 'image/png' }));
+  const cap = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins;
+  try {
+    if (cap && cap.Share && cap.Filesystem) { const REQ = Date.now() + '-' + Math.random().toString(36).slice(2, 8); const uris = []; for (const it of items) { const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(it.blob); }); const w = await cap.Filesystem.writeFile({ path: 'share/' + REQ + '/' + it.name, data: b64, directory: 'CACHE', recursive: true }); uris.push(w.uri); } await cap.Share.share({ title: C().name + ' 팀 편성', files: uris }); return; }
+    if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, title: C().name + ' 팀 편성' }); return; }
+    alert('이 기기에서는 바로 공유할 수 없습니다. 사진을 길게 눌러 "사진에 저장"한 뒤 카톡·밴드에 올려 주세요.');
+  } catch (e) { if (!isCancel(e)) alert('공유하지 못했습니다. 사진을 길게 눌러 저장해 주세요.'); }
+}
+$('btnImageSep').onclick = async () => {
+  const snaps = multiSnapshot().filter(sn => MULTI.pick && MULTI.pick.has(sn.sz)); if (!snaps.length) return alert('받을 인원을 하나 이상 체크해 주세요.');
+  const owner = DB.cur, avg0 = $('copyAvg').checked; const changed = () => { if (DB.cur !== owner || $('copyAvg').checked !== avg0) { alert('사진을 만드는 중에 크루나 설정이 바뀌어 멈췄습니다. 다시 눌러 주세요.'); return true; } return false; };
+  try {
+    const out = []; const day = todayStr().slice(0, 10).replace(/\./g, '');
+    for (const sn of snaps) { if (changed()) return; const blob = await makeImage({ label: sn.sz + '명씩', teams: sn.teams, res: sn.res }); out.push({ sz: sn.sz, blob, name: 'team-' + day + '-' + sn.sz + 'p.png' }); }
+    if (changed()) return;
+    SEP.forEach(it => { if (it.url) URL.revokeObjectURL(it.url); }); SEP = out.map(it => Object.assign(it, { url: URL.createObjectURL(it.blob) }));
+    $('sepList').innerHTML = SEP.map((it, i) => '<div class="sepitem"><div class="ttl">' + it.sz + '명씩 배정 사진</div><img src="' + it.url + '" alt="' + it.sz + '명씩 팀 편성"><div class="bar"><button data-i="' + i + '" class="sepShare">이 사진 공유</button><button data-i="' + i + '" class="sec sepCopy" style="background:#fff">이미지 복사</button></div></div>').join('');
+    $('sepList').querySelectorAll('.sepShare').forEach(b => b.onclick = () => shareFiles([SEP[+b.dataset.i]]));
+    $('sepList').querySelectorAll('.sepCopy').forEach(b => b.onclick = async () => { try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': SEP[+b.dataset.i].blob })]); alert('이미지를 복사했습니다. 카톡·밴드 입력칸에 붙여 넣으세요.'); } catch (e) { alert('이미지를 복사하지 못했습니다. 사진을 길게 눌러 "복사" 또는 "사진에 저장"을 고르세요.'); } });
+    $('sepModal').classList.remove('hide'); $('sepModal').scrollTop = 0;
+  } catch (e) { alert('사진을 만들지 못했습니다: ' + (e && e.message ? e.message : e)); }
+};
+$('sepShareAll').onclick = () => { if (SEP.length) shareFiles(SEP); };
+$('sepClose').onclick = () => $('sepModal').classList.add('hide');
 $('btnCopyAll').onclick = async () => { const snaps = multiSnapshot(); if (snaps.length < 2) return; await copyOut(snaps.map(sn => copyText(sn.sz + '명씩', sn.teams, sn.res)).join('\n\n──────────\n\n')); };
 
 // ===== 명단 =====
@@ -2311,7 +2368,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 34, APP_DATE = '2026.11.08';
+const APP_VER = 35, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2562,7 +2619,7 @@ function bkSanitize(d) {
     c.present = Array.isArray(c.present) ? c.present.filter(okId) : [];
     c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
-    if (c.hist != null) { const seenH = new Set(); c.hist = Array.isArray(c.hist) ? c.hist.filter(h => { if (!isObj(h) || !okId(h.id) || seenH.has(h.id) || !str(h.date) || !/^\d{4}-\d{2}-\d{2}$/.test(h.date) || !Array.isArray(h.teams) || !h.teams.length) return false; const ppl = new Set(); for (const t of h.teams) { if (!Array.isArray(t)) return false; for (const id of t) { if (!okId(id) || ppl.has(id)) return false; ppl.add(id); } } seenH.add(h.id); return true; }).map(h => ({ id: h.id, t: typeof h.t === 'number' ? h.t : 0, date: h.date, kind: ['정모', '벙개', '대회', '연습'].includes(h.kind) ? h.kind : '', teams: h.teams, joint: str(h.joint) ? h.joint.slice(0, 120) : '' })).slice(-HIST_MAX) : []; }
+    if (c.hist != null) { const seenH = new Set(); c.hist = Array.isArray(c.hist) ? c.hist.filter(h => { if (!isObj(h) || !okId(h.id) || seenH.has(h.id) || !str(h.date) || !/^\d{4}-\d{2}-\d{2}$/.test(h.date) || !Array.isArray(h.teams) || !h.teams.length) return false; const ppl = new Set(); for (const t of h.teams) { if (!Array.isArray(t)) return false; for (const id of t) { if (!okId(id) || ppl.has(id)) return false; ppl.add(id); } } seenH.add(h.id); return true; }).map(h => ({ id: h.id, t: typeof h.t === 'number' ? h.t : 0, date: h.date, kind: ['정모', '벙개', '대회', '연습'].includes(h.kind) ? h.kind : '', teams: h.teams, joint: str(h.joint) ? h.joint.slice(0, 120) : '', size: Number.isInteger(h.size) && h.size >= 2 && h.size <= 25 ? h.size : 0 })).slice(-HIST_MAX) : []; }
     if (isObj(c.opts)) { if (c.opts.avoidN != null) c.opts.avoidN = Math.max(1, Math.min(10, parseInt(c.opts.avoidN, 10) || 3)); if (c.opts.avoidOn != null) c.opts.avoidOn = c.opts.avoidOn === true; if (c.opts.avoidKind != null && !['', '정모', '벙개', '대회', '연습'].includes(c.opts.avoidKind)) c.opts.avoidKind = ''; if (c.opts.multi != null) c.opts.multi = c.opts.multi === true; if (c.opts.multiSizes != null) c.opts.multiSizes = Array.isArray(c.opts.multiSizes) ? [...new Set(c.opts.multiSizes.filter(x => Number.isInteger(x) && x >= 2 && x <= 25))].slice(0, 9) : []; }
     if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
   }
@@ -2813,7 +2870,7 @@ function renderHist() {
   $('hsKinds').querySelectorAll('.chip').forEach(b => b.onclick = () => { HS.kind = b.dataset.k; renderHist(); });
   const list = hs.filter(h => !HS.kind || h.kind === HS.kind).slice().sort((a, b) => (b.date < a.date ? -1 : b.date > a.date ? 1 : 0) || ((b.t || 0) - (a.t || 0)));
   $('hsSub').textContent = c.name + ' · 저장한 편성 ' + hs.length + '개 (최근 것이 위). 날짜를 누르면 팀 구성을 볼 수 있습니다.';
-  let lastD = ''; $('hsList').innerHTML = list.length ? list.map(h => { const dh = h.date !== lastD ? '<div class="lbl" style="margin-top:10px"><b>' + esc(fmtD(h.date)) + '</b></div>' : ''; lastD = h.date; return dh + '<div class="hist" style="align-items:flex-start"><input type="checkbox" data-id="' + h.id + '"' + (HS.sel.has(h.id) ? ' checked' : '') + ' style="width:22px;height:22px;flex:none;margin-top:2px" aria-label="' + esc(fmtD(h.date) + ' ' + h.kind) + ' 선택"><details style="flex:1"><summary><b>' + esc(h.kind || '구분 없음') + '</b> · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + (h.t ? ' <span class="small">' + new Date(h.t).toTimeString().slice(0, 5) + '</span>' : '') + '</summary><div class="small" style="padding:4px 0">' + h.teams.map((t, i) => '<div><b>' + (i + 1) + '팀</b> ' + t.map(id => esc(nm(id))).join(', ') + '</div>').join('') + '</div></details></div>'; }).join('') : '<div class="small" style="padding:10px 0">저장한 편성 기록이 없습니다. 팀을 짠 뒤 "팀 편성 기록 저장"을 누르면 여기에 날짜별로 쌓입니다.</div>';
+  let lastD = ''; $('hsList').innerHTML = list.length ? list.map(h => { const dh = h.date !== lastD ? '<div class="lbl" style="margin-top:10px"><b>' + esc(fmtD(h.date)) + '</b></div>' : ''; lastD = h.date; return dh + '<div class="hist" style="align-items:flex-start"><input type="checkbox" data-id="' + h.id + '"' + (HS.sel.has(h.id) ? ' checked' : '') + ' style="width:22px;height:22px;flex:none;margin-top:2px" aria-label="' + esc(fmtD(h.date) + ' ' + h.kind) + ' 선택"><details style="flex:1"><summary><b>' + esc(h.kind || '구분 없음') + '</b>' + (h.size ? ' · ' + h.size + '명씩' : '') + ' · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + (h.t ? ' <span class="small">' + new Date(h.t).toTimeString().slice(0, 5) + '</span>' : '') + '</summary><div class="small" style="padding:4px 0">' + h.teams.map((t, i) => '<div><b>' + (i + 1) + '팀</b> ' + t.map(id => esc(nm(id))).join(', ') + '</div>').join('') + '</div></details></div>'; }).join('') : '<div class="small" style="padding:10px 0">저장한 편성 기록이 없습니다. 팀을 짠 뒤 "팀 편성 기록 저장"을 누르면 여기에 날짜별로 쌓입니다.</div>';
   $('hsList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { if (ck.checked) HS.sel.add(ck.dataset.id); else HS.sel.delete(ck.dataset.id); $('hsDel').textContent = '선택한 기록 삭제' + (HS.sel.size ? ' (' + HS.sel.size + ')' : ''); });
   $('hsDel').textContent = '선택한 기록 삭제' + (HS.sel.size ? ' (' + HS.sel.size + ')' : '');
 }
