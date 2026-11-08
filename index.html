@@ -1527,7 +1527,23 @@ async function handleFile(file) {
     renderPrev();
   } catch (e) { st.textContent = '파일을 읽지 못했습니다: ' + (e && e.message ? e.message : e); }
 }
-$('btnCam').onclick = () => $('fileCam').click(); $('btnPic').onclick = () => $('filePic').click(); $('btnXls').onclick = () => $('fileXls').click();
+// ===== 이미지 고르기는 폰 사진 갤러리로 =====
+// 네이티브 앱(아이폰·안드로이드)에 Camera 플러그인이 있으면 파일(폴더) 화면 대신 사진 갤러리를 바로 연다.
+// 웹(브라우저)과 플러그인이 없는 앱은 accept="image/*" 입력칸을 그대로 연다. 엑셀·백업 같은 다른 파일은 기존대로 파일 화면.
+const GALLERY_IDS = ['filePic', 'rpFilePic', 'riFilePic', 'ncFilePic', 'ciFilePic'];
+async function openPicker(id) {
+  const inp = $(id); const C0 = window.Capacitor; const cam = C0 && typeof C0.isNativePlatform === 'function' && C0.isNativePlatform() && C0.Plugins && C0.Plugins.Camera;
+  if (cam && GALLERY_IDS.includes(id)) {
+    try {
+      const ph = await cam.getPhoto({ source: 'PHOTOS', resultType: 'uri', quality: 92, correctOrientation: true, saveToGallery: false });
+      const src = ph && (ph.webPath || ph.path); if (!src) return; const blob = await (await fetch(src)).blob(); const fmt = String((ph.format || 'jpeg')).toLowerCase();
+      const f = new File([blob], 'photo.' + (fmt === 'jpeg' ? 'jpg' : fmt), { type: blob.type || ('image/' + (fmt === 'jpg' ? 'jpeg' : fmt)) });
+      if (typeof inp.onchange === 'function') inp.onchange({ target: { files: [f], value: '' } }); return;
+    } catch (e) { const m = String(e && (e.message || e) || ''); if (isCancel(e) || /cancel|취소/i.test(m)) return; console.warn('gallery picker failed, fallback to file input', m); }
+  }
+  inp.click();
+}
+$('btnCam').onclick = () => $('fileCam').click(); $('btnPic').onclick = () => openPicker('filePic'); $('btnXls').onclick = () => $('fileXls').click();
 ['fileCam', 'filePic', 'fileXls'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); });
 $('sheetSel').onchange = (e) => chooseSheet(+e.target.value);
 
@@ -1668,7 +1684,7 @@ function rcSetMode(m) {
   if (RC.mode === 'p') { rpCrewFill(); rpWhoNote(); $('rpAgain').textContent = RC.pick === 'c' ? '사진 다시 찍기' : '다른 이미지 고르기'; aiRender(); }
   rcShow();
 }
-$('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { const m = b.dataset.m; rcSetMode(m); if (RP && RP.busy) return; if (m === 'c') $('rpFileCam').click(); else if (m === 'i') $('rpFilePic').click(); });
+$('rcMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { const m = b.dataset.m; rcSetMode(m); if (RP && RP.busy) return; if (m === 'c') $('rpFileCam').click(); else if (m === 'i') openPicker('rpFilePic'); });
 function rcBuild(vals) {
   const box = $('rcScores'); box.innerHTML = vals.map((v, i) => '<div class="gin"><b>' + (i + 1) + 'G</b><input type="number" inputmode="numeric" min="0" max="300" value="' + esc(v) + '" placeholder="점수"></div>').join('');
   box.querySelectorAll('input').forEach(inp => inp.oninput = () => { RC.edited = true; rcLive(); }); rcLive();
@@ -1927,7 +1943,7 @@ $('rcAlley').addEventListener('change', () => { if (RC.mode === 'p') { rpWhoNote
 function rpCrewFill() { let cur = REC.lastPhotoCrew || ''; if (!DB.clubs.some(c => c.id === cur)) { const mapped = DB.clubs.find(c => ((REC.me.crew || {})[c.id] || {}).mid) || (DB.clubs.length === 1 ? DB.clubs[0] : null); cur = mapped ? mapped.id : ''; } $('rpCrew').innerHTML = '<option value="">크루 선택 안 함 (내 이름·닉네임만 사용)</option>' + DB.clubs.map(c => '<option value="' + c.id + '"' + (c.id === cur ? ' selected' : '') + '>' + esc(c.name) + '</option>').join(''); }
 function rpWhoNote() { const w = meIdentities($('rpCrew').value, [$('rcAlley').value, RP.meta && RP.meta.alleyId]); $('rpWho').innerHTML = w.ids.length ? '내 줄 판단에 쓰는 이름: ' + w.ids.map(i => '<b>' + esc(i.t) + '</b>(' + esc(i.kind) + ')').join(', ') : '<span class="warn">내 이름과 닉네임이 없습니다. 마이 탭에서 먼저 넣으면 내 줄을 정확히 찾습니다. 지금은 사진에서 내 줄을 직접 눌러 고르게 됩니다.</span>'; }
 $('rpCrew').onchange = () => { REC.lastPhotoCrew = $('rpCrew').value; saveRec(); rpWhoNote(); if (RP.res) rpReanalyze(); };
-$('rpAgain').onclick = () => $(RC.pick === 'i' ? 'rpFilePic' : 'rpFileCam').click();
+$('rpAgain').onclick = () => RC.pick === 'i' ? openPicker('rpFilePic') : $('rpFileCam').click();
 ['rpFileCam', 'rpFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; rpHandle(f); });
 async function rpHandle(file) {
   if (!file || RP.busy) return; RP.busy = true; const st = $('rpStatus'); $('rpRes').innerHTML = ''; RP.applied = false; RC.edited = false; rcShow();
@@ -2015,7 +2031,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 27, APP_DATE = '2026.11.08';
+const APP_VER = 28, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2443,7 +2459,7 @@ async function riHandle(file) {
     st.textContent = recs.length ? name + ' 에서 ' + recs.length + '건을 읽었습니다. 날짜와 점수를 확인한 뒤 등록하세요.' : '읽을 수 있는 기록이 없습니다. 첫 줄에 날짜, 볼링장, 1G, 2G 같은 제목이 있는지 확인하세요.';
   } catch (e) { st.textContent = '파일을 읽지 못했습니다: ' + (e && e.message ? e.message : e); }
 }
-$('riCam').onclick = () => $('riFileCam').click(); $('riPic').onclick = () => $('riFilePic').click(); $('riXls').onclick = () => $('riFileXls').click();
+$('riCam').onclick = () => $('riFileCam').click(); $('riPic').onclick = () => openPicker('riFilePic'); $('riXls').onclick = () => $('riFileXls').click();
 ['riFileCam', 'riFilePic', 'riFileXls'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; riHandle(f); });
 $('riApply').onclick = () => {
   let added = 0, dup = 0, skipped = 0, newAl = 0;
@@ -2471,11 +2487,11 @@ async function imgThumb(file, size) {
 let NCIMG = '';
 function ncRender() { $('ncPrev').innerHTML = NCIMG ? '<img src="' + NCIMG + '" alt="">' : '+'; $('ncDel').classList.toggle('hide', !NCIMG); }
 async function ncPick(f) { if (!f) return; try { NCIMG = await imgThumb(f, 256); ncRender(); } catch (e) { alert('이미지를 읽지 못했습니다.'); } }
-$('ncCam').onclick = () => $('ncFileCam').click(); $('ncPic').onclick = () => $('ncFilePic').click(); $('ncPrev').onclick = () => $('ncFilePic').click(); $('ncDel').onclick = () => { NCIMG = ''; ncRender(); };
+$('ncCam').onclick = () => $('ncFileCam').click(); $('ncPic').onclick = () => openPicker('ncFilePic'); $('ncPrev').onclick = () => openPicker('ncFilePic'); $('ncDel').onclick = () => { NCIMG = ''; ncRender(); };
 ['ncFileCam', 'ncFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ncPick(f); });
 function ciRender() { const c = C(); if (!c) return; $('ciPrev').innerHTML = c.img ? '<img src="' + c.img + '" alt="">' : '+'; $('ciDel').classList.toggle('hide', !c.img); }
 async function ciPick(f) { if (!f) return; const c = C(); if (!c) return; try { c.img = await imgThumb(f, 256); save(); ciRender(); setHeadAv(); } catch (e) { alert('이미지를 읽지 못했습니다.'); } }
-$('ciCam').onclick = () => $('ciFileCam').click(); $('ciPic').onclick = () => $('ciFilePic').click(); $('ciPrev').onclick = () => $('ciFilePic').click();
+$('ciCam').onclick = () => $('ciFileCam').click(); $('ciPic').onclick = () => openPicker('ciFilePic'); $('ciPrev').onclick = () => openPicker('ciFilePic');
 $('ciDel').onclick = () => { const c = C(); if (!c) return; delete c.img; save(); ciRender(); setHeadAv(); };
 ['ciFileCam', 'ciFilePic'].forEach(id => $(id).onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ciPick(f); });
 function setHeadAv() { const el = $('hAv'); const c = (typeof curView !== 'undefined' && curView === 'crew' && DB.cur) ? C() : null; if (c && c.img) { el.src = c.img; el.classList.remove('hide'); } else el.classList.add('hide'); }
