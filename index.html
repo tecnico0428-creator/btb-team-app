@@ -126,6 +126,62 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 /* ===== 레트로 테마(홈·기록·마이) ===== */
 .phero{position:relative;margin:0 -12px;height:calc(min(125vw,560px) + var(--sat));overflow:hidden;background:var(--bg)}
 .pheroimg{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%}
+/* 메인 애니메이션(ANIM-1, Claude Code 시안): 공이 레인을 굴러와 핀 3개를 쓰러뜨리고 STRIKE! 표시, 6.4초 반복. 움직임 줄이기 설정이면 멈춘 그림 */
+.pscene{position:absolute;left:0;bottom:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+.pscene .pin,.pscene .strike,.pscene .burst{transform-box:fill-box}
+.pscene .pin{transform-origin:50% 100%}
+.pscene .strike,.pscene .burst{transform-origin:50% 50%}
+.pscene .ballmove{transform:translate(612px,870px) scale(2.25)}   /* 정지 상태: 원래 그림처럼 공이 앞 */
+.pscene .strike,.pscene .burst,.pscene .shadow{opacity:0}
+.pscene .shadow{opacity:.2}
+@media (prefers-reduced-motion:no-preference){
+  .pscene .ballmove{animation:cBall 6.4s linear infinite}
+  .pscene .ballspin{animation:cSpin 6.4s linear infinite}
+  .pscene .pinB{animation:cPinB 6.4s linear infinite}
+  .pscene .pinL{animation:cPinL 6.4s linear infinite}
+  .pscene .pinR{animation:cPinR 6.4s linear infinite}
+  .pscene .shadow{animation:cShadow 6.4s linear infinite}
+  .pscene .burst{animation:cBurst 6.4s ease-out infinite}
+  .pscene .strike{animation:cStrike 6.4s ease-out infinite}
+}
+@keyframes cBall{
+  0%,4%{transform:translate(400px,1520px) scale(2.7);opacity:1}
+  13%{transform:translate(425px,1190px) scale(2.05)}
+  22%{transform:translate(490px,1030px) scale(1.55)}
+  31%{transform:translate(565px,895px) scale(1.15)}
+  38%{transform:translate(640px,775px) scale(.86);opacity:1}
+  44%{transform:translate(730px,665px) scale(.66);opacity:1}
+  50%{transform:translate(830px,560px) scale(.48);opacity:0}
+  51%,100%{transform:translate(400px,1520px) scale(2.7);opacity:0}}
+@keyframes cSpin{0%,4%{transform:rotate(0)}50%{transform:rotate(1000deg)}100%{transform:rotate(1000deg)}}
+@keyframes cPinB{
+  0%,38%{transform:none;opacity:1}
+  42%{transform:translate(70px,-160px) rotate(42deg)}
+  50%{transform:translate(250px,-250px) rotate(125deg);opacity:1}
+  58%{transform:translate(370px,-110px) rotate(190deg);opacity:0}
+  83%{transform:translate(0,-130px);opacity:0}
+  89%{transform:translate(0,10px);opacity:1}
+  92%,100%{transform:none;opacity:1}}
+@keyframes cPinL{
+  0%,39%{transform:none;opacity:1}
+  44%{transform:translate(-80px,-190px) rotate(-70deg)}
+  52%{transform:translate(-210px,-70px) rotate(-140deg);opacity:1}
+  60%{transform:translate(-240px,110px) rotate(-165deg);opacity:0}
+  84%{transform:translate(0,-130px);opacity:0}
+  90%{transform:translate(0,10px);opacity:1}
+  93%,100%{transform:none;opacity:1}}
+@keyframes cPinR{
+  0%,40%{transform:none;opacity:1}
+  45%{transform:translate(110px,-210px) rotate(75deg)}
+  53%{transform:translate(290px,-130px) rotate(150deg);opacity:1}
+  61%{transform:translate(340px,60px) rotate(195deg);opacity:0}
+  85%{transform:translate(0,-130px);opacity:0}
+  91%{transform:translate(0,10px);opacity:1}
+  94%,100%{transform:none;opacity:1}}
+@keyframes cShadow{0%,38%{opacity:.2}44%,84%{opacity:0}92%,100%{opacity:.2}}
+@keyframes cBurst{0%,37%{opacity:0;transform:scale(.2) rotate(0)}41%{opacity:1;transform:scale(1) rotate(12deg)}54%,100%{opacity:0;transform:scale(1.7) rotate(24deg)}}
+@keyframes cStrike{0%,39%{opacity:0;transform:scale(.3) rotate(-10deg)}44%{opacity:1;transform:scale(1.15) rotate(-8deg)}48%{transform:scale(1) rotate(-8deg)}76%{opacity:1;transform:scale(1) rotate(-8deg)}84%,100%{opacity:0;transform:scale(1.05) rotate(-8deg)}}
+
 .pbrand{position:absolute;left:16px;top:calc(14px + var(--sat));z-index:2;line-height:1}
 .pbrand small{display:block;font-size:11px;letter-spacing:.32em;font-weight:800;color:var(--ink)}
 .pbrand b{display:flex;align-items:center;gap:7px;font-size:24px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-top:5px}
@@ -267,7 +323,55 @@ header .hrow{padding-right:92px}
 <main>
 <section id="v-home">
   <div class="phero">
-    <img class="pheroimg" src="hero-retro.jpg" alt="오늘도 스트라이크">
+    <img class="pheroimg" src="hero-lane.jpg" alt="오늘도 스트라이크">
+    <svg class="pscene" viewBox="0 0 900 1200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="cBallG" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ff9166"/><stop offset=".3" stop-color="#ee5428"/><stop offset=".75" stop-color="#c63a1b"/><stop offset="1" stop-color="#8f2512"/></radialGradient>
+      <linearGradient id="cPinG" x1="0" x2="1"><stop offset="0" stop-color="#fdf3dc"/><stop offset=".5" stop-color="#f6e6c4"/><stop offset="1" stop-color="#d2b988"/></linearGradient>
+      <pattern id="cDots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.6" fill="#7a1d0e" opacity=".32"/></pattern>
+      <pattern id="cPinDots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.3" fill="#a07b45" opacity=".35"/></pattern>
+      <clipPath id="cBallClip"><circle r="100"/></clipPath>
+      <clipPath id="cPinClip"><path id="cPinPath" d="M0 0C24 0 32 20 30 48C28 72 16 86 14 108C12 128 48 150 58 200C68 262 56 306 38 330L-38 330C-56 306-68 262-58 200C-48 150-12 128-14 108C-16 86-28 72-30 48C-32 20-24 0 0 0Z"/></clipPath>
+      <g id="cPin">
+        <use href="#cPinPath" fill="url(#cPinG)"/>
+        <g clip-path="url(#cPinClip)">
+          <rect x="18" y="0" width="60" height="330" fill="url(#cPinDots)"/>
+          <rect x="-70" y="100" width="140" height="15" fill="#dc4527"/>
+          <rect x="-70" y="132" width="140" height="15" fill="#dc4527"/>
+          <path d="M-22 40C-24 70-8 90-8 112" stroke="#fff" stroke-width="7" fill="none" opacity=".55" stroke-linecap="round"/>
+        </g>
+        <use href="#cPinPath" fill="none" stroke="#8a6f45" stroke-width="3" opacity=".8"/>
+      </g>
+      <path id="cSpark" d="M0-46C4-10 10-4 46 0C10 4 4 10 0 46C-4 10-10 4-46 0C-10-4-4-10 0-46Z" fill="#dc4527"/>
+    </defs>
+    <!-- 핀 그림자 -->
+    <g class="shadow" fill="#10413d"><ellipse cx="670" cy="716" rx="105" ry="16"/><ellipse cx="520" cy="754" rx="80" ry="12"/><ellipse cx="808" cy="772" rx="78" ry="12"/></g>
+    <!-- 핀 3개: 각 핀은 바깥 g(위치·크기) 안쪽 g.pin(애니메이션) -->
+    <g transform="translate(670,300) scale(1.25)"><g class="pin pinB"><use href="#cPin"/></g></g>
+    <g transform="translate(522,455) rotate(-8) scale(.9)"><g class="pin pinL"><use href="#cPin"/></g></g>
+    <g transform="translate(808,470) rotate(9) scale(.88)"><g class="pin pinR"><use href="#cPin"/></g></g>
+    <!-- 충돌 불꽃 -->
+    <g transform="translate(650,735)"><g class="burst">
+      <use href="#cSpark"/><use href="#cSpark" x="-120" y="-70" transform="scale(.7)"/><use href="#cSpark" x="150" y="-110" transform="scale(.8)"/><use href="#cSpark" x="40" y="90" transform="scale(.55)"/>
+      <circle r="62" fill="none" stroke="#dc4527" stroke-width="10" stroke-dasharray="3 16" stroke-linecap="round"/>
+    </g></g>
+    <!-- 공: 반지름 100 기준, 위치·크기는 .ballmove 가 움직임 -->
+    <g class="ballmove"><g class="ballspin">
+      <circle r="100" fill="url(#cBallG)"/>
+      <g clip-path="url(#cBallClip)">
+        <rect x="-100" y="-100" width="200" height="200" fill="url(#cDots)"/>
+        <path d="M-95-30C-50-70 10-50 50-92M-98 28C-50-4 28 12 96-34M-70 80C-18 52 40 70 92 28" stroke="#ffc3a0" stroke-width="9" fill="none" opacity=".5" stroke-linecap="round"/>
+      </g>
+      <circle cx="26" cy="-52" r="15" fill="#3a1208"/><circle cx="58" cy="-20" r="14" fill="#3a1208"/><circle cx="18" cy="-8" r="14" fill="#3a1208"/>
+      <ellipse cx="-42" cy="-52" rx="28" ry="14" fill="#fff" opacity=".35" transform="rotate(-30 -42 -52)"/>
+      <circle r="100" fill="none" stroke="#7a1d0e" stroke-width="3" opacity=".7"/>
+    </g></g>
+    <!-- STRIKE! 배지: 오른쪽 위, 제목(왼쪽)과 겹치지 않는 자리 -->
+    <g transform="translate(715,302) scale(.85)"><g class="strike">
+      <polygon fill="#dc4527" stroke="#10413d" stroke-width="6" stroke-linejoin="round" points="0,-108 20,-82 51,-96 60,-64 94,-60 86,-28 112,-8 88,14 100,46 66,52 58,86 28,76 0,102 -28,76 -58,86 -66,52 -100,46 -88,14 -112,-8 -86,-28 -94,-60 -60,-64 -51,-96 -20,-82"/>
+      <text y="14" text-anchor="middle" font-family="-apple-system,'Apple SD Gothic Neo',sans-serif" font-style="italic" font-weight="900" font-size="46" fill="#fff4de" stroke="#10413d" stroke-width="5" paint-order="stroke" letter-spacing="-1">STRIKE!</text>
+    </g></g>
+  </svg>
     <div class="pbrand"><small>THE LANE CLUB</small><b><span class="ballmark"></span>오늘도 스트라이크</b></div>
     <div class="phead"><span>오늘도</span><span>스트라이크.</span></div>
     <div class="pcheck"></div>
@@ -332,6 +436,7 @@ header .hrow{padding-right:92px}
     <div class="small" style="margin-top:6px">오른쪽 에버 숫자를 눌러 바로 고칠 수 있습니다. 고친 값은 명단에도 저장됩니다.</div>
     <div class="lbl">게스트 바로 추가</div>
     <select id="gCrew" class="hide" style="margin-bottom:6px" aria-label="게스트 크루"></select><div class="row"><input type="text" id="gName" placeholder="이름" class="grow"><select id="gGender" style="width:80px"><option value="M">남</option><option value="F">여</option></select><input type="number" id="gAvg" placeholder="에버" style="width:90px" inputmode="numeric"><button id="btnGuest">추가</button></div>
+    <button id="btnGuestClean" class="gray hide" style="margin-top:6px;width:100%"></button>
   </div>
   <div class="card" id="seedCard">
     <b>시드 설정</b>
@@ -369,10 +474,10 @@ header .hrow{padding-right:92px}
   <div class="card" id="avoidCard">
     <label class="row"><input type="checkbox" id="avoidOn" style="width:22px;height:22px"> <b>최근 같은 팀이었던 사람끼리 피하기</b></label>
     <div id="avoidBox" class="hide">
-      <div class="small" style="margin-top:6px">팀 구성 탭에서 "팀 편성 기록 저장"을 누른 편성표를 기준으로, 최근 몇 번 안에 같은 팀이었던 사람끼리는 되도록 다른 팀에 넣습니다. 에버 합계 목표 안에서 피하고, 못 피한 쌍은 결과 위에 알려 줍니다.</div>
+      <div class="small" style="margin-top:6px">팀 구성 탭에서 "팀 편성 기록 저장"을 누른 편성표를 기준으로, 최근 몇 번 안에 같은 팀이었던 사람끼리는 되도록 다른 팀에 넣습니다. 에버 합계 목표 안에서 피하고, 못 피한 쌍은 결과 위에 알려 줍니다. 크루 합동 편성은 같은 크루 사람끼리만 기록·회피합니다.</div>
       <div class="row" style="margin-top:8px">
-        <div class="grow"><div class="lbl">최근 몇 회까지 피할까요</div><select id="avoidN"></select></div>
-        <div class="grow"><div class="lbl">어떤 기록 기준</div><select id="avoidKind"><option value="">모든 종류</option><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select></div>
+        <div class="grow"><div class="lbl">최근 몇 회까지 피할까요</div><select id="avoidN" aria-label="최근 몇 회까지 피할까요"></select></div>
+        <div class="grow"><div class="lbl">어떤 기록 기준</div><select id="avoidKind" aria-label="어떤 기록 기준"><option value="">모든 종류</option><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select></div>
       </div>
       <div class="lbl" style="margin-top:10px"><b>저장된 팀 편성</b> <span class="small" id="histCnt"></span></div>
       <div id="histList"></div>
@@ -558,6 +663,7 @@ header .hrow{padding-right:92px}
       <div class="small" id="hdFound" style="margin-top:4px"></div>
       <div class="lbl">개인 기록(에버)에 넣는 점수</div>
       <div class="chips" id="hdMode"><button type="button" class="chip on" data-m="sub">핸디 빼고 (내 실력 점수)</button><button type="button" class="chip" data-m="add">핸디 포함 (가산 점수)</button></div>
+      <div class="small" style="margin-top:4px">고른 방식은 다음 사진에도 그대로 씁니다. 핸디 포함으로 저장한 기록은 기록 목록에 [핸디 포함]으로 표시됩니다.</div>
       <div class="small" id="hdPrev" style="margin-top:6px"></div>
     </div>
     <div class="lbl" id="rcGLbl">게임 점수 (0~300)</div>
@@ -584,6 +690,11 @@ header .hrow{padding-right:92px}
   <div class="lbl">지역(선택)</div><input type="text" id="alArea" placeholder="예: 서울 송파">
   <div class="lbl">메모(선택)</div><input type="text" id="alMemo" placeholder="레인 수, 요금, 주차 등">
   <label class="row" style="margin-top:10px"><input type="checkbox" id="alFav" style="width:24px;height:24px"> <b>자주 가는 볼링장 (목록 맨 위)</b></label>
+  <div class="hdbox" style="margin-top:10px">
+    <label class="row"><input type="checkbox" id="alMe" style="width:24px;height:24px"> <b class="grow">내 정보 그대로 반영</b></label>
+    <div class="small" id="alMeTxt" style="margin:2px 0 6px"></div>
+    <div class="g2"><div><div class="lbl">이 볼링장에서 쓰는 내 이름</div><input type="text" id="alMyName" placeholder="점수표에 나오는 이름"></div><div><div class="lbl">닉네임(쉼표로 여러 개)</div><input type="text" id="alMyNick" placeholder="예: 스트라이크킹"></div></div>
+  </div>
   <div class="row" style="margin-top:14px"><button id="alSave" class="grow">저장</button><button id="alDel" class="danger hide">삭제</button><button id="alClose" class="gray">닫기</button></div>
 </div></div>
 
@@ -695,7 +806,7 @@ function improveTeams(teams, maxSize, pairs, gm, anyGender, seedSet) {
     for (let a = 0; a < teams.length; a++) for (let b = a + 1; b < teams.length; b++)
       for (let i = 0; i < teams[a].length; i++) for (let j = 0; j < teams[b].length; j++) {
         const x = teams[a][i], y = teams[b][j];
-        if ((!anyGender && x.gender !== y.gender && !(inTog.has(x.id) || inTog.has(y.id))) || x.avg === y.avg) continue;
+        if ((!anyGender && x.gender !== y.gender && !(inTog.has(x.id) || inTog.has(y.id))) ) continue; // 에버가 같아도 같은 편·시드·크루·최근 같은 팀 조건은 달라질 수 있어 평가한다
         teams[a][i] = y; teams[b][j] = x;
         const e = evaluateTeams(teams, maxSize, pairs, gm, seedSet);
         if (e.score < best.score - 1e-9) { best = e; improved = true; } else { teams[a][i] = x; teams[b][j] = y; }
@@ -879,11 +990,14 @@ function loadDB() {
 let DB = loadDB();
 DB.clubs.forEach(c => { if (!c.seedCfg) c.seedCfg = { scheme: 'abcd', min: 151, cuts: [170, 190, 210] }; });
 const $ = (id) => document.getElementById(id);
-const save = () => { try { localStorage.setItem(KEY2, JSON.stringify(DB)); } catch (e) { alert('저장에 실패했습니다. 사파리 개인정보 보호 모드이거나 저장 공간이 없을 수 있습니다.'); } };
+const save = () => { try { localStorage.setItem(KEY2, JSON.stringify(DB)); return true; } catch (e) { alert('저장에 실패했습니다. 사파리 개인정보 보호 모드이거나 저장 공간이 없을 수 있습니다.'); return false; } };
 const C = () => DB.clubs.find(c => c.id === DB.cur);
 const JW = ['vs', 'mix', 'any'], JW_NAME = { vs: '크루 대항전', mix: '크루 고르게 섞기', any: '크루 상관없이 에버 조합' };
 const CREW_COL = ['#dc4527', '#1d6fb8', '#2b7a9b', '#8a5cc2', '#c46a05', '#1b7f4b'];
 const crewCol = (i) => CREW_COL[(i || 0) % CREW_COL.length];
+// 합동 때 다른 크루의 참석 체크는 그 크루의 평소 참석(cl.present)을 바꾸지 않고 이 크루의 joint.present에 따로 둔다
+function jpres(host, cl) { if (!host || cl.id === host.id) return cl.present; const j = host.joint; if (!j.present || typeof j.present !== 'object') j.present = {}; if (!Array.isArray(j.present[cl.id])) j.present[cl.id] = []; return j.present[cl.id]; }
+function jpresSet(host, cl, arr) { if (cl.id === host.id) { cl.present = arr; return; } jpres(host, cl); host.joint.present[cl.id] = arr; }
 // 합동 모드면 {way, clubs:[이 크루, 함께하는 크루...]}, 아니면 null
 function jointOf(c) { c = c || C(); const j = c && c.joint; if (!j || !j.on || !Array.isArray(j.crews)) return null; const crews = [...new Set(j.crews)].map(id => DB.clubs.find(x => x.id === id)).filter(x => x && x.id !== c.id); if (!crews.length) return null; return { way: JW.includes(j.way) ? j.way : 'vs', clubs: [c].concat(crews) }; }
 const jointTitle = (J) => J.clubs.map(x => x.name).join(' + ');
@@ -935,7 +1049,7 @@ function tab(t) {
 document.querySelectorAll('.subtabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
 
 // ===== 참석 =====
-function updateCounts() { const c = C(); const J = jointOf(c); if (J) { let n = 0, f = 0, all = 0; J.clubs.forEach(cl => { const pr = cl.members.filter(m => cl.present.includes(m.id)); const ff = pr.filter(m => m.gender === 'F').length; n += pr.length; f += ff; all += cl.members.length; const h = document.getElementById('grpc-' + cl.id); if (h) h.textContent = '참석 ' + pr.length + '/' + cl.members.length + ' · 여 ' + ff; }); $('attCount').textContent = n; $('attM').textContent = n - f; $('attF').textContent = f; $('attAll').textContent = all; return; } const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
+function updateCounts() { const c = C(); const J = jointOf(c); if (J) { let n = 0, f = 0, all = 0; J.clubs.forEach(cl => { const pp = jpres(c, cl); const pr = cl.members.filter(m => pp.includes(m.id)); const ff = pr.filter(m => m.gender === 'F').length; n += pr.length; f += ff; all += cl.members.length; const h = document.getElementById('grpc-' + cl.id); if (h) h.textContent = '참석 ' + pr.length + '/' + cl.members.length + ' · 여 ' + ff; }); $('attCount').textContent = n; $('attM').textContent = n - f; $('attF').textContent = f; $('attAll').textContent = all; return; } const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
 function setHH() { const hd = document.querySelector('header'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); }
 window.addEventListener('resize', setHH);
 function grpHdr(cl, i, btns) { return '<div class="grp"><span class="cdot" style="background:' + crewCol(i) + '"></span><b>' + esc(cl.name) + '</b><span class="small grow" style="text-align:right" id="grpc-' + cl.id + '"></span>' + (btns ? '<button class="sec jall" data-cid="' + cl.id + '">전체</button><button class="gray jnone" data-cid="' + cl.id + '">해제</button>' : '') + '</div>'; }
@@ -953,10 +1067,10 @@ function renderJoint() {
 $('jointOn').onchange = (e) => { const c = C(); if (!c.joint || !Array.isArray(c.joint.crews)) c.joint = { on: false, crews: [], way: 'vs' }; c.joint.on = e.target.checked; save(); renderAtt(); showPlan(); };
 function renderJointAtt(J) {
   if (!J) { $('jointAtt').innerHTML = ''; return; }
-  $('jointAtt').innerHTML = J.clubs.slice(1).map((cl, i) => grpHdr(cl, i + 1, true) + (cl.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-cid="' + cl.id + '" data-id="' + m.id + '"' + (cl.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span>' : '') + '</span>' + gbadge(m.gender) + '<span style="min-width:52px;text-align:right;font-weight:700">' + (m.avg === '' || m.avg == null ? '<span class="small">미입력</span>' : esc(m.avg)) + '</span></label>').join('') || '<div class="small" style="padding:8px 0">이 크루에 등록된 팀원이 없습니다.</div>')).join('') + '<div class="small" style="margin-top:6px">다른 크루 팀원의 에버는 그 크루를 열어 명단에서 고칩니다.</div>';
+  $('jointAtt').innerHTML = J.clubs.slice(1).map((cl, i) => grpHdr(cl, i + 1, true) + (cl.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-cid="' + cl.id + '" data-id="' + m.id + '"' + (jpres(C(), cl).includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span>' : '') + '</span>' + gbadge(m.gender) + '<span style="min-width:52px;text-align:right;font-weight:700">' + (m.avg === '' || m.avg == null ? '<span class="small">미입력</span>' : esc(m.avg)) + '</span></label>').join('') || '<div class="small" style="padding:8px 0">이 크루에 등록된 팀원이 없습니다.</div>')).join('') + '<div class="small" style="margin-top:6px">다른 크루 팀원의 에버는 그 크루를 열어 명단에서 고칩니다.</div>';
   const club = (id) => DB.clubs.find(x => x.id === id);
-  $('jointAtt').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const cl = club(ck.dataset.cid); if (!cl) return; cl.present = cl.present.filter(x => x !== ck.dataset.id); if (ck.checked) cl.present.push(ck.dataset.id); save(); updateCounts(); renderPairs(); showPlan(); });
-  $('jointAtt').querySelectorAll('.jall,.jnone').forEach(b => b.onclick = (e) => { e.preventDefault(); const cl = club(b.dataset.cid); if (!cl) return; cl.present = b.classList.contains('jall') ? cl.members.map(m => m.id) : []; save(); renderAtt(); showPlan(); });
+  $('jointAtt').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const cl = club(ck.dataset.cid); if (!cl) return; const h = C(); const arr = jpres(h, cl).filter(x => x !== ck.dataset.id); if (ck.checked) arr.push(ck.dataset.id); jpresSet(h, cl, arr); save(); updateCounts(); renderPairs(); showPlan(); });
+  $('jointAtt').querySelectorAll('.jall,.jnone').forEach(b => b.onclick = (e) => { e.preventDefault(); const cl = club(b.dataset.cid); if (!cl) return; jpresSet(C(), cl, b.classList.contains('jall') ? cl.members.map(m => m.id) : []); save(); renderAtt(); showPlan(); });
 }
 function renderAtt() {
   const c = C(); const all = c.members; const J = renderJoint();
@@ -967,11 +1081,14 @@ function renderAtt() {
   $('attList').querySelectorAll('.delg').forEach(a => a.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const id = a.dataset.id; c.members = c.members.filter(g => g.id !== id); c.present = c.present.filter(x => x !== id); c.pairs = c.pairs.filter(p => p[0] !== id && p[1] !== id); c.tog = (c.tog || []).filter(p => p[0] !== id && p[1] !== id); save(); renderAtt(); });
   $('attList').querySelectorAll('.avin').forEach(inp => { inp.onclick = (e) => e.stopPropagation(); inp.onchange = () => { const m = all.find(x => x.id === inp.dataset.id); if (!m) return; const v = inp.value.trim(); if (v === '') { m.avg = ''; save(); renderAtt(); return; } const x = parseFloat(v); if (!isFinite(x) || x < 1 || x > 300) { alert('에버는 1~300 사이 숫자로 넣어 주세요.'); inp.value = m.avg === '' || m.avg == null ? '' : m.avg; return; } m.avg = Math.round(x * 10) / 10; save(); renderAtt(); }; });
   $('attList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; c.present = c.present.filter(x => x !== id); if (ck.checked) c.present.push(id); save(); updateCounts(); renderPairs(); showPlan(); });
-  renderPairs(); if ($('seedRows').children.length) refreshSeedUI();
+  renderPairs(); if ($('seedRows').children.length) refreshSeedUI(); guestCleanRender();
 }
-$('btnAll').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { cl.present = cl.members.map(m => m.id); }); save(); renderAtt(); showPlan(); };
-$('btnNone').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { cl.present = []; }); save(); renderAtt(); showPlan(); };
-$('btnGuest').onclick = () => { const c0 = C(); const J = jointOf(c0); const c = (J && J.clubs.find(x => x.id === $('gCrew').value)) || c0; const n = $('gName').value.trim(); if (!n) return; const m = { id: uid(), name: n, gender: $('gGender').value, avg: $('gAvg').value === '' ? '' : num($('gAvg').value, ''), nick: '', seed: '', guest: true }; c.members.push(m); c.present.push(m.id); $('gName').value = ''; $('gAvg').value = ''; save(); renderAtt(); showPlan(); };
+$('btnAll').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { jpresSet(c, cl, cl.members.map(m => m.id)); }); save(); renderAtt(); showPlan(); };
+$('btnNone').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { jpresSet(c, cl, []); }); save(); renderAtt(); showPlan(); };
+// 오늘 참석하지 않은 게스트를 목록에서 정리(이 크루만)
+function guestCleanRender() { const c = C(); if (!c) return; const old = c.members.filter(m => m.guest && !c.present.includes(m.id)); const b = $('btnGuestClean'); b.classList.toggle('hide', !old.length); b.textContent = '참석 안 한 지난 게스트 ' + old.length + '명 목록에서 지우기'; }
+$('btnGuestClean').onclick = () => { const c = C(); const old = c.members.filter(m => m.guest && !c.present.includes(m.id)); if (!old.length || !confirm('참석 체크가 안 된 게스트 ' + old.length + '명(' + old.slice(0, 6).map(m => m.name).join(', ') + (old.length > 6 ? ' 외' : '') + ')을 이 크루 목록에서 지울까요? 점수 기록은 그대로 남습니다.')) return; const ids = new Set(old.map(m => m.id)); c.members = c.members.filter(m => !ids.has(m.id)); c.pairs = (c.pairs || []).filter(p => !ids.has(p[0]) && !ids.has(p[1])); c.tog = (c.tog || []).filter(p => !ids.has(p[0]) && !ids.has(p[1])); save(); renderAtt(); showPlan(); };
+$('btnGuest').onclick = () => { const c0 = C(); const J = jointOf(c0); const c = (J && J.clubs.find(x => x.id === $('gCrew').value)) || c0; const n = $('gName').value.trim(); if (!n) return; const m = { id: uid(), name: n, gender: $('gGender').value, avg: $('gAvg').value === '' ? '' : num($('gAvg').value, ''), nick: '', seed: '', guest: true }; c.members.push(m); if (c === c0) c.present.push(m.id); else { const arr = jpres(c0, c); arr.push(m.id); } $('gName').value = ''; $('gAvg').value = ''; save(); renderAtt(); showPlan(); };
 
 // ===== 같은 편 금지(분리 조건) =====
 function renderPairs() {
@@ -1042,14 +1159,14 @@ function syncOpts() { const o = C().opts; $('optSize').value = o.teamSize; $('op
 });
 function people() {
   const c = C(); const o = c.opts; const J = jointOf(c);
-  const list = [].concat(...(J ? J.clubs : [c]).map((cl, ci) => cl.members.filter(m => cl.present.includes(m.id)).map(m => {
+  const list = [].concat(...(J ? J.clubs : [c]).map((cl, ci) => { const pr = J ? jpres(c, cl) : cl.present; return cl.members.filter(m => pr.includes(m.id)).map(m => {
     const blank = !(m.avg !== '' && m.avg != null && +m.avg >= 1 && +m.avg <= 300);
     const seed = (!J && /^[ABCD]$/.test(m.seed || '')) ? m.seed : ''; const raw = blank ? o.def : +m.avg;
     const pid = J ? cl.id + ':' + m.id : m.id; // 합동 때는 크루ID:팀원ID(ID에는 ':'가 들어갈 수 없어 겹치지 않음, 같은 편 조건도 같은 규칙으로 바꿈)
     const base = (seed && o.floor) ? Math.max(raw, floorOf(seed)) : raw;
     const g = m.gender === 'F' ? 'F' : 'M'; const hd = num(g === 'F' ? o.hdF : o.hdM, 0) || 0;
     return { id: pid, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest, cr: cl.id, crN: cl.name, crI: ci, mid: m.id };
-  })));
+  }); }));
   const dN = list.filter(p => (p.seed || GRADE(p.base)) === 'D').length;
   list.forEach(p => { p.grade = p.seed || GRADE(p.base); if (p.grade === 'D' && dN === 1) p.grade = 'C'; });
   return list;
@@ -1081,13 +1198,13 @@ function renderAvoid() {
   $('histCnt').textContent = hs.length ? hs.length + '개' : '';
   const nm = (id) => { const x = c.members.find(y => y.id === id); return x ? dn(x) : '(삭제됨)'; };
   $('histList').innerHTML = hs.length ? hs.slice().reverse().map(h => '<details class="hist" style="display:block"><summary><b>' + esc(fmtD(h.date)) + '</b> ' + esc(h.kind) + ' · ' + h.teams.length + '팀 ' + h.teams.reduce((a, t) => a + t.length, 0) + '명' + (h.joint ? ' <span class="small">(합동: ' + esc(h.joint) + ')</span>' : '') + ' <a href="#" class="hdel" data-id="' + h.id + '" style="color:#dc2626;font-size:13px;margin-left:6px">삭제</a></summary><div class="small" style="padding:4px 0 2px">' + h.teams.map((t, i) => (i + 1) + '팀: ' + t.map(id => esc(nm(id))).join(', ')).join('<br>') + '</div></details>').join('') : '<div class="small" style="padding:6px 0">아직 저장된 편성이 없습니다. 팀을 짠 뒤 팀 구성 탭 아래 "팀 편성 기록 저장"을 눌러 주세요.</div>';
-  $('histList').querySelectorAll('.hdel').forEach(a => a.onclick = (e) => { e.preventDefault(); const h = hs.find(x => x.id === a.dataset.id); if (!h || !confirm(fmtD(h.date) + ' ' + h.kind + ' 편성 기록을 지울까요?')) return; c.hist = hs.filter(x => x.id !== h.id); save(); renderAvoid(); });
+  $('histList').querySelectorAll('.hdel').forEach(a => a.onclick = (e) => { e.preventDefault(); const h = hs.find(x => x.id === a.dataset.id); if (!h || !confirm(fmtD(h.date) + ' ' + h.kind + ' 편성 기록을 지울까요?')) return; c.hist = hs.filter(x => x.id !== h.id); if (!save()) c.hist = hs; renderAvoid(); });
 }
 $('avoidOn').onchange = (e) => { C().opts.avoidOn = e.target.checked; save(); renderAvoid(); };
 $('avoidN').onchange = (e) => { C().opts.avoidN = parseInt(e.target.value, 10) || 3; save(); };
 $('avoidKind').onchange = (e) => { C().opts.avoidKind = e.target.value; save(); };
 $('btnHistSave').onclick = () => {
-  if (!curTeams) return; const c = C(); const J = jointOf(c); const kind = $('histKind').value; const date = isoToday(); const clubs = J ? J.clubs : [c]; let saved = 0;
+  if (!curTeams) return; const c = C(); const J = jointOf(c); const kind = $('histKind').value; const histBefore = {}; (J ? J.clubs : [c]).forEach(cl => { histBefore[cl.id] = histOf(cl).slice(); }); const date = isoToday(); const clubs = J ? J.clubs : [c]; let saved = 0;
   const same = (a, b) => a.length === b.length && a.every((t, i) => t.join(',') === b[i].join(','));
   for (const cl of clubs) {
     const teams = curTeams.map(t => t.filter(m => m.cr === cl.id).map(m => m.mid || m.id)).filter(t => t.length >= 2).map(t => t.slice().sort());
@@ -1096,7 +1213,7 @@ $('btnHistSave').onclick = () => {
     cl.hist = hs.concat([{ id: uid(), t: Date.now(), date, kind, teams, joint: J ? jointTitle(J) : '' }]).slice(-HIST_MAX); saved++;
   }
   if (!saved) return alert('저장할 편성이 없습니다(같은 크루 사람이 2명 이상 있는 팀이 없거나 저장을 취소했습니다).');
-  save(); alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
+  if (!save()) { clubs.forEach(cl => { if (histBefore[cl.id]) cl.hist = histBefore[cl.id]; }); return; } alert(fmtD(date) + ' ' + kind + ' 팀 편성을 ' + (J ? saved + '개 크루에 ' : '') + '저장했습니다. 다음에 참석 탭 "최근 같은 팀이었던 사람끼리 피하기"를 켜면 이 편성을 참고합니다.');
 };
 
 // ===== 팀 구성 =====
@@ -1632,7 +1749,7 @@ let RECLIM = 30;
 function recRow(r) {
   const kc = r.kind === '대회' ? 'k3' : r.kind === '연습' ? 'k2' : r.kind === '벙개' ? 'k4' : ''; const al = alleyName(r.alleyId) || '볼링장 미지정'; let mid, av;
   if (r.k === 'e') { mid = '<div class="al">' + esc(al) + '<span class="kbadge ks">에버 입력</span></div><div class="small">' + r.n + '게임 평균' + (Number.isInteger(r.hi) && r.hi > 0 ? ' · 최고 ' + r.hi : '') + '</div>'; av = '<b style="font:inherit">' + fmtA(r.avg) + '</b><small>에버</small>'; }
-  else { const sm = r.scores.reduce((a, b) => a + b, 0); mid = '<div class="al">' + esc(al) + '<span class="kbadge ' + kc + '">' + esc(r.kind || '연습') + '</span></div><div>' + r.scores.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>'; av = fmtA(sm / r.scores.length) + '<small>' + r.scores.length + '게임 평균</small>'; }
+  else { const sm = r.scores.reduce((a, b) => a + b, 0); mid = '<div class="al">' + esc(al) + '<span class="kbadge ' + kc + '">' + esc(r.kind || '연습') + '</span>' + (Number.isInteger(r.hda) && r.hda > 0 ? '<span class="kbadge ks">핸디 포함 +' + r.hda + '</span>' : '') + '</div><div>' + r.scores.map(s => '<span class="sc' + (s >= 200 ? ' hi' : '') + '">' + s + '</span>').join('') + '</div>'; av = fmtA(sm / r.scores.length) + '<small>' + r.scores.length + '게임 평균</small>'; }
   return '<div class="rec" data-id="' + r.id + '"><div class="d"><b>' + (+r.date.slice(8, 10)) + '</b><small>' + (+r.date.slice(5, 7)) + '월 ' + dowK(r.date) + '</small></div><div class="mid">' + mid + (r.note ? '<div class="small">' + esc(r.note) + '</div>' : '') + '</div><div class="av">' + av + '</div></div>';
 }
 function renderRec() {
@@ -1713,9 +1830,9 @@ $('rcSave').onclick = () => {
   if (RC.mode === 'g' || photo) {
     const raw = rcVals().filter(x => x !== ''); if (!raw.length) return alert('점수를 한 게임 이상 넣어 주세요.');
     const sc = raw.map(Number); if (sc.some(x => !Number.isInteger(x) || x < 0 || x > (photo ? 400 : 300))) return alert(photo ? '사진 점수는 0~300(핸디가 더해진 점수는 400까지) 사이 정수로 넣어 주세요.' : '점수는 0~300 사이 정수로 넣어 주세요.');
-    let hdNote = ''; if (photo) { const h = hdNum(); if (isNaN(h)) return alert('핸디는 0~100 사이 정수로 넣어 주세요.'); if (hdFinalRaw(sc).some(x => x < 0 || x > 300)) return alert('핸디를 반영한 점수가 0~300을 벗어납니다(' + hdFinalRaw(sc).join(', ') + '). "이미지 점수에 핸디가 포함돼 있음" 체크와 핸디 점수, 저장 방식을 확인해 주세요.'); const fin = hdFinal(sc); const d = sumA(fin) - sumA(sc); if (h && d) { hdNote = '핸디 ' + h + '점 ' + (d < 0 ? '뺌' : '더함') + '(사진 ' + sc.join('/') + ')'; sc.splice(0, sc.length, ...fin); } else if (h && HD.inc) hdNote = '핸디 ' + h + '점 포함 점수'; }
+    let hdNote = ''; if (photo) { const h = hdNum(); if (isNaN(h)) return alert('핸디는 0~100 사이 정수로 넣어 주세요.'); if (HD.inc && !h) return alert('"이미지 점수에 핸디가 포함돼 있음"을 체크했으면 게임당 핸디(1~100)를 넣어 주세요. 핸디가 없으면 체크를 풀어 주세요.'); if (hdFinalRaw(sc).some(x => x < 0 || x > 300)) return alert('핸디를 반영한 점수가 0~300을 벗어납니다(' + hdFinalRaw(sc).join(', ') + '). "이미지 점수에 핸디가 포함돼 있음" 체크와 핸디 점수, 저장 방식을 확인해 주세요.'); const fin = hdFinal(sc); const d = sumA(fin) - sumA(sc); if (h && d) { hdNote = '핸디 ' + h + '점 ' + (d < 0 ? '뺌' : '더함') + '(사진 ' + sc.join('/') + ')'; sc.splice(0, sc.length, ...fin); } else if (h && HD.inc) hdNote = '핸디 ' + h + '점 포함 점수'; }
     if (photo) { const sm = sumA(sc); const dupe = REC.recs.some(r => r.k === 'g' && r.id !== RC.id && r.date === date && r.scores.join(',') === sc.join(',')); const al = alleyId ? alleyName(alleyId) : '볼링장 선택 안 함'; if (!confirm('판독한 점수를 저장할까요?\n\n' + sc.length + '게임: ' + sc.join(', ') + '\n합계 ' + sm + ' · 평균 ' + fmtA(sm / sc.length) + (hdNote ? '\n' + hdNote : '') + '\n날짜 ' + fmtD(date) + ' · ' + kind + ' · ' + al + (dupe ? '\n\n※ 같은 날짜에 같은 점수 기록이 이미 있습니다.' : ''))) return; rpLearn(); }
-    rec = { k: 'g', scores: sc }; if (hdNote && note.indexOf(hdNote) < 0) note = (note ? note + ' · ' : '') + hdNote;
+    rec = { k: 'g', scores: sc }; if (!photo && RC.id) { const o0 = REC.recs.find(r => r.id === RC.id); if (o0 && Number.isInteger(o0.hda) && o0.hda > 0) rec.hda = o0.hda; } if (photo) { const h2 = hdNum() || 0; const incl = h2 > 0 && ((HD.inc && HD.m === 'add') || (!HD.inc && HD.m === 'add')); if (incl) rec.hda = h2; } if (hdNote && note.indexOf(hdNote) < 0) note = (note ? note + ' · ' : '') + hdNote;
   } else {
     const avg = parseFloat($('reAvg').value), n = parseInt($('reN').value, 10), hi = parseInt($('reHi').value, 10);
     if (!(avg >= 1 && avg <= 300)) return alert('에버는 1~300 사이로 넣어 주세요.'); if (!(n >= 1 && n <= 5000)) return alert('게임 수를 넣어 주세요.');
@@ -1734,14 +1851,19 @@ let AL = { id: null, after: null };
 function openAl(id, after) {
   const a = id ? REC.alleys.find(x => x.id === id) : null; AL = { id: a ? a.id : null, after: after || null };
   $('alTitle').textContent = a ? '볼링장 고치기' : '볼링장 등록'; $('alName').value = a ? a.name : ''; $('alArea').value = a ? (a.area || '') : ''; $('alMemo').value = a ? (a.memo || '') : ''; $('alFav').checked = !!(a && a.fav);
+  const meN = (REC.me.name || '').trim(), meK = (REC.me.nick || '').trim(); const same = a ? (a.meSame === true || (!!meN && (a.myName || '') === meN && (a.myNick || '') === meK)) : !!(meN || meK);
+  $('alMe').checked = same; $('alMyName').value = a ? (a.myName || '') : ''; $('alMyNick').value = a ? (a.myNick || '') : ''; alMeSync();
   $('alDel').classList.toggle('hide', !a); $('alFind').classList.toggle('hide', !!a); $('alSheet').classList.remove('hide'); if (!a) afOpen();
 }
 $('alClose').onclick = () => $('alSheet').classList.add('hide');
+// "내 정보 그대로 반영": 마이 탭의 내 이름·닉네임을 이 볼링장의 이름·닉네임 칸에 그대로 넣는다(체크를 풀면 직접 고칠 수 있다)
+function alMeSync() { const on = $('alMe').checked, meN = (REC.me.name || '').trim(), meK = (REC.me.nick || '').trim(); if (on) { $('alMyName').value = meN; $('alMyNick').value = meK; } $('alMyName').disabled = on; $('alMyNick').disabled = on; $('alMeTxt').textContent = (meN || meK) ? '마이 탭 내 정보: 이름 ' + (meN || '(없음)') + (meK ? ' · 닉네임 ' + meK : '') + (on ? ' → 그대로 넣었습니다' : '') : '마이 탭에 내 이름·닉네임이 아직 없습니다. 마이 탭에서 먼저 넣으면 여기서 바로 가져올 수 있습니다.'; }
+$('alMe').onchange = alMeSync;
 $('alSave').onclick = () => {
   const name = $('alName').value.trim(); if (!name) return alert('볼링장 이름을 넣어 주세요.');
   const area0 = $('alArea').value.trim(); if (REC.alleys.some(x => x.name === name && (x.area || '') === area0 && x.id !== AL.id)) return alert('같은 이름과 지역의 볼링장이 이미 등록돼 있습니다.');
   let a = AL.id ? REC.alleys.find(x => x.id === AL.id) : null; if (!a) { a = { id: uid() }; REC.alleys.push(a); }
-  a.name = name; a.area = $('alArea').value.trim(); a.memo = $('alMemo').value.trim(); a.fav = $('alFav').checked; saveRec(); $('alSheet').classList.add('hide');
+  a.name = name; a.area = $('alArea').value.trim(); a.memo = $('alMemo').value.trim(); a.fav = $('alFav').checked; a.meSame = $('alMe').checked; a.myName = $('alMyName').value.trim().slice(0, 40); a.myNick = $('alMyNick').value.trim().slice(0, 200); saveRec(); $('alSheet').classList.add('hide');
   const f = AL.after; AL.after = null; if (f) f(a.id); if (curView === 'me') renderMe(); if (curView === 'rec') renderRec();
 };
 $('alDel').onclick = () => {
@@ -1892,7 +2014,7 @@ function mergeFragments(P, hdr) {
   });
 }
 // AI가 읽은 줄(이름, 게임 점수, 합계, 평균)을 분석기가 쓰는 모양으로 바꾼다
-function aiRowParts(ai) { const mk = (v, dec) => ({ v, dec: !!dec, raw: String(v), c: 1 }); const vals = ai.games.map(g => mk(g, false)); if (ai.total != null) vals.push(mk(ai.total, false)); if (ai.avg != null) vals.push(mk(ai.avg, true)); const o = { name: ai.name, vals, gh: 0, pre: [], aiDirect: { games: ai.games, total: ai.total, avg: ai.avg } }; if (ai.hd > 0 && ai.hd <= 100) { o.hd = ai.hd; o.hdFrom = 'AI 판독'; o.hdInc = ai.inc; } return o; }
+function aiRowParts(ai) { const mk = (v, dec) => ({ v, dec: !!dec, raw: String(v), c: 1 }); const vals = ai.games.map(g => mk(g, false)); if (ai.total != null) vals.push(mk(ai.total, false)); if (ai.avg != null) vals.push(mk(ai.avg, true)); const o = { name: ai.name, vals, gh: 0, pre: [], aiDirect: { games: ai.games, slots: ai.slots || ai.games, total: ai.total, avg: ai.avg } }; if (ai.hd > 0 && ai.hd <= 100) { o.hd = ai.hd; o.hdFrom = 'AI 판독'; o.hdInc = ai.inc; } return o; }
 function analyzeScoreSheet(rows, crewId, alleyIds) {
   const who = meIdentities(crewId, alleyIds); const P = rows.map((r, i) => r.ai ? Object.assign({ i }, aiRowParts(r.ai)) : Object.assign({ i }, parseRowTokens(r.texts, r.confs))); mergeFragments(P, findHeader(rows));
   // 게임 수: 머리글 > 합계 검산으로 알아낸 값의 최빈값 > 줄 길이의 최빈값
@@ -1904,7 +2026,9 @@ function analyzeScoreSheet(rows, crewId, alleyIds) {
   if (!ng) { ng = Math.min(10, mode(data.map(p => p.vals.filter(v => !v.dec && v.v <= 300).length))); ngFrom = '줄마다 점수 개수'; }
   const HDR = findHeader(rows);
   data.forEach(p => {
-    const mp = (p.aiDirect && p.hd > 0 && p.aiDirect.games.some(g => g > 300) && p.aiDirect.games.every(g => g >= 0 && g <= 400)) ? { games: p.aiDirect.games.slice(), gconf: p.aiDirect.games.map(() => 1), total: p.aiDirect.total, avg: p.aiDirect.avg, by: 'AI 판독(핸디 포함 점수)' } : (mapByHeader(p, HDR) || sumSearch(p, ng)); if (mp) { p.games = mp.games; p.gconf = mp.gconf; p.total = mp.total; p.avg = mp.avg; p.colBy = mp.by; if (mp.hd != null && mp.hd > 0) { p.hd = mp.hd; p.hdFrom = '표의 핸디 칸'; } }
+    // AI가 구조화해 준 줄은 게임 칸·합계·평균을 섞지 않고 그대로 쓴다(빈 게임 칸 위치도 보존)
+    const mp = (p.aiDirect && p.aiDirect.games.every(g => g >= 0 && g <= 400)) ? { games: p.aiDirect.games.slice(), gconf: p.aiDirect.games.map(() => 1), total: p.aiDirect.slots.some(x => x == null) ? null : p.aiDirect.total, avg: p.aiDirect.slots.some(x => x == null) ? null : p.aiDirect.avg, by: 'AI 판독', slots: p.aiDirect.slots } : (mapByHeader(p, HDR) || sumSearch(p, ng));
+    if (mp && mp.slots) p.slots = mp.slots; if (mp) { p.games = mp.games; p.gconf = mp.gconf; p.total = mp.total; p.avg = mp.avg; p.colBy = mp.by; if (mp.hd != null && mp.hd > 0) { p.hd = mp.hd; p.hdFrom = '표의 핸디 칸'; } }
     const ivo = p.vals.filter(v => !v.dec); const iv = ivo.map(v => v.v); const decs = p.vals.filter(v => v.dec).map(v => v.v);
     if (!mp) {
     const cut = iv.findIndex(v => v > 300); const head = cut >= 0 ? iv.slice(0, cut) : iv.slice(); let games = head.slice(0, ng);
@@ -1919,7 +2043,9 @@ function analyzeScoreSheet(rows, crewId, alleyIds) {
     p.short = p.games.length < ng; const own = rowOwner(nk(p.name), who); Object.assign(p, own);
     p.isMine = own.mine >= 0.65 && own.mine > own.other; p.amb = own.mine >= 0.65 && own.mine === own.other && own.mine < 1 ? true : (own.mine >= 0.65 && own.other >= own.mine);
   });
+  if (!data.length) { const gLbl = /(^|\s)(1\s*[Gg]|1\s*게임|[Gg]\s*1)(\s|$|[:.\-])/; const hasG = rows.some(r => gLbl.test(r.texts.join(' '))); const one = hasG ? P.filter(p => p.name && !p.aiDirect && p.vals.filter(v => !v.dec && v.v <= 300).length === 1) : []; if (one.length) { one.forEach(p => { const v = p.vals.find(x => !x.dec && x.v <= 300); p.games = [v.v]; p.gconf = [v.c]; p.total = null; p.avg = null; p.sumOk = null; p.avgOk = null; p.short = false; const own = rowOwner(nk(p.name), who); Object.assign(p, own); p.isMine = own.mine >= 0.65 && own.mine > own.other; p.amb = own.mine >= 0.65 && own.other >= own.mine; data.push(p); }); ng = 1; ngFrom = '한 게임 점수표'; } }
   if (!data.length) { const ex = nameless(rows); if (ex.length) { ex.forEach((p, k) => { p.i = P.length; P.push(p); data.push(p); }); ng = Math.max.apply(null, data.map(p => p.games.length)); ngFrom = '이름 없이 읽은 점수 개수'; if (data.length === 1) return { who, ng, ngFrom, rows: P, data, mine: [], chosen: data[0].i, why: 'single' }; } }
+  if (!data.length) { const allT = rows.map(r => r.texts.join(' ')).join(' '); const gnums = new Set(); allT.replace(/(?:^|\s)(?:([1-9])\s*(?:게임|경기|[Gg])|[Gg]\s*([1-9]))/g, (z, a, b) => { gnums.add(a || b); return z; }); const m1 = gnums.size === 1 && gnums.has('1') && allT.match(/(?:^|\s)(?:1\s*(?:게임|경기|[Gg])|[Gg]\s*1)\s*[:.\-]?\s*(\d{1,3})(?!\d)/); if (m1 && +m1[1] <= 300 && !rows.some(r => r.ai)) { const p = { i: P.length, name: '(이름 없음)', games: [+m1[1]], gconf: [1], total: null, avg: null, vals: [], gh: 0, mine: 0, other: 0, otherName: '', mineKind: '', mineT: '', nameless: true, sumOk: null, avgOk: null, short: false }; P.push(p); data.push(p); ng = 1; ngFrom = '1G 표기'; return { who, ng, ngFrom, rows: P, data, mine: [], chosen: p.i, why: 'single' }; } }
   const mine = data.filter(p => p.isMine).sort((a, b) => b.mine - a.mine); let chosen = -1, why = '';
   if (mine.length === 1) { chosen = mine[0].i; why = 'one'; } else if (mine.length > 1) { if (mine[0].mine > mine[1].mine) { chosen = mine[0].i; why = 'best'; } else why = 'multi'; }
   return { who, ng, ngFrom, rows: P, data, mine, chosen, why };
@@ -1995,7 +2121,7 @@ function rpRender() {
 function rpApply() {
   const res = RP.res, p = RP.chosen >= 0 && res ? res.rows[RP.chosen] : null; if (!p || !p.games.length) { RP.applied = false; hdReset(); rcShow(); return; }
   const g = p.games.slice(); if (p.fix) g[p.fix.gi] = p.fix.to; const m = RP.meta || {};
-  const vals = g.map(String); while (vals.length < res.ng && vals.length < 10) vals.push('');
+  let vals = g.map(String); if (p.slots && p.slots.length >= g.length && !p.fix) vals = p.slots.map(v => v == null ? '' : String(v)); while (vals.length < res.ng && vals.length < 10) vals.push('');
   rcBuild(vals); RC.edited = false;
   if (m.date) $('rcDate').value = m.date; if (m.kind) $('rcKind').value = m.kind; if (m.alleyId) $('rcAlley').value = m.alleyId;
   RC.src = '사진'; RP.applied = true; if (!p.nameless && (!$('rcNote').value || /^사진 판독: /.test($('rcNote').value))) $('rcNote').value = '사진 판독: ' + p.name.trim();
@@ -2031,7 +2157,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 28, APP_DATE = '2026.11.08';
+const APP_VER = 29, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2134,11 +2260,11 @@ function aiParse(text) {
 }
 function aiToRows(j) {
   const rows = []; const num = (x) => (x == null || x === '' || !isFinite(+x)) ? null : +x;
-  const lists = j.rows.filter(r => r && r.name).map(r => ({ name: String(r.name).trim(), games: (Array.isArray(r.scores) ? r.scores : []).map(num).filter(x => x != null), total: num(r.total), avg: num(r.avg), hd: num(r.handicap), inc: r.scoresIncludeHandicap === true ? true : (r.scoresIncludeHandicap === false ? false : null) }));
+  const lists = j.rows.filter(r => r && r.name).map(r => ({ name: String(r.name).trim(), slots: (Array.isArray(r.scores) ? r.scores : []).map(num), games: (Array.isArray(r.scores) ? r.scores : []).map(num).filter(x => x != null), total: num(r.total), avg: num(r.avg), hd: num(r.handicap), inc: r.scoresIncludeHandicap === true ? true : (r.scoresIncludeHandicap === false ? false : null) }));
   const G = Math.max.apply(null, [parseInt(j.games, 10) || 0, 1].concat(lists.map(l => l.games.length)));
   const meta = [j.date ? String(j.date).replace(/-/g, '.') : '', j.place || ''].filter(Boolean).join(' '); if (meta) rows.push({ texts: [meta] });
   const hd = ['성명']; for (let i = 1; i <= G; i++) hd.push(i + 'G'); hd.push('합계', '평균'); rows.push({ texts: hd });
-  lists.forEach(l => rows.push({ texts: [l.name].concat(l.games.map(String), l.total == null ? [] : [String(l.total)], l.avg == null ? [] : [String(l.avg)]), ai: { name: l.name, games: l.games, total: l.total, avg: l.avg, hd: l.hd, inc: l.inc } }));
+  lists.forEach(l => rows.push({ texts: [l.name].concat(l.games.map(String), l.total == null ? [] : [String(l.total)], l.avg == null ? [] : [String(l.avg)]), ai: { name: l.name, games: l.games, slots: l.slots, total: l.total, avg: l.avg, hd: l.hd, inc: l.inc } }));
   return rows;
 }
 function aiApplyJson(j, label) {
@@ -2232,7 +2358,7 @@ function renderMe() {
   aiRefreshStat();
   $('meName').value = REC.me.name || ''; $('meNick').value = REC.me.nick || '';
   $('meAlleyIds').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => '<div class="mealley" data-id="' + a.id + '"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="g2" style="margin-top:4px"><input type="text" class="man" placeholder="이름" value="' + esc(a.myName || '') + '"><input type="text" class="mak" placeholder="닉네임(쉼표로)" value="' + esc(a.myNick || '') + '"></div></div>').join('') : '<div class="small">등록한 볼링장이 없습니다. 아래 "내 볼링장"에서 볼링장을 등록하면 여기에서 볼링장별 이름과 닉네임을 넣을 수 있습니다.</div>';
-  $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
+  $('meAlleyIds').querySelectorAll('.mealley').forEach(el => { const sv = () => { const a = REC.alleys.find(x => x.id === el.dataset.id); if (!a) return; a.myName = el.querySelector('.man').value.trim(); a.myNick = el.querySelector('.mak').value.trim(); a.meSame = a.myName === (REC.me.name || '').trim() && a.myNick === (REC.me.nick || '').trim(); saveRec(); }; el.querySelector('.man').onchange = sv; el.querySelector('.mak').onchange = sv; });
   $('meCrews').innerHTML = DB.clubs.length ? DB.clubs.map(c => { const cfg = (REC.me.crew || {})[c.id] || {}; const opts = '<option value="">(선택 안 함)</option>' + c.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(mm => '<option value="' + mm.id + '"' + (mm.id === cfg.mid ? ' selected' : '') + '>' + esc(mm.name) + (mm.nick ? ' (' + esc(mm.nick) + ')' : '') + '</option>').join(''); return '<div class="mecrew" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="lbl">이 크루에서의 나</div><select class="mcm">' + opts + '</select><div class="lbl">사진에 다르게 적히는 내 이름·닉네임 (쉼표로)</div><input type="text" class="mca" value="' + esc(cfg.alias || '') + '" placeholder="예: 햄토리, 서현이"></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록된 크루가 없습니다. 크루 탭에서 크루와 명단을 먼저 등록하세요.</div>';
   $('meCrews').querySelectorAll('.mecrew').forEach(el => { const save1 = () => { REC.me.crew = REC.me.crew || {}; REC.me.crew[el.dataset.id] = { mid: el.querySelector('.mcm').value, alias: el.querySelector('.mca').value.trim() }; saveRec(); }; el.querySelector('.mcm').onchange = save1; el.querySelector('.mca').onchange = save1; });
   $('meAlleys').innerHTML = REC.alleys.length ? REC.alleys.slice().sort(favFirst).map(a => { const s = calcStats(REC.recs.filter(r => r.alleyId === a.id)); return '<div class="alrow"><div class="grow"><b>' + (a.fav ? '★ ' : '') + esc(a.name) + '</b>' + (a.area ? ' <span class="small">' + esc(a.area) + '</span>' : '') + '<div class="small">' + (s.cnt ? '방문 ' + s.days + '일 · ' + s.cnt + '게임 · 에버 ' + fmtA(s.avg) : '아직 기록 없음') + (a.memo ? ' · ' + esc(a.memo) : '') + '</div></div><button class="sec" data-ed="' + a.id + '">고치기</button></div>'; }).join('') : '<div class="small" style="margin-top:6px">등록한 볼링장이 없습니다. 점수를 기록할 때 볼링장을 고르면 볼링장별 에버를 볼 수 있습니다.</div>';
@@ -2264,7 +2390,7 @@ function bkSanitize(d) {
     if (!isObj(c) || !okId(c.id) || !str(c.name)) return '크루 정보가 손상됐습니다';
     if (c.img != null && !(str(c.img) && BK_IMG.test(c.img))) delete c.img;
     if (!Array.isArray(c.members)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 목록이 손상됐습니다';
-    for (const m of c.members) { if (!isObj(m) || !okId(m.id) || !str(m.name)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 정보가 손상됐습니다'; if (m.gender !== 'M' && m.gender !== 'F') m.gender = 'M'; if (m.avg !== '' && typeof m.avg !== 'number') m.avg = ''; if (m.nick != null && !str(m.nick)) m.nick = ''; if (m.seed != null && !str(m.seed)) m.seed = ''; }
+    for (const m of c.members) { if (!isObj(m) || !okId(m.id) || !str(m.name)) return '"' + c.name.slice(0, 20) + '" 크루의 팀원 정보가 손상됐습니다'; if (m.gender !== 'M' && m.gender !== 'F') m.gender = 'M'; if (m.avg !== '' && (typeof m.avg !== 'number' || !(m.avg >= 1 && m.avg <= 300))) m.avg = ''; if (m.nick != null && !str(m.nick)) m.nick = ''; if (m.seed != null && !str(m.seed)) m.seed = ''; }
     c.present = Array.isArray(c.present) ? c.present.filter(okId) : [];
     c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
@@ -2273,10 +2399,10 @@ function bkSanitize(d) {
     if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
   }
   const clubIds = new Set(d.db.clubs.map(c => c.id)); if (clubIds.size !== d.db.clubs.length) return '같은 ID의 크루가 두 번 들어 있습니다';
-  for (const c of d.db.clubs) { if (c.joint == null) continue; if (!isObj(c.joint)) { delete c.joint; continue; } c.joint = { on: c.joint.on === true, crews: [...new Set(Array.isArray(c.joint.crews) ? c.joint.crews.filter(id => okId(id) && id !== c.id && clubIds.has(id)) : [])], way: ['vs', 'mix', 'any'].includes(c.joint.way) ? c.joint.way : 'vs' }; }
+  for (const c of d.db.clubs) { if (c.joint == null) continue; if (!isObj(c.joint)) { delete c.joint; continue; } c.joint = { on: c.joint.on === true, crews: [...new Set(Array.isArray(c.joint.crews) ? c.joint.crews.filter(id => okId(id) && id !== c.id && clubIds.has(id)) : [])], way: ['vs', 'mix', 'any'].includes(c.joint.way) ? c.joint.way : 'vs', present: (() => { const o = {}; const jp = isObj(c.joint.present) ? c.joint.present : {}; Object.keys(jp).forEach(k => { if (okId(k) && clubIds.has(k) && Array.isArray(jp[k])) o[k] = [...new Set(jp[k].filter(okId))]; }); return o; })() }; }
   if (d.db.cur != null && !okId(d.db.cur)) d.db.cur = null;
   if (!Array.isArray(d.rec.alleys)) d.rec.alleys = [];
-  for (const a of d.rec.alleys) { if (!isObj(a) || !okId(a.id) || !str(a.name)) return '볼링장 정보가 손상됐습니다'; ['area', 'memo', 'myNick'].forEach(k => { if (a[k] != null && !str(a[k])) a[k] = ''; }); a.fav = a.fav === true; }
+  for (const a of d.rec.alleys) { if (!isObj(a) || !okId(a.id) || !str(a.name)) return '볼링장 정보가 손상됐습니다'; ['area', 'memo', 'myName', 'myNick'].forEach(k => { if (a[k] != null && !str(a[k])) a[k] = ''; }); a.fav = a.fav === true; if (a.meSame != null) a.meSame = a.meSame === true; }
   for (const r of d.rec.recs) {
     if (!isObj(r) || !okId(r.id) || !str(r.date)) return '점수 기록이 손상됐습니다';
     if (r.k === 'g') { if (!Array.isArray(r.scores) || !r.scores.every(x => Number.isInteger(x) && x >= 0 && x <= 300)) return '점수 기록의 점수가 손상됐습니다'; }
@@ -2284,7 +2410,7 @@ function bkSanitize(d) {
     else return '점수 기록 종류가 맞지 않습니다';
     if (r.alleyId && !okId(r.alleyId)) r.alleyId = '';
     if (r.k === 'e') { r.hi = Number.isInteger(r.hi) && r.hi >= 1 && r.hi <= 300 ? r.hi : 0; if (!(r.avg >= 1 && r.avg <= 300) || !(Number.isInteger(r.n) && r.n >= 1 && r.n <= 5000)) return '에버 기록의 값이 범위를 벗어났습니다'; }
-    r.kind = ['정모', '벙개', '연습', '대회'].includes(r.kind) ? r.kind : '연습'; r.note = str(r.note) ? r.note.slice(0, 300) : ''; r.src = str(r.src) ? r.src.slice(0, 20) : '직접'; if (r.alleyId != null && !str(r.alleyId)) r.alleyId = ''; if (r.t != null && typeof r.t !== 'number') r.t = 0;
+    r.kind = ['정모', '벙개', '연습', '대회'].includes(r.kind) ? r.kind : '연습'; if (r.hda != null) r.hda = Number.isInteger(r.hda) && r.hda >= 1 && r.hda <= 100 ? r.hda : 0; r.note = str(r.note) ? r.note.slice(0, 300) : ''; r.src = str(r.src) ? r.src.slice(0, 20) : '직접'; if (r.alleyId != null && !str(r.alleyId)) r.alleyId = ''; if (r.t != null && typeof r.t !== 'number') r.t = 0;
   }
   if (!isObj(d.rec.me)) d.rec.me = { name: '' };
   { const me = d.rec.me; me.name = str(me.name) ? me.name.slice(0, 40) : ''; me.nick = str(me.nick) ? me.nick.slice(0, 200) : ''; const cr = {}; if (isObj(me.crew)) Object.keys(me.crew).forEach(k => { const v = me.crew[k]; if (okId(k) && isObj(v)) cr[k] = { mid: okId(v.mid) ? v.mid : '', alias: str(v.alias) ? v.alias.slice(0, 200) : '' }; }); me.crew = cr; }
