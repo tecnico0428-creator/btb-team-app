@@ -58,6 +58,19 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 .ok{color:var(--ok)}.warn{color:var(--warn)}
 .lbl{font-size:13px;color:var(--sub);margin:6px 0 2px}
 .small{font-size:13px;color:var(--sub)}
+.jcrew{display:flex;align-items:center;gap:8px;border:2px solid rgba(16,65,61,.35);border-radius:14px;padding:8px 10px;margin-top:6px;font-size:17px}
+.jcrew.on{border-color:var(--ink);background:#fff}
+.jcrew input{width:22px;height:22px;flex:none}
+.cdot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+.grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0 2px;padding-top:10px;border-top:2px solid var(--ink);font-size:17px}
+#attList>.grp{border-top:0;margin-top:0;padding-top:0}
+.grp button{padding:5px 9px;font-size:12px}
+.wayck{display:flex;gap:10px;align-items:flex-start;border:2px solid rgba(16,65,61,.35);border-radius:14px;padding:10px;margin-top:8px}
+.wayck.on{border-color:var(--pri);background:#fff}
+.wayck input{width:24px;height:24px;flex:none;margin-top:1px}
+.wayck .small{display:block}
+.ctag{display:inline-block;font-size:11px;font-weight:800;color:#fff;border-radius:7px;padding:0 6px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+.vsbox{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.vsbox>div{flex:1 1 40%;min-width:0;overflow-wrap:anywhere;border-radius:14px;padding:10px 6px;color:#fff4de;text-align:center;font-weight:700}.vsbox b{display:block;font-size:22px}
 .nick{color:var(--sub);font-size:12px}
 .pair{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 
@@ -300,13 +313,21 @@ header .hrow{padding-right:92px}
 
 <section id="scr-club" class="hide">
 <div id="tab-att">
+  <div class="card hide" id="jointCard">
+    <label class="row"><input type="checkbox" id="jointOn" style="width:22px;height:22px"> <b class="grow">크루 합동 팀 짜기</b><span class="kbadge k2">대회·합동</span></label>
+    <div id="jointBox" class="hide">
+      <div class="small" style="margin-top:4px">다른 크루와 함께 정모·대회를 할 때 씁니다. 함께할 크루를 체크한 뒤, 아래에서 크루별로 참석자를 체크하고 팀 나누는 방식을 고르세요. 크루마다 시드 기준이 달라서 합동 때는 시드를 에버로 통일합니다(이 크루의 시드 기준 점수 사용).</div>
+      <div id="jointCrews"></div>
+    </div>
+  </div>
   <div class="card">
     <div class="cntbar" id="cntBar"><div class="cnt"><span class="lbl2">참가</span><span id="attCount" class="bignum">0</span><span class="lbl2">명</span></div><div class="cnt2">남 <b id="attM">0</b> · 여 <b id="attF">0</b><span class="small"> / 전체 <span id="attAll">0</span>명</span></div></div>
     <div class="row" style="margin:8px 0"><b class="grow" style="font-size:19px">참가 팀원 체크</b><button class="sec" id="btnAll">전체 선택</button><button class="sec" id="btnNone">전체 해제</button></div>
     <div id="attList"></div>
+    <div id="jointAtt"></div>
     <div class="small" style="margin-top:6px">오른쪽 에버 숫자를 눌러 바로 고칠 수 있습니다. 고친 값은 명단에도 저장됩니다.</div>
     <div class="lbl">게스트 바로 추가</div>
-    <div class="row"><input type="text" id="gName" placeholder="이름" class="grow"><select id="gGender" style="width:80px"><option value="M">남</option><option value="F">여</option></select><input type="number" id="gAvg" placeholder="에버" style="width:90px" inputmode="numeric"><button id="btnGuest">추가</button></div>
+    <select id="gCrew" class="hide" style="margin-bottom:6px" aria-label="게스트 크루"></select><div class="row"><input type="text" id="gName" placeholder="이름" class="grow"><select id="gGender" style="width:80px"><option value="M">남</option><option value="F">여</option></select><input type="number" id="gAvg" placeholder="에버" style="width:90px" inputmode="numeric"><button id="btnGuest">추가</button></div>
   </div>
   <div class="card" id="seedCard">
     <b>시드 설정</b>
@@ -340,6 +361,13 @@ header .hrow{padding-right:92px}
       <div class="row" style="margin-top:8px"><div class="grow" id="togSel" style="font-size:18px;font-weight:700">선택: 없음</div><button id="btnTog">쌍 추가</button><button id="btnTogClear" class="gray">선택 해제</button></div>
       <div class="small" style="margin-top:8px">같은 편 지정은 목표 합계 차이를 못 맞춰도 풀지 않고 지킵니다(합계 차이가 크면 결과 위에 안내가 나옵니다).</div>
     </div>
+  </div>
+  <div class="card hide" id="jointWayCard">
+    <b>합동 팀 나누는 방식</b> <span class="small">하나를 체크하세요</span>
+    <label class="wayck" data-w="vs"><input type="checkbox" data-w="vs"><span><b>크루 대항전</b><span class="small">같은 크루끼리 한 팀을 만들고 모든 팀의 에버 합계를 맞춥니다. 크루별 팀 수는 인원대로 정하고, 남는 인원은 어느 팀이든 넣어서 팀을 만듭니다.</span></span></label>
+    <label class="wayck" data-w="mix"><input type="checkbox" data-w="mix"><span><b>크루 고르게 섞기</b><span class="small">팀마다 각 크루 인원이 최대한 같게 섞이도록 나눕니다(친선전).</span></span></label>
+    <label class="wayck" data-w="any"><input type="checkbox" data-w="any"><span><b>크루 상관없이 에버 조합</b><span class="small">크루는 보지 않고 에버 합계와 시드로만 나눕니다.</span></span></label>
+    <div class="small" style="margin-top:8px">남녀 성비와 팀 인원은 아래 "팀 만들기 설정"을 그대로 씁니다. 같은 편 금지·지정은 각 크루에 저장된 설정을 함께 적용합니다.</div>
   </div>
   <div class="card">
     <b>팀 만들기 설정</b>
@@ -587,6 +615,16 @@ function seedViolOf(teams, seedSet, gm) {
   }
   return { total, bad };
 }
+// ===== 크루 합동: JX = null(일반) | {way:'mix'} | {way:'vs', owners:[팀별 크루 id], minMis:어쩔 수 없이 다른 크루 팀에 들어가는 인원} =====
+let JX = null;
+function crewViolOf(teams, gm) {
+  if (!JX) return 0;
+  if (JX.way === 'vs') { let mis = 0; teams.forEach((t, i) => t.forEach(m => { if (m.cr !== JX.owners[i]) mis++; })); return Math.max(0, mis - (JX.minMis || 0)); }
+  const isMen = (t) => t.length && t.every(m => m.gender !== 'F');
+  const groups = gm === 'split' ? [teams.filter(isMen), teams.filter(t => !isMen(t))] : [teams]; let v = 0;
+  for (const g of groups) { if (g.length < 2) continue; const crs = [...new Set([].concat(...g).map(m => m.cr))]; for (const cr of crs) { const cnt = g.map(t => t.filter(m => m.cr === cr).length); v += Math.max(0, Math.max(...cnt) - Math.min(...cnt) - 1); } }
+  return v;
+}
 function evaluateTeams(teams, maxSize, pairs, gm, seedSet) {
   const calc = (ts) => {
     if (!ts.length) return { sp: 0, gp: 0 };
@@ -608,7 +646,8 @@ function evaluateTeams(teams, maxSize, pairs, gm, seedSet) {
   }
   const seedViol = seedViolOf(teams, seedSet, gm).total; const viol = pairViol + seedViol;
   let fpen = 0; if (gm === 'balanced' && teams.length > 1) { const fc = teams.map(t => t.filter(m => m.gender === 'F').length); fpen = Math.max(0, Math.max.apply(null, fc) - Math.min.apply(null, fc) - 1) * 300; }
-  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, pairViol, seedViol, score: spreadAvg * 4 + 12 * gp + 1000 * viol + fpen };
+  const crewViol = crewViolOf(teams, gm);
+  return { spreadAvg, spread4: spreadAvg * 4, gp, viol, pairViol, seedViol, crewViol, fpen, score: spreadAvg * 4 + 12 * gp + 1000 * viol + fpen + crewViol * (JX && JX.way === 'vs' ? 5000 : 250) };
 }
 function allocateCounts(total, sizes, r) {
   const n = sizes.reduce((a, b) => a + b, 0);
@@ -715,16 +754,71 @@ function buildAny(ppl, plan, o, seed, pairs, seedSet) {
   }
   return buildTeams(ppl, { k: plan.k, seed, tries: 150, pairs, gm, anyGender: gm === 'random', seedSet });
 }
+// 크루 대항전 배치: 크루마다 (인원 ÷ 팀 인원)의 몫만큼 팀을 만들고, 남는 인원은 자기 크루 팀에 1명씩 더 넣은 뒤 그래도 남으면 아무 팀에나 넣는다.
+function vsLayout(ppl, size, ids) {
+  const per = ids.map(id => ppl.filter(p => p.cr === id).length);
+  const k = per.map(n => Math.floor(n / size));
+  const owners = [], sizes = [];
+  ids.forEach((id, i) => { for (let t = 0; t < k[i]; t++) { owners.push(id); sizes.push(size); } });
+  if (!owners.length) return null;
+  let orph = 0;
+  ids.forEach((id, i) => { let r = per[i] - k[i] * size; const own = []; owners.forEach((o, ti) => { if (o === id) own.push(ti); }); for (let j = 0; j < own.length && r > 0; j++, r--) sizes[own[j]]++; orph += r; });
+  while (orph > 0) { let bi = 0; sizes.forEach((x, i) => { if (x < sizes[bi]) bi = i; }); sizes[bi]++; orph--; }
+  let minMis = 0; ids.forEach((id, i) => { const cap = sizes.reduce((a, x, ti) => a + (owners[ti] === id ? x : 0), 0); minMis += Math.max(0, per[i] - cap); });
+  return { owners, sizes, minMis, maxSize: Math.max(...sizes) };
+}
+function buildVs(ppl, L, seed, pairs, gm, seedSet, anyGender) {
+  const r = makeRng(seed); const k = L.owners.length; const all = [];
+  JX = { way: 'vs', owners: L.owners, minMis: L.minMis };
+  for (let t = 0; t < 120; t++) {
+    const teams = L.owners.map(() => []), sums = new Array(k).fill(0), fc = new Array(k).fill(0);
+    const pick = (p, own) => { let bi = -1, bv = Infinity; for (let i = 0; i < k; i++) { if (teams[i].length >= L.sizes[i]) continue; if (own && L.owners[i] !== p.cr) continue; const v = (!anyGender && p.gender === 'F' ? fc[i] * 1e5 : 0) + sums[i] * (L.maxSize / L.sizes[i]) + (t ? r() * 10 : 0); if (v < bv) { bv = v; bi = i; } } return bi; };
+    const put = (p, i) => { teams[i].push(p); sums[i] += p.avg; if (p.gender === 'F') fc[i]++; };
+    const ord = ppl.slice().sort((a, b) => (anyGender ? 0 : (b.gender === 'F') - (a.gender === 'F')) || (b.avg - a.avg) || (r() - 0.5));
+    const left = []; for (const p of ord) { const i = pick(p, true); if (i < 0) left.push(p); else put(p, i); }
+    for (const p of left) { const i = pick(p, false); if (i >= 0) put(p, i); }
+    const ev = improveTeams(teams, L.maxSize, pairs, gm, anyGender, seedSet);
+    all.push({ teams: teams.map(tm => tm.slice().sort((a, b) => b.avg - a.avg)), ev });
+  }
+  all.sort((a, b) => a.ev.score - b.ev.score);
+  const seen = new Set(), uniq = [];
+  for (const x of all) { const sig = x.teams.map(tm => tm.map(m => m.id).sort().join(',')).join('|'); if (!seen.has(sig)) { seen.add(sig); uniq.push(x); } }
+  return { sizes: L.sizes, maxSize: L.maxSize, results: uniq };
+}
+function computeVs(ppl, c, J, pairs, togPairs, sepPairs, seedSet, gm, togSkip) {
+  const o = c.opts, size = Math.max(2, +o.teamSize || 4), ids = J.clubs.map(x => x.id), seed = o.seed || 1;
+  const M = ppl.filter(p => p.gender !== 'F'), F = ppl.filter(p => p.gender === 'F');
+  const need = '크루 대항전은 한 크루에서 ' + size + '명 이상 참석해야 그 크루 팀이 만들어집니다.';
+  let LM = null, LF = null, L = null;
+  if (gm === 'split') {
+    LM = M.length ? vsLayout(M, size, ids) : null; LF = F.length ? vsLayout(F, size, ids) : null;
+    if ((M.length && !LM) || (F.length && !LF)) return { plan: { k: 0, msg: (M.length && !LM ? '남자' : '여자') + '는 어느 크루도 ' + size + '명이 안 돼서 남자팀/여자팀으로 나눈 크루 대항전을 만들 수 없습니다. 성비를 "남녀 균등"으로 바꾸거나 팀 인원을 줄여 주세요.' } };
+    if ((LM ? LM.owners.length : 0) + (LF ? LF.owners.length : 0) < 2) return { plan: { k: 0, msg: need + ' 지금은 팀이 1개만 나옵니다.' } };
+  } else { L = vsLayout(ppl, size, ids); if (!L || L.owners.length < 2) return { plan: { k: 0, msg: need + (L ? ' 지금은 팀이 1개만 나옵니다.' : '') } }; }
+  const run = (prs, ss) => {
+    if (gm !== 'split') { const u = buildVs(ppl, L, seed, prs, gm, ss, gm === 'random'); return { used: u, jx: { way: 'vs', owners: L.owners, minMis: L.minMis } }; }
+    const rm = LM ? buildVs(M, LM, seed, prs, 'balanced', ss, false) : null, rf = LF ? buildVs(F, LF, seed + 7, prs, 'balanced', ss, false) : null;
+    const jx = { way: 'vs', owners: (LM ? LM.owners : []).concat(LF ? LF.owners : []), minMis: (LM ? LM.minMis : 0) + (LF ? LF.minMis : 0) }; JX = jx;
+    const maxSize = Math.max(LM ? LM.maxSize : 0, LF ? LF.maxSize : 0); const cnt = Math.min(40, Math.max(rm ? rm.results.length : 1, rf ? rf.results.length : 1)); const results = [];
+    for (let i = 0; i < cnt; i++) { const a = rm ? rm.results[i % rm.results.length] : null, b = rf ? rf.results[i % rf.results.length] : null; const teams = (a ? a.teams : []).concat(b ? b.teams : []); results.push({ teams, ev: evaluateTeams(teams, maxSize, prs, 'split', ss) }); }
+    results.sort((x, y) => x.ev.score - y.ev.score); return { used: { sizes: [], maxSize, results }, jx };
+  };
+  let out = run(pairs, seedSet), relaxed = false;
+  if ((sepPairs.length || seedSet.length) && o.relax && out.used.results[0].ev.spreadAvg > o.goal + 1e-9) { const free = run(togPairs, []); if (free.used.results[0].ev.spreadAvg < out.used.results[0].ev.spreadAvg - 1e-9) { out = free; relaxed = true; } }
+  JX = out.jx;
+  return { plan: { k: out.jx.owners.length }, used: out.used, relaxed, pairs, seedSet, gm, togSkip, jx: out.jx };
+}
 function computeResult(ppl, c) {
-  const o = c.opts, gm = o.genderMode || 'balanced';
+  const o = c.opts, gm = o.genderMode || 'balanced'; const J = jointOf(c); JX = (J && J.way === 'mix') ? { way: 'mix' } : null;
   const nF = ppl.filter(p => p.gender === 'F').length, nM = ppl.length - nF;
+  if (J && J.way === 'vs') { const ids0 = new Set(ppl.map(p => p.id)); const ps = activePairs(ppl); const sp = ps.filter(p => p[2] !== 't'); let tp = ps.filter(p => p[2] === 't'); let skip = 0; if (gm === 'split') { const g = (id) => (ppl.find(x => x.id === id) || {}).gender === 'F'; const keep = tp.filter(p => g(p[0]) === g(p[1])); skip = tp.length - keep.length; tp = keep; } void ids0; return computeVs(ppl, c, J, sp.concat(tp), tp, sp, c.pairOn ? (c.seedSep || []).filter(x => ['A', 'B', 'C', 'D'].includes(x)) : [], gm, skip); }
   const plan = planTeams(ppl.length, o.teamSize, o.mode, o.teamCount, gm === 'split' && !(o.teamCount > 0) ? 'split' : gm === 'split' ? 'balanced' : gm, nM, nF);
   if (!plan.k) return { plan };
   const effGm = (gm === 'split' && o.teamCount > 0) ? 'balanced' : gm;
   const o2 = Object.assign({}, o, { genderMode: effGm });
   const ids = new Set(ppl.map(p => p.id));
-  const sepPairs = c.pairOn ? (c.pairs || []).filter(p => ids.has(p[0]) && ids.has(p[1])) : [];
-  let togPairs = c.togOn ? (c.tog || []).filter(p => ids.has(p[0]) && ids.has(p[1])).map(p => [p[0], p[1], 't']) : []; let togSkip = 0;
+  void ids; const ap = activePairs(ppl); const sepPairs = ap.filter(p => p[2] !== 't');
+  let togPairs = ap.filter(p => p[2] === 't'); let togSkip = 0;
   if (effGm === 'split') { const g = (id) => (ppl.find(x => x.id === id) || {}).gender === 'F'; const keep = togPairs.filter(p => g(p[0]) === g(p[1])); togSkip = togPairs.length - keep.length; togPairs = keep; }
   const pairs = sepPairs.concat(togPairs);
   const seed = o.seed || 1;
@@ -735,7 +829,7 @@ function computeResult(ppl, c) {
     const free = buildAny(ppl, plan, o2, seed, togPairs, []);
     if (free.results[0].ev.spreadAvg < used.results[0].ev.spreadAvg - 1e-9) { used = free; relaxed = true; }
   }
-  return { plan, used, relaxed, pairs, seedSet, gm: effGm, togSkip };
+  return { plan, used, relaxed, pairs, seedSet, gm: effGm, togSkip, jx: JX };
 }
 
 // ===== 저장소 =====
@@ -758,6 +852,12 @@ DB.clubs.forEach(c => { if (!c.seedCfg) c.seedCfg = { scheme: 'abcd', min: 151, 
 const $ = (id) => document.getElementById(id);
 const save = () => { try { localStorage.setItem(KEY2, JSON.stringify(DB)); } catch (e) { alert('저장에 실패했습니다. 사파리 개인정보 보호 모드이거나 저장 공간이 없을 수 있습니다.'); } };
 const C = () => DB.clubs.find(c => c.id === DB.cur);
+const JW = ['vs', 'mix', 'any'], JW_NAME = { vs: '크루 대항전', mix: '크루 고르게 섞기', any: '크루 상관없이 에버 조합' };
+const CREW_COL = ['#dc4527', '#1d6fb8', '#2b7a9b', '#8a5cc2', '#c46a05', '#1b7f4b'];
+const crewCol = (i) => CREW_COL[(i || 0) % CREW_COL.length];
+// 합동 모드면 {way, clubs:[이 크루, 함께하는 크루...]}, 아니면 null
+function jointOf(c) { c = c || C(); const j = c && c.joint; if (!j || !j.on || !Array.isArray(j.crews)) return null; const crews = [...new Set(j.crews)].map(id => DB.clubs.find(x => x.id === id)).filter(x => x && x.id !== c.id); if (!crews.length) return null; return { way: JW.includes(j.way) ? j.way : 'vs', clubs: [c].concat(crews) }; }
+const jointTitle = (J) => J.clubs.map(x => x.name).join(' + ');
 const num = (v, d) => { const x = parseFloat(v); return isFinite(x) ? Math.round(x * 10) / 10 : d; };
 const r1 = (x) => Math.round(x * 10) / 10;
 const dn = (m) => m.nick ? m.nick : m.name;
@@ -806,13 +906,33 @@ function tab(t) {
 document.querySelectorAll('.subtabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
 
 // ===== 참석 =====
-function updateCounts() { const c = C(); const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
+function updateCounts() { const c = C(); const J = jointOf(c); if (J) { let n = 0, f = 0, all = 0; J.clubs.forEach(cl => { const pr = cl.members.filter(m => cl.present.includes(m.id)); const ff = pr.filter(m => m.gender === 'F').length; n += pr.length; f += ff; all += cl.members.length; const h = document.getElementById('grpc-' + cl.id); if (h) h.textContent = '참석 ' + pr.length + '/' + cl.members.length + ' · 여 ' + ff; }); $('attCount').textContent = n; $('attM').textContent = n - f; $('attF').textContent = f; $('attAll').textContent = all; return; } const pres = c.members.filter(m => c.present.includes(m.id)); const f = pres.filter(m => m.gender === 'F').length; $('attCount').textContent = pres.length; $('attM').textContent = pres.length - f; $('attF').textContent = f; $('attAll').textContent = c.members.length; }
 function setHH() { const hd = document.querySelector('header'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); }
 window.addEventListener('resize', setHH);
+function grpHdr(cl, i, btns) { return '<div class="grp"><span class="cdot" style="background:' + crewCol(i) + '"></span><b>' + esc(cl.name) + '</b><span class="small grow" style="text-align:right" id="grpc-' + cl.id + '"></span>' + (btns ? '<button class="sec jall" data-cid="' + cl.id + '">전체</button><button class="gray jnone" data-cid="' + cl.id + '">해제</button>' : '') + '</div>'; }
+function renderJoint() {
+  const c = C(); const others = DB.clubs.filter(x => x.id !== c.id);
+  $('jointCard').classList.toggle('hide', !others.length);
+  const j = (c.joint && typeof c.joint === 'object' && Array.isArray(c.joint.crews)) ? c.joint : { on: false, crews: [], way: 'vs' }, J = jointOf(c); $('jointOn').checked = !!j.on; $('jointBox').classList.toggle('hide', !j.on);
+  $('jointCrews').innerHTML = '<div class="jcrew on"><span class="cdot" style="background:' + crewCol(0) + '"></span><b class="grow">' + esc(c.name) + ' <span class="small">(이 크루)</span></b><span class="small">' + c.members.length + '명</span></div>' + others.map(x => { const ci = J ? J.clubs.indexOf(x) : -1; return '<label class="jcrew' + (ci > 0 ? ' on' : '') + '"><input type="checkbox" data-id="' + x.id + '"' + (ci > 0 ? ' checked' : '') + '>' + (ci > 0 ? '<span class="cdot" style="background:' + crewCol(ci) + '"></span>' : '') + '<b class="grow">' + esc(x.name) + '</b><span class="small">' + x.members.length + '명</span></label>'; }).join('');
+  $('jointCrews').querySelectorAll('input').forEach(ck => ck.onchange = () => { j.crews = j.crews.filter(id => id !== ck.dataset.id && DB.clubs.some(x => x.id === id)); if (ck.checked) j.crews.push(ck.dataset.id); save(); renderAtt(); showPlan(); });
+  $('jointWayCard').classList.toggle('hide', !J);
+  $('jointWayCard').querySelectorAll('.wayck').forEach(l => { const on = J && J.way === l.dataset.w; l.classList.toggle('on', !!on); l.querySelector('input').checked = !!on; l.querySelector('input').onchange = (e) => { if (e.target.checked) j.way = l.dataset.w; save(); renderJoint(); showPlan(); }; });
+  const gc = $('gCrew'); gc.classList.toggle('hide', !J); if (J) { const v = gc.value; gc.innerHTML = J.clubs.map(x => '<option value="' + x.id + '">게스트 크루: ' + esc(x.name) + '</option>').join(''); if (J.clubs.some(x => x.id === v)) gc.value = v; }
+  return J;
+}
+$('jointOn').onchange = (e) => { const c = C(); if (!c.joint || !Array.isArray(c.joint.crews)) c.joint = { on: false, crews: [], way: 'vs' }; c.joint.on = e.target.checked; save(); renderAtt(); showPlan(); };
+function renderJointAtt(J) {
+  if (!J) { $('jointAtt').innerHTML = ''; return; }
+  $('jointAtt').innerHTML = J.clubs.slice(1).map((cl, i) => grpHdr(cl, i + 1, true) + (cl.members.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-cid="' + cl.id + '" data-id="' + m.id + '"' + (cl.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span>' : '') + '</span>' + gbadge(m.gender) + '<span style="min-width:52px;text-align:right;font-weight:700">' + (m.avg === '' || m.avg == null ? '<span class="small">미입력</span>' : esc(m.avg)) + '</span></label>').join('') || '<div class="small" style="padding:8px 0">이 크루에 등록된 팀원이 없습니다.</div>')).join('') + '<div class="small" style="margin-top:6px">다른 크루 팀원의 에버는 그 크루를 열어 명단에서 고칩니다.</div>';
+  const club = (id) => DB.clubs.find(x => x.id === id);
+  $('jointAtt').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const cl = club(ck.dataset.cid); if (!cl) return; cl.present = cl.present.filter(x => x !== ck.dataset.id); if (ck.checked) cl.present.push(ck.dataset.id); save(); updateCounts(); renderPairs(); showPlan(); });
+  $('jointAtt').querySelectorAll('.jall,.jnone').forEach(b => b.onclick = (e) => { e.preventDefault(); const cl = club(b.dataset.cid); if (!cl) return; cl.present = b.classList.contains('jall') ? cl.members.map(m => m.id) : []; save(); renderAtt(); showPlan(); });
+}
 function renderAtt() {
-  const c = C(); const all = c.members;
-  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (c.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (c.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < floorOf(m.seed) ? ' <span class="nick">하한 ' + floorOf(m.seed) + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
-  $('attList').innerHTML = rows || '<div class="small" style="padding:12px 0">팀원이 없습니다. 명단 탭에서 팀원을 등록해 주세요.</div>';
+  const c = C(); const all = c.members; const J = renderJoint();
+  const rows = all.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(m => '<label class="mem"><input type="checkbox" data-id="' + m.id + '"' + (c.present.includes(m.id) ? ' checked' : '') + '><span class="grow">' + esc(m.name) + (m.nick ? ' <span class="nick">' + esc(m.nick) + '</span>' : '') + (!J && c.opts.floor && /^[ABCD]$/.test(m.seed || '') && m.avg !== '' && m.avg != null && +m.avg < floorOf(m.seed) ? ' <span class="nick">하한 ' + floorOf(m.seed) + ' 적용</span>' : '') + (m.guest ? ' <span class="small">(게스트)</span> <a href="#" class="delg" data-id="' + m.id + '" style="color:#dc2626;font-size:13px">삭제</a>' : '') + '</span>' + (m.seed ? grBadge(m.seed) : '') + gbadge(m.gender) + '<input type="number" class="avin" data-id="' + m.id + '" inputmode="decimal" step="any" placeholder="에버" value="' + (m.avg === '' || m.avg == null ? '' : m.avg) + '" style="width:72px;text-align:right;padding:7px 8px"></label>').join('');
+  $('attList').innerHTML = (J ? grpHdr(c, 0, false) : '') + (rows || '<div class="small" style="padding:12px 0">팀원이 없습니다. 명단 탭에서 팀원을 등록해 주세요.</div>'); renderJointAtt(J);
   const cnt = () => c.present.filter(id => all.some(m => m.id === id)).length;
   updateCounts();
   $('attList').querySelectorAll('.delg').forEach(a => a.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const id = a.dataset.id; c.members = c.members.filter(g => g.id !== id); c.present = c.present.filter(x => x !== id); c.pairs = c.pairs.filter(p => p[0] !== id && p[1] !== id); c.tog = (c.tog || []).filter(p => p[0] !== id && p[1] !== id); save(); renderAtt(); });
@@ -820,9 +940,9 @@ function renderAtt() {
   $('attList').querySelectorAll('input[type=checkbox]').forEach(ck => ck.onchange = () => { const id = ck.dataset.id; c.present = c.present.filter(x => x !== id); if (ck.checked) c.present.push(id); save(); updateCounts(); renderPairs(); showPlan(); });
   renderPairs(); if ($('seedRows').children.length) refreshSeedUI();
 }
-$('btnAll').onclick = () => { const c = C(); c.present = c.members.map(m => m.id); save(); renderAtt(); showPlan(); };
-$('btnNone').onclick = () => { const c = C(); c.present = []; save(); renderAtt(); showPlan(); };
-$('btnGuest').onclick = () => { const c = C(); const n = $('gName').value.trim(); if (!n) return; const m = { id: uid(), name: n, gender: $('gGender').value, avg: $('gAvg').value === '' ? '' : num($('gAvg').value, ''), nick: '', seed: '', guest: true }; c.members.push(m); c.present.push(m.id); $('gName').value = ''; $('gAvg').value = ''; save(); renderAtt(); showPlan(); };
+$('btnAll').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { cl.present = cl.members.map(m => m.id); }); save(); renderAtt(); showPlan(); };
+$('btnNone').onclick = () => { const c = C(); const J = jointOf(c); (J ? J.clubs : [c]).forEach(cl => { cl.present = []; }); save(); renderAtt(); showPlan(); };
+$('btnGuest').onclick = () => { const c0 = C(); const J = jointOf(c0); const c = (J && J.clubs.find(x => x.id === $('gCrew').value)) || c0; const n = $('gName').value.trim(); if (!n) return; const m = { id: uid(), name: n, gender: $('gGender').value, avg: $('gAvg').value === '' ? '' : num($('gAvg').value, ''), nick: '', seed: '', guest: true }; c.members.push(m); c.present.push(m.id); $('gName').value = ''; $('gAvg').value = ''; save(); renderAtt(); showPlan(); };
 
 // ===== 같은 편 금지(분리 조건) =====
 function renderPairs() {
@@ -892,20 +1012,24 @@ function syncOpts() { const o = C().opts; $('optSize').value = o.teamSize; $('op
   o.goal = Math.max(0, num($('optGoal').value, 10)); o.seed = Math.max(1, Math.round(num($('optSeed').value, 1))); save(); showPlan();
 });
 function people() {
-  const c = C(); const o = c.opts;
-  const list = c.members.filter(m => c.present.includes(m.id)).map(m => {
+  const c = C(); const o = c.opts; const J = jointOf(c);
+  const list = [].concat(...(J ? J.clubs : [c]).map((cl, ci) => cl.members.filter(m => cl.present.includes(m.id)).map(m => {
     const blank = !(m.avg !== '' && m.avg != null && +m.avg >= 1 && +m.avg <= 300);
-    const seed = /^[ABCD]$/.test(m.seed || '') ? m.seed : ''; const raw = blank ? o.def : +m.avg;
+    const seed = (!J && /^[ABCD]$/.test(m.seed || '')) ? m.seed : ''; const raw = blank ? o.def : +m.avg;
+    const pid = J ? cl.id + ':' + m.id : m.id; // 합동 때는 크루ID:팀원ID(ID에는 ':'가 들어갈 수 없어 겹치지 않음, 같은 편 조건도 같은 규칙으로 바꿈)
     const base = (seed && o.floor) ? Math.max(raw, floorOf(seed)) : raw;
     const g = m.gender === 'F' ? 'F' : 'M'; const hd = num(g === 'F' ? o.hdF : o.hdM, 0) || 0;
-    return { id: m.id, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest };
-  });
+    return { id: pid, name: m.name, nick: m.nick || '', gender: g, base, raw, hd, avg: base + hd, floored: base !== raw, seed, blank, guest: !!m.guest, cr: cl.id, crN: cl.name, crI: ci };
+  })));
   const dN = list.filter(p => (p.seed || GRADE(p.base)) === 'D').length;
   list.forEach(p => { p.grade = p.seed || GRADE(p.base); if (p.grade === 'D' && dN === 1) p.grade = 'C'; });
   return list;
 }
 function showPlan() {
-  const c = C(); if (!c) return; const n = c.members.filter(m => c.present.includes(m.id)).length;
+  const c = C(); if (!c) return; const J = jointOf(c);
+  if (J) { const ppl = people(), size = Math.max(2, +c.opts.teamSize || 4); const nF = ppl.filter(p => p.gender === 'F').length; let t = J.clubs.map(cl => cl.name + ' ' + ppl.filter(p => p.cr === cl.id).length).join(' + ') + ' = ' + ppl.length + '명 (남 ' + (ppl.length - nF) + ' / 여 ' + nF + ') · ' + JW_NAME[J.way];
+    if (J.way === 'vs') { const L = vsLayout(ppl, size, J.clubs.map(x => x.id)); t += L && L.owners.length >= 2 ? ' → ' + L.owners.length + '팀 (' + J.clubs.map(cl => cl.name + ' ' + L.owners.filter(x => x === cl.id).length + '팀').join(', ') + ')' + (L.minMis ? ', 남는 ' + L.minMis + '명은 다른 크루 팀에 넣습니다' : '') : ' → 한 크루에서 ' + size + '명 이상 참석해야 그 크루 팀이 만들어집니다'; }
+    $('planInfo').textContent = t; return; } const n = c.members.filter(m => c.present.includes(m.id)).length;
   const nF = c.members.filter(m => c.present.includes(m.id) && m.gender === 'F').length;
   const poss = []; for (let s = 2; s <= 25; s++) if (n % s === 0 && n / s >= 2) poss.push(s + '명씩 ' + (n / s) + '팀');
   $('planInfo').textContent = '참가 ' + n + '명 (남 ' + (n - nF) + ' / 여 ' + nF + ')' + (poss.length ? ' · 나누어떨어지는 구성: ' + poss.slice(0, 8).join(', ') + (poss.length > 8 ? ' 외' : '') : '');
@@ -928,15 +1052,18 @@ function build(fresh) {
 }
 function pickList() {
   const res = result.used.results, goal = C().opts.goal;
-  const base = result.relaxed ? res : res.filter(r => r.ev.viol === 0);
-  const pool = base.length ? base : res;
+  // 우선순위: 크루 대항전은 크루 보존 > 같은 편 조건, 섞기는 같은 편 조건 > 크루 섞기(성비는 점수에서 섞기보다 앞섬)
+  const isVsR = !!(result.jx && result.jx.way === 'vs'); const keepC = (a) => { const x = a.filter(r => !r.ev.crewViol); return x.length ? x : a; };
+  const res2 = isVsR ? keepC(res) : res;
+  const base0 = result.relaxed ? res2 : res2.filter(r => r.ev.viol === 0); let base = base0; if (!isVsR && base0.length) { const mf = Math.min(...base0.map(r => r.ev.fpen || 0)); base = keepC(base0.filter(r => (r.ev.fpen || 0) === mf)); } // 섞기: 성비가 가장 좋은 후보 안에서만 크루 섞기를 따진다
+  const pool = base.length ? base : res2;
   const ok = pool.filter(r => r.ev.spreadAvg <= goal + 1e-9).sort((a, b) => (a.ev.gp - b.ev.gp) || (a.ev.spreadAvg - b.ev.spreadAvg));
   return (ok.length ? ok : pool).slice(0, 30);
 }
 function show() { const list = pickList(); if (idx >= list.length) idx = 0; if (idx < 0) idx = list.length - 1; render(list[idx].teams.map(t => t.slice()), list.length); }
-function activePairs(all) { const c = C(); const ids = new Set(all.map(p => p.id)); const sep = c.pairOn ? (c.pairs || []).filter(p => ids.has(p[0]) && ids.has(p[1])) : []; const tog = c.togOn ? (c.tog || []).filter(p => ids.has(p[0]) && ids.has(p[1])).map(p => [p[0], p[1], 't']) : []; return sep.concat(tog); }
+function activePairs(all) { const c = C(); const J = jointOf(c); const ids = new Set(all.map(p => p.id)); let sep = [], tog = []; (J ? J.clubs : [c]).forEach(cl => { const k = (id) => J ? cl.id + ':' + id : id; const ok = (p) => Array.isArray(p) && ids.has(k(p[0])) && ids.has(k(p[1])); if (cl.pairOn) sep = sep.concat((cl.pairs || []).filter(ok).map(p => [k(p[0]), k(p[1])])); if (cl.togOn) tog = tog.concat((cl.tog || []).filter(ok).map(p => [k(p[0]), k(p[1]), 't'])); }); return sep.concat(tog); }
 function activeSeeds() { const c = C(); return c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : []; }
-function metrics(teams) { const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
+function metrics(teams) { JX = (result && result.jx) || null; const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
 function render(teams, nCand) {
   const c = C(); const o = c.opts;
   curTeams = teams; const ev = metrics(teams); const goal = o.goal; const okg = ev.spreadAvg <= goal + 1e-9;
@@ -949,7 +1076,8 @@ function render(teams, nCand) {
   const seedBad = ev.seedViol ? seedViolOf(teams, activeSeeds(), gm).bad : [];
   if (ev.pairViol) { const all = teams.reduce((a, t) => a.concat(t), []); activePairs(all).forEach(p => { const a = all.find(m => m.id === p[0]), b = all.find(m => m.id === p[1]); const same = teams.some(t => t.includes(a) && t.includes(b)); if (p[2] === 't') { if (!same) apartNames.push(a.name + '·' + b.name); } else if (same) togetherNames.push(a.name + '·' + b.name); }); }
   { const all2 = teams.reduce((a, t) => a.concat(t), []); togN = activePairs(all2).filter(p => p[2] === 't').length; }
-  const hdOn = (num(o.hdM, 0) || num(o.hdF, 0));
+  const hdOn = (num(o.hdM, 0) || num(o.hdF, 0)); const J = jointOf(c), jx = result && result.jx, isVs = !!(J && jx && jx.way === 'vs');
+  const ci = (id) => J ? Math.max(0, J.clubs.findIndex(x => x.id === id)) : 0, cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
   $('buildInfo').innerHTML = (manual ? '직접 바꾼 결과 · ' : '후보 ' + (idx + 1) + '/' + nCand + ' · ') + '팀 합계 차이 <b class="' + (okg ? 'ok' : 'warn') + '">' + r1(ev.spreadAvg) + '점</b> (4게임 환산 ' + Math.round(ev.spread4) + '점) · 목표 ' + goal + '점 ' + (okg ? '충족' : '미달')
     + (gm === 'split' ? '<br>남자팀·여자팀을 나눠 구성했습니다. 차이는 남자팀끼리, 여자팀끼리 따로 비교한 값 중 큰 쪽입니다.' : '') + (gm === 'random' ? '<br>남녀 구분 없이 에버 합계만 맞췄습니다.' : '') + (hdOn ? '<br>성별 핸디(남 ' + (num(o.hdM, 0) || 0) + ', 여 ' + (num(o.hdF, 0) || 0) + ')를 에버에 더해 계산했습니다.' : '')
     + (blanks ? '<br>에버 미입력 또는 범위(1~300) 밖 ' + blanks + '명은 기본값 ' + o.def + ' 적용' : '')
@@ -957,8 +1085,12 @@ function render(teams, nCand) {
     + (sizeDiff ? '<br>팀 인원이 달라 합계는 큰 팀 기준으로 환산해 비교했습니다.' : '')
     + (gm === 'balanced' && fDiff > 1 ? '<br><span class="warn">여성 수 차이가 ' + fDiff + '명입니다.</span>' : '')
     + (togN && !apartNames.length ? '<br>같은 편 지정 ' + togN + '쌍을 모두 같은 팀에 넣었습니다.' : '') + (apartNames.length ? '<br><span class="warn">같은 편 조건을 못 지킨 쌍(다른 팀): ' + esc(apartNames.join(', ')) + '</span>' : '') + ((result && result.togSkip) ? '<br><span class="warn">남자팀·여자팀 나누기에서는 남녀가 섞인 같은 편 지정 ' + result.togSkip + '쌍을 적용할 수 없습니다.</span>' : '') + (togetherNames.length ? '<br><span class="warn">분리 조건을 풀었습니다: ' + esc(togetherNames.join(', ')) + ' 같은 팀</span>' : '') + (seedBad.length ? '<br><span class="warn">같은 시드가 한 팀에 몰린 곳이 있습니다: ' + seedBad.join(', ') + ' 시드</span>' : '')
+    + (J ? '<br>크루 합동(' + esc(jointTitle(J)) + ') · ' + JW_NAME[J.way] + ' · 시드는 에버로 통일' + (isVs ? (() => { const mx = Math.max(...teams.map(z => z.length)); const nrm = (t) => t.reduce((x, m) => x + m.avg, 0) * (mx / t.length); const ins = J.clubs.map(cl => { const v = teams.filter((t, i) => jx.owners[i] === cl.id && t.length).map(nrm); return v.length > 1 ? cl.name + ' ' + r1(Math.max(...v) - Math.min(...v)) + '점' : ''; }).filter(Boolean); return '<br>크루 대항전은 크루 실력 차이가 팀 합계 차이에 그대로 나옵니다.' + (ins.length ? ' 같은 크루 팀끼리 차이: ' + esc(ins.join(', ')) : ''); })() : '') + (isVs && jx.minMis ? '<br>남는 ' + jx.minMis + '명은 다른 크루 팀에 넣었습니다("용병" 표시).' : '') + (isVs && (o.mode === 'same' || o.teamCount > 0) ? '<br>크루 대항전은 크루별 인원으로 팀 수를 정해서 "동일 인원만"·"팀 수" 설정은 쓰지 않습니다.' : '') : '')
+    + (ev.crewViol ? '<br><span class="warn">' + (isVs ? '크루가 섞인 팀이 있습니다.' : '크루 인원이 고르지 않은 팀이 있습니다.') + '</span>' : '')
     + (!okg ? '<br>목표 이내로 맞추지 못했습니다. "새 조합"을 눌러 다른 후보를 비교해 보세요.' : '');
-  $('teamOut').innerHTML = teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 <span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + (m.floored ? ' <span class="nick">하한 적용(원래 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
+  let vsHtml = ''; if (isVs) { const avgOf = (id) => { const ts = teams.filter((t, i) => jx.owners[i] === id && t.length); return ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (Math.max(...teams.map(z => z.length)) / t.length), 0) / ts.length : 0; }; vsHtml = '<div class="vsbox">' + J.clubs.filter(cl => jx.owners.includes(cl.id)).map(cl => '<div style="background:' + crewCol(ci(cl.id)) + '">' + esc(cl.name) + ' ' + jx.owners.filter(x => x === cl.id).length + '팀<b>' + r1(avgOf(cl.id)) + '</b><span style="font-size:11px">팀당 에버 합 평균</span></div>').join('') + '</div>'; }
+  const crTag = (m, ti) => { if (!J) return ''; if (isVs) return m.cr !== jx.owners[ti] ? ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">용병 · ' + esc(m.crN) + '</span>' : ''; return ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">' + esc(m.crN) + '</span>'; };
+  $('teamOut').innerHTML = vsHtml + teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 ' + (isVs ? '<span class="ctag" style="background:' + crewCol(ci(jx.owners[ti])) + '">' + esc(cn(jx.owners[ti])) + '</span> ' : '') + '<span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + crTag(m, ti) + (m.floored ? ' <span class="nick">하한 적용(원래 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
   $('copyBox').classList.remove('hide'); $('swapHint').classList.remove('hide');
   $('teamOut').querySelectorAll('.pm').forEach(el => el.onclick = () => { const t = +el.dataset.t, m = +el.dataset.m; if (!sel) { sel = { t, m }; render(curTeams, nCand); return; } if (sel.t === t && sel.m === m) { sel = null; render(curTeams, nCand); return; } if (sel.t === t) { sel = { t, m }; render(curTeams, nCand); return; } const a = curTeams[sel.t][sel.m]; curTeams[sel.t][sel.m] = curTeams[t][m]; curTeams[t][m] = a; sel = null; manual = true; render(curTeams, nCand); });
 }
@@ -968,8 +1100,9 @@ $('btnPrev').onclick = () => { if (!result) return; idx--; manual = false; show(
 $('btnNew').onclick = () => { const o = C().opts; o.seed = (o.seed || 1) + 1; save(); build(true); };
 $('btnCopy').onclick = async () => {
   if (!curTeams) return; const c = C(); const withAvg = $('copyAvg').checked; const ev = metrics(curTeams);
-  const lines = ['[' + c.name + ' 팀 편성] ' + todayStr() + (c.opts.month ? ' · ' + c.opts.month : '') + ' · ' + curTeams.reduce((a, t) => a + t.length, 0) + '명 / ' + curTeams.length + '팀'];
-  curTeams.forEach((t, i) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); lines.push('', (i + 1) + '팀' + (withAvg ? ' (합계 ' + sum + ', 4게임 ' + r1(sum * 4) + ')' : '')); t.forEach(m => lines.push('- ' + dn(m) + (withAvg ? ' (' + (m.gender === 'F' ? '여' : '남') + ' ' + m.base + (m.hd ? (m.hd > 0 ? '+' : '') + m.hd : '') + ')' : ''))); });
+  const J = jointOf(c), jx = result && result.jx, isVs = !!(J && jx && jx.way === 'vs'); const cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
+  const lines = ['[' + (J ? jointTitle(J) + ' 합동' : c.name) + ' 팀 편성] ' + todayStr() + (c.opts.month ? ' · ' + c.opts.month : '') + ' · ' + curTeams.reduce((a, t) => a + t.length, 0) + '명 / ' + curTeams.length + '팀'];
+  curTeams.forEach((t, i) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); lines.push('', (i + 1) + '팀' + (isVs ? ' [' + cn(jx.owners[i]) + ']' : '') + (withAvg ? ' (합계 ' + sum + ', 4게임 ' + r1(sum * 4) + ')' : '')); t.forEach(m => lines.push('- ' + dn(m) + (J ? (isVs ? (m.cr !== jx.owners[i] ? ' (용병·' + m.crN + ')' : '') : ' [' + m.crN + ']') : '') + (withAvg ? ' (' + (m.gender === 'F' ? '여' : '남') + ' ' + m.base + (m.hd ? (m.hd > 0 ? '+' : '') + m.hd : '') + ')' : ''))); });
   if (withAvg) lines.push('', '팀 합계 차이 ' + r1(ev.spreadAvg) + '점 (4게임 ' + Math.round(ev.spread4) + '점)');
   const text = lines.join('\n');
   try { await navigator.clipboard.writeText(text); alert('복사했습니다. 카톡이나 밴드에 붙여 넣으세요.'); } catch (e) { prompt('아래 글을 길게 눌러 복사하세요', text); }
@@ -981,38 +1114,43 @@ function loadImg(src) { return new Promise((res, rej) => { const i = new Image()
 function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 async function makeImage() {
   const c = C(); const teams = curTeams; const withAvg = $('copyAvg').checked; const ev = metrics(teams);
+  const J = jointOf(c), jx = result && result.jx, isVs = !!(J && jx && jx.way === 'vs'); const cix = (id) => J ? Math.max(0, J.clubs.findIndex(x => x.id === id)) : 0; const cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
+  const ttl = (J ? jointTitle(J) + ' 합동' : c.name) + ' 팀 편성'; const short = (t) => t.length > 7 ? t.slice(0, 7) + '…' : t;
   const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
   const W = 1080, P = 32, GAP = 22, HEAD = 230, LH = 44, CT = 100;
+  const J0 = jointOf(c), jx0 = result && result.jx, VSH = (J0 && jx0 && jx0.way === 'vs') ? 120 : 0;
   const cols = teams.length === 1 ? 1 : 2; const cw = (W - P * 2 - GAP * (cols - 1)) / cols;
   const cardH = (t) => CT + t.length * LH + 22;
   const rows = []; for (let i = 0; i < teams.length; i += cols) rows.push(teams.slice(i, i + cols).map((t, j) => ({ t, no: i + j + 1 })));
   const rowH = rows.map(r => Math.max(...r.map(x => cardH(x.t))));
-  const H = HEAD + rowH.reduce((a, b) => a + b + GAP, 0) + 90;
+  const H = HEAD + VSH + rowH.reduce((a, b) => a + b + GAP, 0) + 90;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   g.fillStyle = '#f2f4f8'; g.fillRect(0, 0, W, H);
   g.fillStyle = '#231e20'; g.fillRect(0, 0, W, HEAD); g.fillStyle = '#c8102e'; g.fillRect(0, HEAD - 6, W, 6);
-  try { if (c.img) { const lg = await loadImg(c.img); g.save(); g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.clip(); g.drawImage(lg, P, 38, 150, 150); g.restore(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.stroke(); } else { const lg = await loadImg(/비투비|btb|back\s*to\s*back/i.test(c.name) ? 'logo-small.png' : 'logo-emblem.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } } catch (e) {}
+  if (J) { const n = J.clubs.length, R = Math.min(62, 400 / (2 + 1.45 * (n - 1))); for (let i = n - 1; i >= 0; i--) { const cl = J.clubs[i], x0 = P + R + i * R * 1.45, y0 = 113; g.save(); g.beginPath(); g.arc(x0, y0, R, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); g.clip(); try { const lg = await loadImg(cl.img || (/비투비|btb|back\s*to\s*back/i.test(cl.name) ? 'logo-small.png' : 'logo-emblem.png')); if (cl.img) g.drawImage(lg, x0 - R, y0 - R, R * 2, R * 2); else { const sc = Math.min(R * 1.7 / lg.width, R * 1.7 / lg.height); g.drawImage(lg, x0 - lg.width * sc / 2, y0 - lg.height * sc / 2, lg.width * sc, lg.height * sc); } } catch (e) {} g.restore(); g.lineWidth = 6; g.strokeStyle = crewCol(i); g.beginPath(); g.arc(x0, y0, R, 0, Math.PI * 2); g.stroke(); } }
+  else try { if (c.img) { const lg = await loadImg(c.img); g.save(); g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.clip(); g.drawImage(lg, P, 38, 150, 150); g.restore(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.beginPath(); g.arc(P + 75, 113, 75, 0, Math.PI * 2); g.stroke(); } else { const lg = await loadImg(/비투비|btb|back\s*to\s*back/i.test(c.name) ? 'logo-small.png' : 'logo-emblem.png'); const lh = 150, lw = lh * lg.width / lg.height; g.drawImage(lg, P, 38, lw, lh); } } catch (e) {}
   g.textBaseline = 'alphabetic'; g.textAlign = 'right'; g.fillStyle = '#ffffff';
   g.font = '700 46px ' + FONT; g.fillText(todayStr(), W - P, 78);
-  g.font = '700 40px ' + FONT; g.fillStyle = '#ffd7dc'; g.fillText(c.name + ' 팀 편성', W - P, 134);
+  { const n0 = J ? J.clubs.length : 1, R0 = Math.min(62, 400 / (2 + 1.45 * (n0 - 1))), maxW = W - P * 2 - (J ? R0 * (2 + 1.45 * (n0 - 1)) : 190) - 24; let tt = ttl, fs = 40; g.font = '700 ' + fs + 'px ' + FONT; while (fs > 26 && g.measureText(tt).width > maxW) { fs -= 2; g.font = '700 ' + fs + 'px ' + FONT; } if (g.measureText(tt).width > maxW && J) { tt = J.clubs.length + '개 크루 합동 팀 편성'; fs = 40; g.font = '700 ' + fs + 'px ' + FONT; } g.fillStyle = '#ffd7dc'; g.fillText(tt, W - P, 134); }
   g.font = '500 28px ' + FONT; g.fillStyle = '#d9d9d9'; g.fillText((c.opts.month ? c.opts.month + ' · ' : '') + teams.reduce((a, t) => a + t.length, 0) + '명 · ' + teams.length + '팀 · 합계 차이 ' + r1(ev.spreadAvg) + '점', W - P, 182);
-  let y = HEAD + GAP;
+  if (VSH) { const crs = J.clubs.filter(cl => jx.owners.includes(cl.id)); const mx = Math.max(...teams.map(z => z.length)); const bw = (W - P * 2 - GAP * (crs.length - 1)) / crs.length; crs.forEach((cl, i) => { const ts = teams.filter((t, ti) => jx.owners[ti] === cl.id && t.length); const av = ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (mx / t.length), 0) / ts.length : 0; const bx = P + i * (bw + GAP), by = HEAD + 18; g.fillStyle = crewCol(cix(cl.id)); rr(g, bx, by, bw, 96, 20); g.fill(); g.fillStyle = '#ffffff'; g.textAlign = 'center'; let fs = 28; g.font = '700 ' + fs + 'px ' + FONT; const t1 = cl.name + ' ' + ts.length + '팀'; while (fs > 16 && g.measureText(t1).width > bw - 20) { fs -= 2; g.font = '700 ' + fs + 'px ' + FONT; } g.fillText(t1, bx + bw / 2, by + 38); const t2 = (crs.length > 3 ? '평균 ' : '팀당 평균 ') + r1(av); fs = 36; g.font = '800 ' + fs + 'px ' + FONT; while (fs > 16 && g.measureText(t2).width > bw - 16) { fs -= 2; g.font = '800 ' + fs + 'px ' + FONT; } g.fillText(t2, bx + bw / 2, by + 80); }); g.textAlign = 'left'; }
+  let y = HEAD + VSH + GAP;
   rows.forEach((r, ri) => {
     r.forEach((x, ci) => {
       const cx = P + ci * (cw + GAP); const h = rowH[ri];
       g.fillStyle = '#ffffff'; rr(g, cx, y, cw, h, 22); g.fill(); g.strokeStyle = '#e3e6ec'; g.lineWidth = 2; g.stroke();
-      g.textAlign = 'left'; g.fillStyle = '#c8102e'; g.font = '700 40px ' + FONT; g.fillText(x.no + '팀', cx + 24, y + 54);
+      g.textAlign = 'left'; g.fillStyle = '#c8102e'; g.font = '700 40px ' + FONT; g.fillText(x.no + '팀', cx + 24, y + 54); if (isVs) { const on = jx.owners[x.no - 1]; const w0 = g.measureText(x.no + '팀').width; g.font = '700 26px ' + FONT; const tx = short(cn(on)); const tw = g.measureText(tx).width; g.fillStyle = crewCol(cix(on)); rr(g, cx + 36 + w0, y + 24, tw + 24, 40, 12); g.fill(); g.fillStyle = '#ffffff'; g.fillText(tx, cx + 48 + w0, y + 53); }
       const sum = r1(x.t.reduce((a, m) => a + m.avg, 0)); g.fillStyle = '#6b7280'; g.font = '500 25px ' + FONT; g.fillText(x.t.length + '명' + (withAvg ? ' · 합계 ' + sum + ' · 4게임 ' + r1(sum * 4) : ''), cx + 24, y + 88);
       x.t.forEach((m, mi) => {
         const ly = y + CT + mi * LH + 30;
         g.fillStyle = m.gender === 'F' ? '#db2777' : '#2563eb'; g.beginPath(); g.arc(cx + 34, ly - 10, 10, 0, Math.PI * 2); g.fill();
-        g.fillStyle = '#1a1d24'; g.font = '600 31px ' + FONT; g.textAlign = 'left'; g.fillText(dn(m) + (m.guest ? ' (게스트)' : ''), cx + 56, ly);
+        g.fillStyle = '#1a1d24'; g.font = '600 31px ' + FONT; g.textAlign = 'left'; g.fillText(dn(m) + (m.guest ? ' (게스트)' : ''), cx + 56, ly); if (J && (!isVs || m.cr !== jx.owners[x.no - 1])) { const w1 = g.measureText(dn(m) + (m.guest ? ' (게스트)' : '')).width; g.font = '700 22px ' + FONT; const room = cw - 56 - 10 - w1 - 24 - (withAvg ? 80 : 0); let lb = (isVs ? '용병·' : '') + short(m.crN); while (lb.length > 1 && g.measureText(lb).width > room) lb = lb.slice(0, -2) + '…'; if (g.measureText(lb).width <= room) { g.fillStyle = crewCol(cix(m.cr)); g.fillText(lb, cx + 66 + w1, ly - 2); } }
         if (withAvg) { g.textAlign = 'right'; g.fillStyle = '#374151'; g.font = '600 30px ' + FONT; g.fillText(String(m.base) + (m.hd ? (m.hd > 0 ? '+' : '') + m.hd : ''), cx + cw - 24, ly); }
       });
     });
     y += rowH[ri] + GAP;
   });
-  g.textAlign = 'center'; g.fillStyle = '#9aa3b2'; g.font = '500 24px ' + FONT; g.fillText('만든 날짜 ' + todayStr() + ' · ' + c.name, W / 2, H - 34);
+  g.textAlign = 'center'; g.fillStyle = '#9aa3b2'; g.font = '500 24px ' + FONT; g.fillText('만든 날짜 ' + todayStr() + ' · ' + (J ? jointTitle(J) : c.name), W / 2, H - 34);
   return await new Promise(res => cv.toBlob(b => res(b), 'image/png'));
 }
 let lastBlob = null, lastUrl = null;
@@ -1789,7 +1927,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 24, APP_DATE = '2026.11.08';
+const APP_VER = 25, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2028,6 +2166,8 @@ function bkSanitize(d) {
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
     if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
   }
+  const clubIds = new Set(d.db.clubs.map(c => c.id)); if (clubIds.size !== d.db.clubs.length) return '같은 ID의 크루가 두 번 들어 있습니다';
+  for (const c of d.db.clubs) { if (c.joint == null) continue; if (!isObj(c.joint)) { delete c.joint; continue; } c.joint = { on: c.joint.on === true, crews: [...new Set(Array.isArray(c.joint.crews) ? c.joint.crews.filter(id => okId(id) && id !== c.id && clubIds.has(id)) : [])], way: ['vs', 'mix', 'any'].includes(c.joint.way) ? c.joint.way : 'vs' }; }
   if (d.db.cur != null && !okId(d.db.cur)) d.db.cur = null;
   if (!Array.isArray(d.rec.alleys)) d.rec.alleys = [];
   for (const a of d.rec.alleys) { if (!isObj(a) || !okId(a.id) || !str(a.name)) return '볼링장 정보가 손상됐습니다'; }
