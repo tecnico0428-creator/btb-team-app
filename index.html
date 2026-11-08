@@ -330,6 +330,7 @@ header .hrow{padding-right:92px}
       <linearGradient id="cPinG" x1="0" x2="1"><stop offset="0" stop-color="#fdf3dc"/><stop offset=".5" stop-color="#f6e6c4"/><stop offset="1" stop-color="#d2b988"/></linearGradient>
       <pattern id="cDots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.6" fill="#7a1d0e" opacity=".32"/></pattern>
       <pattern id="cPinDots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.3" fill="#a07b45" opacity=".35"/></pattern>
+      <radialGradient id="cBallShade" cx="28%" cy="20%" r="82%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".22" stop-color="#fff" stop-opacity=".12"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#0a0d33" stop-opacity=".5"/></radialGradient>
       <clipPath id="cBallClip"><circle r="100"/></clipPath>
       <clipPath id="cPinClip"><path id="cPinPath" d="M0 0C24 0 32 20 30 48C28 72 16 86 14 108C12 128 48 150 58 200C68 262 56 306 38 330L-38 330C-56 306-68 262-58 200C-48 150-12 128-14 108C-16 86-28 72-30 48C-32 20-24 0 0 0Z"/></clipPath>
       <g id="cPin">
@@ -357,14 +358,13 @@ header .hrow{padding-right:92px}
     </g></g>
     <!-- 공: 반지름 100 기준, 위치·크기는 .ballmove 가 움직임 -->
     <g class="ballmove"><g class="ballspin">
-      <circle r="100" fill="url(#cBallG)"/>
-      <g clip-path="url(#cBallClip)">
-        <rect x="-100" y="-100" width="200" height="200" fill="url(#cDots)"/>
-        <path d="M-95-30C-50-70 10-50 50-92M-98 28C-50-4 28 12 96-34M-70 80C-18 52 40 70 92 28" stroke="#ffc3a0" stroke-width="9" fill="none" opacity=".5" stroke-linecap="round"/>
-      </g>
-      <circle cx="26" cy="-52" r="15" fill="#3a1208"/><circle cx="58" cy="-20" r="14" fill="#3a1208"/><circle cx="18" cy="-8" r="14" fill="#3a1208"/>
-      <ellipse cx="-42" cy="-52" rx="28" ry="14" fill="#fff" opacity=".35" transform="rotate(-30 -42 -52)"/>
-      <circle r="100" fill="none" stroke="#7a1d0e" stroke-width="3" opacity=".7"/>
+      <!-- 에릭이 준 볼링공 사진의 로고 없는 무늬(파랑·분홍·흰색, Copilot 크롭) -->
+      <circle r="100" fill="#262b73"/>
+      <g clip-path="url(#cBallClip)"><image href="ball-tex.jpg" x="-100" y="-100" width="200" height="200" preserveAspectRatio="xMidYMid slice"/></g>
+      <circle r="100" fill="url(#cBallShade)"/>
+      <g fill="#1b1f4d" stroke="#d7a8cf" stroke-width="2.4"><ellipse cx="14" cy="-37" rx="11.7" ry="14.3"/><ellipse cx="49" cy="-23" rx="11.7" ry="14.3"/><ellipse cx="31" cy="9" rx="11.7" ry="14.3"/></g>
+      <path d="M9-46q6-4.6 10-.9M43-31q6-4.6 10-.9M26 0q6-4.6 10-.9" fill="none" stroke="#f8d7e9" stroke-width="2.3" stroke-linecap="round" opacity=".8"/>
+      <circle r="100" fill="none" stroke="#103f3b" stroke-width="4"/>
     </g></g>
     <!-- STRIKE! 배지: 오른쪽 위, 제목(왼쪽)과 겹치지 않는 자리 -->
     <g transform="translate(715,302) scale(.85)"><g class="strike">
@@ -2157,7 +2157,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 29, APP_DATE = '2026.11.08';
+const APP_VER = 30, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
