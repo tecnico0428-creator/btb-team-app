@@ -496,6 +496,8 @@ header .hrow{padding-right:92px}
       <div class="grow"><div class="lbl">몇 명씩 (2~25명)</div><select id="optSize"></select></div>
       <div class="grow"><div class="lbl">인원 배분</div><select id="optMode"><option value="mixed">혼합 허용 (1명 차이)</option><option value="same">동일 인원만</option></select></div>
     </div>
+    <label class="row" style="margin-top:6px"><input type="checkbox" id="optMulti" style="width:22px;height:22px"> <span style="flex:1">인원을 다르게 여러 안 같이 만들기 (예: 4명씩·5명씩·6명씩)</span></label>
+    <div id="multiBox" class="hide" style="margin-top:4px"><div class="small">같이 만들 인원을 2개 이상 고르세요. 결과에서 인원별로 바꿔 보고, 이미지·글로 한꺼번에 내보낼 수 있습니다.</div><div class="chips" id="multiChips" style="margin-top:6px"></div></div>
     <div class="lbl">남녀 나누는 방식</div>
     <select id="optGender">
       <option value="balanced">남녀 균등 (팀별 성비를 최대한 같게)</option>
@@ -520,11 +522,13 @@ header .hrow{padding-right:92px}
     <div class="row" style="margin-top:8px"><button id="btnTeamReset" class="gray grow">이번 참석·편성 초기화 (크루는 그대로)</button><button id="btnHistView" class="sec">편성 기록 보기</button></div>
     <div class="small" id="buildInfo"></div>
   </div>
+  <div id="multiBar" class="chips hide" style="margin:0 2px 8px"></div>
   <div id="swapHint" class="small hide" style="margin:2px 4px 6px">두 사람을 차례로 누르면 자리를 바꿉니다. 에버를 고치려면 참석 탭의 숫자를 누른 뒤 다시 구성하세요.</div>
   <div id="teamOut"></div>
   <div class="card hide stick" id="copyBox">
     <label class="row"><input type="checkbox" id="copyAvg" style="width:22px;height:22px"> 복사·이미지에 에버도 넣기</label>
     <div class="row" style="margin-top:8px"><button id="btnImage" class="grow">이미지로 만들기 (카톡·밴드용)</button><button id="btnCopy" class="gray">글로 복사</button></div>
+    <div class="row hide" id="multiExport" style="margin-top:8px"><button id="btnImageAll" class="grow">인원별 안 모두 이미지 한 장으로</button><button id="btnCopyAll" class="gray">모두 글로 복사</button></div>
     <div class="row" style="margin-top:8px"><select id="histKind" style="width:96px" aria-label="편성 종류"><option>정모</option><option>벙개</option><option>대회</option><option>연습</option></select><button id="btnHistSave" class="sec grow">팀 편성 기록 저장 (다음에 같은 팀 피하기용)</button></div>
     <div class="row" style="margin-top:6px"><button id="btnHistView2" class="gray grow">저장한 편성 기록 보기·삭제</button></div>
     
@@ -1065,7 +1069,7 @@ function delClub(id) {
   DB.clubs = DB.clubs.filter(x => x.id !== id); if (DB.cur === id) DB.cur = null; save(); renderHome();
 }
 function openClub(id) {
-  DB.cur = id; save(); result = null; curTeams = null; idx = 0;
+  DB.cur = id; save(); result = null; curTeams = null; idx = 0; MULTI = null; if ($('multiBar')) renderMultiBar();
   const c = C(); view('crew');
   tab(c.members.length ? 'att' : 'mem');
 }
@@ -1145,6 +1149,7 @@ function renderPairs() {
   $('pairList').querySelectorAll('button').forEach(b => b.onclick = () => { c.pairs.splice(+b.dataset.i, 1); save(); renderPairs(); });
   renderTogs();
 }
+$('optMulti').onchange = (e) => { const o = C().opts; o.multi = e.target.checked; if (o.multi && (!Array.isArray(o.multiSizes) || o.multiSizes.length < 2)) o.multiSizes = [4, 5, 6]; save(); renderMultiOpt(); };
 $('pairOn').onchange = (e) => { const c = C(); c.pairOn = e.target.checked; save(); renderPairs(); };
 $('optRelax').onchange = (e) => { C().opts.relax = e.target.checked; save(); };
 let pickSel = [];
@@ -1189,7 +1194,8 @@ $('btnTog').onclick = () => {
 
 // ===== 팀 만들기 설정 =====
 (function () { let h = ''; for (let i = 2; i <= 25; i++) h += '<option value="' + i + '">' + i + '명씩</option>'; $('optSize').innerHTML = h; })();
-function syncOpts() { const o = C().opts; $('optSize').value = o.teamSize; $('optMode').value = o.mode; $('optGender').value = o.genderMode || 'balanced'; $('optCount').value = o.teamCount; $('optGoal').value = o.goal; $('optSeed').value = o.seed; }
+function renderMultiOpt() { const o = C().opts; if (!Array.isArray(o.multiSizes)) o.multiSizes = []; $('optMulti').checked = !!o.multi; $('multiBox').classList.toggle('hide', !o.multi); let h = ''; for (let i = 2; i <= 10; i++) h += '<button type="button" class="chip' + (o.multiSizes.includes(i) ? ' on' : '') + '" data-s="' + i + '">' + i + '명씩</button>'; $('multiChips').innerHTML = h; $('multiChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { const v = +b.dataset.s; const arr = o.multiSizes.filter(x => x !== v); if (!o.multiSizes.includes(v)) arr.push(v); o.multiSizes = arr.sort((a, b) => a - b); save(); renderMultiOpt(); }); }
+function syncOpts() { renderMultiOpt(); const o = C().opts; $('optSize').value = o.teamSize; $('optMode').value = o.mode; $('optGender').value = o.genderMode || 'balanced'; $('optCount').value = o.teamCount; $('optGoal').value = o.goal; $('optSeed').value = o.seed; }
 ['optSize', 'optMode', 'optGender', 'optCount', 'optGoal', 'optSeed'].forEach(id => $(id).onchange = () => {
   const o = C().opts;
   o.teamSize = Math.max(2, Math.min(25, Math.round(num($('optSize').value, 4)))); o.mode = $('optMode').value; o.genderMode = $('optGender').value; o.teamCount = Math.max(0, Math.round(num($('optCount').value, 0)));
@@ -1255,8 +1261,34 @@ $('btnHistSave').onclick = () => {
 };
 
 // ===== 팀 구성 =====
+// ===== 인원을 다르게 여러 안 같이 만들기 =====
+window.__curResult = () => result; window.__curTeams = () => curTeams;
+let MULTI = null; // { sizes:[...], items:{ [size]: {res, idx, teams, manual} | {msg} }, cur }
+function multiOn(c) { const o = c.opts; return !!o.multi && Array.isArray(o.multiSizes) && o.multiSizes.filter(x => x >= 2 && x <= 25).length >= 2; }
+function multiSaveCur() { if (MULTI && MULTI.cur && MULTI.items[MULTI.cur] && MULTI.items[MULTI.cur].res && curTeams) { const it = MULTI.items[MULTI.cur]; it.teams = curTeams.map(t => t.slice()); it.idx = idx; it.manual = manual; } }
+function multiValid() { if (MULTI && MULTI.owner !== DB.cur) { MULTI = null; renderMultiBar(); } return !!MULTI; }
+function multiSelect(sz) { if (!multiValid() || !MULTI.items[sz] || !MULTI.items[sz].res) return; multiSaveCur(); const it = MULTI.items[sz]; MULTI.cur = sz; result = it.res; idx = it.idx || 0; sel = null; renderMultiBar(); if (it.teams) { manual = !!it.manual; render(it.teams.map(t => t.slice()), pickList().length); } else { manual = false; show(); } }
+function renderMultiBar() {
+  const bar = $('multiBar'), ex = $('multiExport'); if (!MULTI) { bar.classList.add('hide'); ex.classList.add('hide'); return; }
+  bar.classList.remove('hide'); const ok = MULTI.sizes.filter(sz => MULTI.items[sz].res); ex.classList.toggle('hide', ok.length < 2);
+  bar.innerHTML = '<span class="small" style="align-self:center;margin-right:4px">인원별 안:</span>' + MULTI.sizes.map(sz => { const it = MULTI.items[sz]; return '<button class="chip' + (MULTI.cur === sz ? ' on' : '') + '" data-s="' + sz + '"' + (it.res ? '' : ' style="opacity:.5"') + '>' + sz + '명씩' + (it.res ? ' · ' + it.res.plan.k + '팀' : ' (불가)') + '</button>'; }).join('');
+  bar.querySelectorAll('.chip').forEach(b => b.onclick = () => { const sz = +b.dataset.s, it = MULTI.items[sz]; if (!it.res) return alert(sz + '명씩은 만들 수 없습니다: ' + it.msg); multiSelect(sz); });
+}
+// 인원별 안의 지금 모습을 복사해 둔다(화면 상태는 건드리지 않음 → 내보내는 동안 다른 조작을 해도 섞이지 않음)
+function multiSnapshot() { if (!multiValid()) return []; multiSaveCur(); return MULTI.sizes.filter(sz => MULTI.items[sz].res).map(sz => { const it = MULTI.items[sz]; const pl = pickList(it.res); const tm = it.teams ? it.teams : pl[Math.min(it.idx || 0, pl.length - 1)].teams; return { sz, res: it.res, teams: tm.map(t => t.slice()) }; }); }
 function build(fresh) {
   const c = C(); const ppl = people(); manual = false; sel = null;
+  if (ppl.length >= 2 && multiOn(c) && (fresh || !result)) {
+    $('buildInfo').textContent = '인원별 안 계산 중...';
+    setTimeout(() => {
+      const o = c.opts, keep = o.teamSize; const sizes = [...new Set(o.multiSizes.map(Number).filter(x => x >= 2 && x <= 25))].sort((a, b) => a - b); MULTI = { sizes, items: {}, cur: null, owner: c.id };
+      try { for (const sz of sizes) { o.teamSize = sz; const r = computeResult(ppl, c); MULTI.items[sz] = r.plan.k ? { res: r, idx: 0 } : { msg: r.plan.msg || '인원이 맞지 않습니다' }; } } finally { o.teamSize = keep; }
+      const first = sizes.find(sz => MULTI.items[sz].res);
+      if (!first) { result = null; curTeams = null; renderMultiBar(); $('teamOut').innerHTML = '<div class="card warn">고른 인원으로는 팀을 만들 수 없습니다: ' + esc(sizes.map(sz => sz + '명씩 - ' + MULTI.items[sz].msg).join(' / ')) + '</div>'; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide'); $('buildInfo').textContent = ''; return; }
+      MULTI.cur = null; multiSelect(first);
+    }, 30); return;
+  }
+  if ((!multiOn(c) || ppl.length < 2 || (MULTI && MULTI.owner !== c.id)) && MULTI) { MULTI = null; renderMultiBar(); }
   if (ppl.length < 2) { $('teamOut').innerHTML = '<div class="card">참가 인원이 2명 이상이어야 합니다. 참석 탭에서 체크해 주세요.</div>'; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide'); $('buildInfo').textContent = ''; result = null; return; }
   if (fresh || !result) {
     $('buildInfo').textContent = '계산 중...';
@@ -1268,8 +1300,8 @@ function build(fresh) {
   }
   show();
 }
-function pickList() {
-  const res = result.used.results, goal = C().opts.goal;
+function pickList(rs) {
+  const result = rs || window.__curResult(); const res = result.used.results, goal = C().opts.goal;
   // 우선순위: 크루 대항전은 크루 보존 > 같은 편 조건, 섞기는 같은 편 조건 > 크루 섞기(성비는 점수에서 섞기보다 앞섬)
   const isVsR = !!(result.jx && result.jx.way === 'vs'); const keepC = (a) => { const x = a.filter(r => !r.ev.crewViol); return x.length ? x : a; };
   const res2 = isVsR ? keepC(res) : res;
@@ -1281,13 +1313,13 @@ function pickList() {
 function show() { const list = pickList(); if (idx >= list.length) idx = 0; if (idx < 0) idx = list.length - 1; render(list[idx].teams.map(t => t.slice()), list.length); }
 function activePairs(all) { const c = C(); const J = jointOf(c); const ids = new Set(all.map(p => p.id)); let sep = [], tog = []; (J ? J.clubs : [c]).forEach(cl => { const k = (id) => J ? cl.id + ':' + id : id; const ok = (p) => Array.isArray(p) && ids.has(k(p[0])) && ids.has(k(p[1])); if (cl.pairOn) sep = sep.concat((cl.pairs || []).filter(ok).map(p => [k(p[0]), k(p[1])])); if (cl.togOn) tog = tog.concat((cl.tog || []).filter(ok).map(p => [k(p[0]), k(p[1]), 't'])); }); return sep.concat(tog); }
 function activeSeeds() { const c = C(); return c.pairOn ? (c.seedSep || []).filter(s => ['A', 'B', 'C', 'D'].includes(s)) : []; }
-function metrics(teams) { JX = (result && result.jx) || null; HX = (result && result.hx) || null; const maxSize = Math.max(...teams.map(t => t.length)); const gm = (result && result.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
+function metrics(teams, rs) { const R = rs || result; JX = (R && R.jx) || null; HX = (R && R.hx) || null; const maxSize = Math.max(...teams.map(t => t.length)); const gm = (R && R.gm) || C().opts.genderMode || 'balanced'; return evaluateTeams(teams, maxSize, activePairs(teams.reduce((a, t) => a.concat(t), [])), gm, activeSeeds()); }
 function render(teams, nCand) {
   const c = C(); const o = c.opts;
   curTeams = teams; const ev = metrics(teams); const goal = o.goal; const okg = ev.spreadAvg <= goal + 1e-9;
   const gm = (result && result.gm) || o.genderMode || 'balanced';
   const blanks = people().filter(p => p.blank).length;
-  const sizesNow = teams.map(t => t.length); const bowl = o.teamSize >= 4 && o.teamSize <= 6 && o.mode === 'mixed' && gm !== 'split';
+  const sizesNow = teams.map(t => t.length); const tsz = (MULTI && MULTI.cur) ? MULTI.cur : o.teamSize; const bowl = tsz >= 4 && tsz <= 6 && o.mode === 'mixed' && gm !== 'split';
   const sizeBad = bowl && sizesNow.some(s => s < 4 || s > 6); const sizeDiff = Math.max(...sizesNow) !== Math.min(...sizesNow);
   const fcs = teams.map(t => t.filter(m => m.gender === 'F').length); const fDiff = Math.max(...fcs) - Math.min(...fcs);
   const togetherNames = [], apartNames = []; let togN = 0;
@@ -1317,27 +1349,29 @@ $('btnBuild').onclick = () => build(true);
 $('btnNext').onclick = () => { if (!result) return build(true); idx++; manual = false; show(); };
 $('btnPrev').onclick = () => { if (!result) return; idx--; manual = false; show(); };
 $('btnNew').onclick = () => { const o = C().opts; o.seed = (o.seed || 1) + 1; save(); build(true); };
-$('btnCopy').onclick = async () => {
-  if (!curTeams) return; const c = C(); const withAvg = $('copyAvg').checked; const ev = metrics(curTeams);
+function copyText(label, teamsArg, rsArg) {
+  const curTeams = teamsArg || window.__curTeams(); const result = rsArg || window.__curResult();
+  const c = C(); const withAvg = $('copyAvg').checked; const ev = metrics(curTeams, result);
   const J = jointOf(c), jx = result && result.jx, isVs = !!(J && jx && jx.way === 'vs'); const cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
-  const lines = ['[' + (J ? jointTitle(J) + ' 합동' : c.name) + ' 팀 편성] ' + todayStr() + (c.opts.month ? ' · ' + c.opts.month : '') + ' · ' + curTeams.reduce((a, t) => a + t.length, 0) + '명 / ' + curTeams.length + '팀'];
+  const lines = ['[' + (J ? jointTitle(J) + ' 합동' : c.name) + ' 팀 편성' + (label ? ' · ' + label : '') + '] ' + todayStr() + (c.opts.month ? ' · ' + c.opts.month : '') + ' · ' + curTeams.reduce((a, t) => a + t.length, 0) + '명 / ' + curTeams.length + '팀'];
   curTeams.forEach((t, i) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); lines.push('', (i + 1) + '팀' + (isVs ? ' [' + cn(jx.owners[i]) + ']' : '') + (withAvg ? ' (합계 ' + sum + ', 4게임 ' + r1(sum * 4) + ')' : '')); t.forEach(m => lines.push('- ' + dn(m) + (J ? (isVs ? (m.cr !== jx.owners[i] ? ' (용병·' + m.crN + ')' : '') : ' [' + m.crN + ']') : '') + (withAvg ? ' (' + (m.gender === 'F' ? '여' : '남') + ' ' + m.base + (m.hd ? (m.hd > 0 ? '+' : '') + m.hd : '') + ')' : ''))); });
   if (withAvg) lines.push('', '팀 합계 차이 ' + r1(ev.spreadAvg) + '점 (4게임 ' + Math.round(ev.spread4) + '점)');
-  const text = lines.join('\n');
-  try { await navigator.clipboard.writeText(text); alert('복사했습니다. 카톡이나 밴드에 붙여 넣으세요.'); } catch (e) { prompt('아래 글을 길게 눌러 복사하세요', text); }
-};
+  return lines.join('\n');
+}
+async function copyOut(text) { try { await navigator.clipboard.writeText(text); alert('복사했습니다. 카톡이나 밴드에 붙여 넣으세요.'); } catch (e) { prompt('아래 글을 길게 눌러 복사하세요', text); } }
+$('btnCopy').onclick = async () => { if (!curTeams) return; await copyOut(copyText(MULTI && MULTI.cur ? MULTI.cur + '명씩' : '')); };
 
 // ===== 이미지로 만들기 =====
 function todayStr() { const d = new Date(); const w = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()]; return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' (' + w + ')'; }
 function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
 function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-async function makeImage() {
-  const c = C(); const teams = curTeams; const withAvg = $('copyAvg').checked; const ev = metrics(teams);
-  const J = jointOf(c), jx = result && result.jx, isVs = !!(J && jx && jx.way === 'vs'); const cix = (id) => J ? Math.max(0, J.clubs.findIndex(x => x.id === id)) : 0; const cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
+async function makeImage(opt) {
+  const c = C(); const RS = (opt && opt.res) || result; const teams = (opt && opt.teams) || curTeams; const withAvg = $('copyAvg').checked; const ev = metrics(teams, RS);
+  const J = jointOf(c), jx = RS && RS.jx, isVs = !!(J && jx && jx.way === 'vs'); const cix = (id) => J ? Math.max(0, J.clubs.findIndex(x => x.id === id)) : 0; const cn = (id) => { const x = J && J.clubs.find(y => y.id === id); return x ? x.name : ''; };
   const ttl = (J ? jointTitle(J) + ' 합동' : c.name) + ' 팀 편성'; const short = (t) => t.length > 7 ? t.slice(0, 7) + '…' : t;
   const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
   const W = 1080, P = 32, GAP = 22, HEAD = 230, LH = 44, CT = 100;
-  const J0 = jointOf(c), jx0 = result && result.jx, VSH = (J0 && jx0 && jx0.way === 'vs') ? 120 : 0;
+  const J0 = jointOf(c), jx0 = RS && RS.jx, VSH = (J0 && jx0 && jx0.way === 'vs') ? 120 : 0;
   const cols = teams.length === 1 ? 1 : 2; const cw = (W - P * 2 - GAP * (cols - 1)) / cols;
   const cardH = (t) => CT + t.length * LH + 22;
   const rows = []; for (let i = 0; i < teams.length; i += cols) rows.push(teams.slice(i, i + cols).map((t, j) => ({ t, no: i + j + 1 })));
@@ -1351,7 +1385,7 @@ async function makeImage() {
   g.textBaseline = 'alphabetic'; g.textAlign = 'right'; g.fillStyle = '#ffffff';
   g.font = '700 46px ' + FONT; g.fillText(todayStr(), W - P, 78);
   { const n0 = J ? J.clubs.length : 1, R0 = Math.min(62, 400 / (2 + 1.45 * (n0 - 1))), maxW = W - P * 2 - (J ? R0 * (2 + 1.45 * (n0 - 1)) : 190) - 24; let tt = ttl, fs = 40; g.font = '700 ' + fs + 'px ' + FONT; while (fs > 26 && g.measureText(tt).width > maxW) { fs -= 2; g.font = '700 ' + fs + 'px ' + FONT; } if (g.measureText(tt).width > maxW && J) { tt = J.clubs.length + '개 크루 합동 팀 편성'; fs = 40; g.font = '700 ' + fs + 'px ' + FONT; } g.fillStyle = '#ffd7dc'; g.fillText(tt, W - P, 134); }
-  g.font = '500 28px ' + FONT; g.fillStyle = '#d9d9d9'; g.fillText((c.opts.month ? c.opts.month + ' · ' : '') + teams.reduce((a, t) => a + t.length, 0) + '명 · ' + teams.length + '팀 · 합계 차이 ' + r1(ev.spreadAvg) + '점', W - P, 182);
+  g.font = '500 28px ' + FONT; g.fillStyle = '#d9d9d9'; g.fillText((opt && opt.label ? opt.label + ' · ' : '') + (c.opts.month ? c.opts.month + ' · ' : '') + teams.reduce((a, t) => a + t.length, 0) + '명 · ' + teams.length + '팀 · 합계 차이 ' + r1(ev.spreadAvg) + '점', W - P, 182);
   if (VSH) { const crs = J.clubs.filter(cl => jx.owners.includes(cl.id)); const mx = Math.max(...teams.map(z => z.length)); const bw = (W - P * 2 - GAP * (crs.length - 1)) / crs.length; crs.forEach((cl, i) => { const ts = teams.filter((t, ti) => jx.owners[ti] === cl.id && t.length); const av = ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (mx / t.length), 0) / ts.length : 0; const bx = P + i * (bw + GAP), by = HEAD + 18; g.fillStyle = crewCol(cix(cl.id)); rr(g, bx, by, bw, 96, 20); g.fill(); g.fillStyle = '#ffffff'; g.textAlign = 'center'; let fs = 28; g.font = '700 ' + fs + 'px ' + FONT; const t1 = cl.name + ' ' + ts.length + '팀'; while (fs > 16 && g.measureText(t1).width > bw - 20) { fs -= 2; g.font = '700 ' + fs + 'px ' + FONT; } g.fillText(t1, bx + bw / 2, by + 38); const t2 = (crs.length > 3 ? '평균 ' : '팀당 평균 ') + r1(av); fs = 36; g.font = '800 ' + fs + 'px ' + FONT; while (fs > 16 && g.measureText(t2).width > bw - 16) { fs -= 2; g.font = '800 ' + fs + 'px ' + FONT; } g.fillText(t2, bx + bw / 2, by + 80); }); g.textAlign = 'left'; }
   let y = HEAD + VSH + GAP;
   rows.forEach((r, ri) => {
@@ -1387,6 +1421,21 @@ $('btnImgCopy').onclick = async () => {
   if (!lastBlob) return;
   try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': lastBlob })]); alert('이미지를 복사했습니다. 카톡·밴드 입력칸에 붙여 넣으세요.'); } catch (e) { alert('이미지를 복사하지 못했습니다. 이미지를 길게 눌러 "복사" 또는 "사진에 저장"을 고르세요.'); }
 };
+
+$('btnImageAll').onclick = async () => {
+  if (!multiValid()) return;
+  try {
+    const snaps = multiSnapshot(); if (snaps.length < 2) return; const owner = DB.cur, avg0 = $('copyAvg').checked; const changed = () => { if (DB.cur !== owner || $('copyAvg').checked !== avg0) { alert('이미지를 만드는 중에 크루나 설정이 바뀌어 멈췄습니다. 다시 눌러 주세요.'); return true; } return false; }; const blobs = [];
+    for (const sn of snaps) { if (changed()) return; blobs.push(await makeImage({ label: sn.sz + '명씩', teams: sn.teams, res: sn.res })); }
+    if (changed()) return;
+    const imgs = await Promise.all(blobs.map(b => new Promise((res, rej) => { const u = URL.createObjectURL(b); const im = new Image(); im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = rej; im.src = u; }))); if (changed()) return;
+    const W = 1080, GAPV = 28; const H = imgs.reduce((a, im) => a + im.height * (W / im.width), 0) + GAPV * (imgs.length - 1);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = Math.round(H); const g = cv.getContext('2d'); g.fillStyle = '#10413d'; g.fillRect(0, 0, W, cv.height);
+    let y = 0; imgs.forEach(im => { const h = im.height * (W / im.width); g.drawImage(im, 0, y, W, h); y += h + GAPV; });
+    const outBlob = await new Promise(res => cv.toBlob(b => res(b), 'image/png')); if (changed()) return; lastBlob = outBlob; if (lastUrl) URL.revokeObjectURL(lastUrl); lastUrl = URL.createObjectURL(lastBlob); $('imgOut').src = lastUrl; $('imgModal').classList.remove('hide');
+  } catch (e) { alert('이미지를 만들지 못했습니다: ' + (e && e.message ? e.message : e)); }
+};
+$('btnCopyAll').onclick = async () => { const snaps = multiSnapshot(); if (snaps.length < 2) return; await copyOut(snaps.map(sn => copyText(sn.sz + '명씩', sn.teams, sn.res)).join('\n\n──────────\n\n')); };
 
 // ===== 명단 =====
 function renderMem() {
@@ -2262,7 +2311,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 33, APP_DATE = '2026.11.08';
+const APP_VER = 34, APP_DATE = '2026.11.08';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2514,7 +2563,7 @@ function bkSanitize(d) {
     c.pairs = Array.isArray(c.pairs) ? c.pairs.filter(p => Array.isArray(p) && okId(p[0]) && okId(p[1])) : [];
     if (c.tog != null) c.tog = Array.isArray(c.tog) ? c.tog.filter(p => Array.isArray(p) && p.every(okId)) : [];
     if (c.hist != null) { const seenH = new Set(); c.hist = Array.isArray(c.hist) ? c.hist.filter(h => { if (!isObj(h) || !okId(h.id) || seenH.has(h.id) || !str(h.date) || !/^\d{4}-\d{2}-\d{2}$/.test(h.date) || !Array.isArray(h.teams) || !h.teams.length) return false; const ppl = new Set(); for (const t of h.teams) { if (!Array.isArray(t)) return false; for (const id of t) { if (!okId(id) || ppl.has(id)) return false; ppl.add(id); } } seenH.add(h.id); return true; }).map(h => ({ id: h.id, t: typeof h.t === 'number' ? h.t : 0, date: h.date, kind: ['정모', '벙개', '대회', '연습'].includes(h.kind) ? h.kind : '', teams: h.teams, joint: str(h.joint) ? h.joint.slice(0, 120) : '' })).slice(-HIST_MAX) : []; }
-    if (isObj(c.opts)) { if (c.opts.avoidN != null) c.opts.avoidN = Math.max(1, Math.min(10, parseInt(c.opts.avoidN, 10) || 3)); if (c.opts.avoidOn != null) c.opts.avoidOn = c.opts.avoidOn === true; if (c.opts.avoidKind != null && !['', '정모', '벙개', '대회', '연습'].includes(c.opts.avoidKind)) c.opts.avoidKind = ''; }
+    if (isObj(c.opts)) { if (c.opts.avoidN != null) c.opts.avoidN = Math.max(1, Math.min(10, parseInt(c.opts.avoidN, 10) || 3)); if (c.opts.avoidOn != null) c.opts.avoidOn = c.opts.avoidOn === true; if (c.opts.avoidKind != null && !['', '정모', '벙개', '대회', '연습'].includes(c.opts.avoidKind)) c.opts.avoidKind = ''; if (c.opts.multi != null) c.opts.multi = c.opts.multi === true; if (c.opts.multiSizes != null) c.opts.multiSizes = Array.isArray(c.opts.multiSizes) ? [...new Set(c.opts.multiSizes.filter(x => Number.isInteger(x) && x >= 2 && x <= 25))].slice(0, 9) : []; }
     if (!isObj(c.opts)) c.opts = defOpts(); if (!isObj(c.seedCfg)) c.seedCfg = SEED_DEFAULT();
   }
   const clubIds = new Set(d.db.clubs.map(c => c.id)); if (clubIds.size !== d.db.clubs.length) return '같은 ID의 크루가 두 번 들어 있습니다';
@@ -2751,7 +2800,7 @@ $('btnTeamReset').onclick = () => {
   if (!confirm('"' + c.name + '" 크루의 참석 체크 ' + n + '명' + (J ? '(합동 참석 포함)' : '') + '과 지금 팀 구성을 지울까요?\n\n선택한 크루·명단·저장한 편성 기록은 그대로입니다.' + (unsaved ? '\n※ 지금 팀 구성은 아직 "팀 편성 기록 저장"을 하지 않았습니다. 저장하려면 취소하고 먼저 저장하세요.' : ''))) return;
   const keepP = c.present.slice(), keepJ = c.joint && c.joint.present ? JSON.parse(JSON.stringify(c.joint.present)) : null;
   c.present = []; if (c.joint && c.joint.present) c.joint.present = {}; if (!save()) { c.present = keepP; if (keepJ) c.joint.present = keepJ; return; }
-  result = null; curTeams = null; sel = null; manual = false; HIST_SAVED_SIG = '';
+  result = null; curTeams = null; sel = null; manual = false; HIST_SAVED_SIG = ''; MULTI = null; renderMultiBar();
   $('teamOut').innerHTML = '<div class="card small">초기화했습니다. 참석 탭에서 오늘 참석자를 체크하세요.</div>'; $('buildInfo').textContent = ''; $('copyBox').classList.add('hide'); $('swapHint').classList.add('hide');
   tab('att');
 };
