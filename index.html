@@ -1444,8 +1444,8 @@ $('btnImage').onclick = async () => {
 };
 $('btnImgClose').onclick = () => $('imgModal').classList.add('hide');
 $('btnShare').onclick = async () => {
-  if (!lastBlob) return; const file = new File([lastBlob], 'team-' + todayStr().slice(0, 10).replace(/\./g, '') + '.png', { type: 'image/png' });
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: C().name + ' 팀 편성' }); } else alert('이 기기에서는 바로 공유할 수 없습니다. 이미지를 길게 눌러 저장한 뒤 카톡·밴드에 올려 주세요.'); } catch (e) { if (!isCancel(e)) alert('공유하지 못했습니다. 이미지를 길게 눌러 저장해 주세요.'); }
+  // 안드로이드 앱(웹뷰)은 브라우저 공유(navigator.share)로 파일을 못 보낸다 → 앱 공유 기능(Capacitor Share)을 쓰는 shareFiles로 통일(v38)
+  if (!lastBlob) return; await shareFiles([{ blob: lastBlob, name: 'team-' + todayStr().slice(0, 10).replace(/\./g, '') + '.png' }]);
 };
 $('btnImgCopy').onclick = async () => {
   if (!lastBlob) return;
@@ -2512,7 +2512,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 37, APP_DATE = '2026.11.09';
+const APP_VER = 38, APP_DATE = '2026.11.09';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
@@ -2742,7 +2742,9 @@ $('btnBk').onclick = async () => {
   const data = bkData(); const name = '오늘도스트라이크_백업_' + isoToday() + '.json';
   const file = new File([data], name, { type: 'application/json' });
   let shareFailed = false;
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (isCancel(e)) return; shareFailed = true; }
+  const capB = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins;
+  if (capB && capB.Share && capB.Filesystem) { if (SHARE_BUSY) return alert('공유 창이 아직 열려 있습니다. 끝낸 뒤 다시 눌러 주세요.'); SHARE_BUSY = true; try { const REQ = Date.now() + '-' + Math.random().toString(36).slice(2, 8); const w = await capB.Filesystem.writeFile({ path: 'share/backup/' + REQ + '/' + name, data, directory: 'CACHE', encoding: 'utf8', recursive: true }); await capB.Share.share({ title: name, files: [w.uri] }); return; } catch (e) { if (isCancel(e)) return; shareFailed = true; } finally { SHARE_BUSY = false; } } // 앱(안드로이드·아이폰)은 앱 공유 기능으로 백업 파일 보내기(v38)
+  try { if (!shareFailed && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (isCancel(e)) return; shareFailed = true; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   if (shareFailed || (/Android/i.test(navigator.userAgent) && !(navigator.canShare && navigator.canShare({ files: [file] })))) setTimeout(() => alert('이 폰에서는 백업 파일 저장이 안 됐을 수 있습니다. 바로 아래 "백업 글로 복사"를 눌러 카톡 나와의 채팅이나 메모에 보관해 주세요.'), 600);
 };
