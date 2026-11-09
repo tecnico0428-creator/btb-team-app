@@ -351,8 +351,8 @@ header .hrow{padding-right:92px}
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); }); setInterval(recheck, 60000);
   window.BTB_GATE = (async () => {
     const q = new URLSearchParams(location.search); const hq = new URLSearchParams(location.hash.replace(/^#/, '')); const clean = () => { try { history.replaceState(null, '', location.pathname); } catch (e) {} };
-    const ownP = hq.get('owner'); if (q.get('owner')) clean(); // 주인 키는 주소 뒤 # 부분으로 받는다(서버로 전송되지 않음)
-    if (ownP) { try { const jwk = JSON.parse(new TextDecoder().decode(b64uDec(ownP))); if (await ownerValid(jwk)) { localStorage.setItem(OK, JSON.stringify({ kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, d: jwk.d })); if (window.btbShowOwner) window.btbShowOwner(); } } catch (e) {} clean(); }
+    const ownP = hq.get('owner'), ownD = hq.get('o'); if (q.get('owner')) clean(); // 짧은 주인 링크 #o=<비밀값>(카톡 글자 수 제한 대응) // 주인 키는 주소 뒤 # 부분으로 받는다(서버로 전송되지 않음)
+    if (ownP || ownD) { try { const jwk = ownD ? { kty: 'EC', crv: 'P-256', x: PUB.x, y: PUB.y, d: ownD } : JSON.parse(new TextDecoder().decode(b64uDec(ownP))); if (await ownerValid(jwk)) { localStorage.setItem(OK, JSON.stringify({ kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, d: jwk.d })); if (window.btbShowOwner) window.btbShowOwner(); } } catch (e) {} clean(); }
     if (localStorage.getItem(OK)) { let j = null; try { j = JSON.parse(localStorage.getItem(OK)); } catch (e) {} if (await ownerValid(j)) { cover.remove(); return 'owner'; } }
     if (q.get('k')) { const o = await verifyTok(q.get('k')); if (o) { const cur = window.btbAccessInfo(); const co = cur && cur.tok ? await verifyTok(cur.tok) : null; if (!co || +co.e < +o.e) localStorage.setItem(AK, JSON.stringify({ e: +o.e, tok: q.get('k') })); } clean(); }
     const a = window.btbAccessInfo(); const ao = a && a.tok ? await verifyTok(a.tok) : null; const ae = ao ? +ao.e : 0; // 저장된 e가 아니라 서명 안의 만료 시각으로 판정
@@ -2584,7 +2584,7 @@ function rpLearn() {
     document.getElementById('mkLinkOut').textContent = txt; let shared = false; try { if (navigator.share) { await navigator.share({ title: '오늘도 스트라이크', text: txt }); shared = true; } } catch (e) { if (e && e.name === 'AbortError') return; }
     if (!shared) { try { await navigator.clipboard.writeText(txt); alert('링크를 복사했습니다. 카톡·밴드에 붙여 넣으세요.'); } catch (e) { alert('아래 링크를 길게 눌러 복사해 주세요.'); } } };
 })();
-const APP_VER = 40, APP_DATE = '2026.11.09';
+const APP_VER = 41, APP_DATE = '2026.11.09';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
