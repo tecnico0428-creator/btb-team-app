@@ -17,7 +17,7 @@
 </head>
 <body><div id="ld">불러오는 중...</div>
 <script>
-// 오늘도 스트라이크 웹 로더(v45): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
+// 오늘도 스트라이크 웹 로더(v46): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
 (async function () {
   const API = "https://script.google.com/macros/s/AKfycbzAQ-vHVUhWCn5_NUrLgEBeYAJtlLeV3a7quKzGQ_tMGGau3ayMdnW6oZ8lFyW9R0Y43g/exec", PUB = {"kty":"EC","crv":"P-256","x":"C28yQzzEdfjZNF4SgEKxLhREZdZFt3eaZYhnoQxpcR4","y":"IawzFLr4JlnV0q8t-H97tFdliumxnn3Z7nkIckKVXKE"}, AK = 'btb_access_v1', OK = 'btb_owner_v1'; const ld = document.getElementById('ld');
   const show = (why, sub) => { ld.innerHTML = '<div><div style="font-size:22px;font-weight:800;margin:10px 0">오늘도 스트라이크</div><div>' + why + '</div><div style="margin-top:14px;font-size:15px;color:#5b6a6e">' + (sub || '크루 운영진에게 새 링크를 받아 주세요.<br>이 폰에 저장된 기록은 지워지지 않았습니다.') + '</div></div>'; };
