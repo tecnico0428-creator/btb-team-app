@@ -17,12 +17,23 @@
 </head>
 <body><div id="ld">불러오는 중...</div>
 <script>
-// 오늘도 스트라이크 웹 로더(v43): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
+// 오늘도 스트라이크 웹 로더(v44): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
 (async function () {
   const API = "https://script.google.com/macros/s/AKfycbzAQ-vHVUhWCn5_NUrLgEBeYAJtlLeV3a7quKzGQ_tMGGau3ayMdnW6oZ8lFyW9R0Y43g/exec", PUB = {"kty":"EC","crv":"P-256","x":"C28yQzzEdfjZNF4SgEKxLhREZdZFt3eaZYhnoQxpcR4","y":"IawzFLr4JlnV0q8t-H97tFdliumxnn3Z7nkIckKVXKE"}, AK = 'btb_access_v1', OK = 'btb_owner_v1'; const ld = document.getElementById('ld');
   const show = (why, sub) => { ld.innerHTML = '<div><div style="font-size:22px;font-weight:800;margin:10px 0">오늘도 스트라이크</div><div>' + why + '</div><div style="margin-top:14px;font-size:15px;color:#5b6a6e">' + (sub || '크루 운영진에게 새 링크를 받아 주세요.<br>이 폰에 저장된 기록은 지워지지 않았습니다.') + '</div></div>'; };
   const dec = (t) => { t = String(t).replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; const b = atob(t); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
   const enc = (buf) => { const u = new Uint8Array(buf); let b = ''; for (let i = 0; i < u.length; i++) b += String.fromCharCode(u[i]); return btoa(b).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  // v44: 안드로이드에서 카톡·밴드 등 앱 안 브라우저로 열면 사진 공유가 안 돼서(카톡이 파일 없이 공유 창만 띄움) 기본 브라우저(크롬 등)로 다시 연다. 링크 토큰을 주소에 붙여 그대로 넘긴다.
+  const UA = navigator.userAgent || ''; const inApp = /Android/i.test(UA) && /KAKAOTALK|BAND\/|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|everytimeApp|DaumApps|SamsungBrowser\/[\d.]+ \(wv\)|; wv\)/i.test(UA);
+  if (inApp) { let tried = false; try { tried = !!sessionStorage.getItem('btb_ext_tried'); } catch (e) {}
+    const q0 = new URLSearchParams(location.search); let tk = q0.get('k'); if (!tk) { try { const a0 = JSON.parse(localStorage.getItem(AK) || 'null'); tk = a0 && a0.tok; } catch (e) {} }
+    const url = location.origin + location.pathname + (tk ? '?k=' + encodeURIComponent(tk) : '') + location.hash;
+    const ext = /KAKAOTALK/i.test(UA) ? 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url) : 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;end';
+    window.__BTB_EXT_URL = ext; let ownerOnly = false; try { ownerOnly = !tk && !!localStorage.getItem(OK); } catch (e) {}
+    ld.innerHTML = '<div><div style="font-size:22px;font-weight:800;margin:10px 0">오늘도 스트라이크</div><div>사진 공유가 되도록 기본 브라우저로 여는 중입니다.</div><div style="margin-top:16px"><a id="extA" href="' + ext.replace(/"/g, '&quot;') + '" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#dc4527;color:#fff;text-decoration:none">기본 브라우저로 열기</a></div><div style="margin-top:12px;font-size:15px;color:#5b6a6e">안 열리면 위 버튼을 누르거나, 오른쪽 위 메뉴에서 "다른 브라우저로 열기"를 눌러 주세요.' + (ownerOnly ? '<br>주인 폰이면 기본 브라우저에서 주인 링크를 한 번 더 열어 주세요.' : '') + '</div></div>';
+    if (!tried && !window.__BTB_NO_REDIRECT) { try { sessionStorage.setItem('btb_ext_tried', '1'); } catch (e) {} setTimeout(() => { location.href = ext; }, 300); } // 자동 이동은 한 번만, 안내·버튼은 항상
+    return;
+  }
   if (!(window.crypto && crypto.subtle)) { show('이 브라우저에서는 열 수 없습니다.', '크롬·사파리 최신판으로 열어 주세요.'); return; }
   const ownerValid = async (j) => { try { if (!j || j.x !== PUB.x || j.y !== PUB.y || !j.d) return null; const k = await crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x: j.x, y: j.y, d: j.d, ext: true }, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']); const m = new TextEncoder().encode('t'); const s = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, m); const pk = await crypto.subtle.importKey('jwk', PUB, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']); return (await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pk, s, m)) ? k : null; } catch (e) { return null; } };
   const q = new URLSearchParams(location.search), hq = new URLSearchParams(location.hash.replace(/^#/, ''));
