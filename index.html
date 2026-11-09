@@ -1372,7 +1372,7 @@ function render(teams, nCand) {
   let vsHtml = ''; if (isVs) { const avgOf = (id) => { const ts = teams.filter((t, i) => jx.owners[i] === id && t.length); return ts.length ? ts.reduce((a, t) => a + t.reduce((x, m) => x + m.avg, 0) * (Math.max(...teams.map(z => z.length)) / t.length), 0) / ts.length : 0; }; vsHtml = '<div class="vsbox">' + J.clubs.filter(cl => jx.owners.includes(cl.id)).map(cl => '<div style="background:' + crewCol(ci(cl.id)) + '">' + esc(cl.name) + ' ' + jx.owners.filter(x => x === cl.id).length + '팀<b>' + r1(avgOf(cl.id)) + '</b><span style="font-size:11px">팀당 에버 합 평균</span></div>').join('') + '</div>'; }
   const crTag = (m, ti) => { if (!J) return ''; if (isVs) return m.cr !== jx.owners[ti] ? ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">용병 · ' + esc(m.crN) + '</span>' : ''; return ' <span class="ctag" style="background:' + crewCol(ci(m.cr)) + '">' + esc(m.crN) + '</span>'; };
   $('teamOut').innerHTML = vsHtml + teams.map((t, ti) => { const sum = r1(t.reduce((a, m) => a + m.avg, 0)); const f = t.filter(m => m.gender === 'F').length; return '<div class="card team"><h3>' + (ti + 1) + '팀 ' + (isVs ? '<span class="ctag" style="background:' + crewCol(ci(jx.owners[ti])) + '">' + esc(cn(jx.owners[ti])) + '</span> ' : '') + '<span class="small">' + t.length + '명</span></h3><div class="meta">합계 ' + sum + ' · 4게임 예상 <span class="sum">' + r1(sum * 4).toLocaleString() + '</span> · 평균 ' + r1(sum / t.length).toFixed(1) + ' · 여 ' + f + ' / 남 ' + (t.length - f) + '</div>' + t.map((m, mi) => '<div class="pm' + (sel && sel.t === ti && sel.m === mi ? ' sel' : '') + '" data-t="' + ti + '" data-m="' + mi + '">' + gbadge(m.gender) + '<span class="grow">' + esc(dn(m)) + (m.nick ? ' <span class="nick">' + esc(m.name) + '</span>' : '') + (m.guest ? ' <span class="nick">게스트</span>' : '') + crTag(m, ti) + (m.floored ? ' <span class="nick">하한 적용(원래 ' + m.raw + ')</span>' : '') + '</span>' + grBadge(m.grade) + '<span style="min-width:60px;text-align:right">' + m.base + (m.hd ? '<span class="nick"> ' + (m.hd > 0 ? '+' : '') + m.hd + '</span>' : '') + '</span></div>').join('') + '</div>'; }).join('');
-  $('copyBox').classList.remove('hide'); dockSync(); $('swapHint').classList.remove('hide');
+  $('copyBox').classList.remove('hide'); dockSync(); $('swapHint').classList.remove('hide'); imgPreSchedule();
   $('teamOut').querySelectorAll('.pm').forEach(el => el.onclick = () => { const t = +el.dataset.t, m = +el.dataset.m; if (!sel) { sel = { t, m }; render(curTeams, nCand); return; } if (sel.t === t && sel.m === m) { sel = null; render(curTeams, nCand); return; } if (sel.t === t) { sel = { t, m }; render(curTeams, nCand); return; } const a = curTeams[sel.t][sel.m]; curTeams[sel.t][sel.m] = curTeams[t][m]; curTeams[t][m] = a; sel = null; manual = true; render(curTeams, nCand); });
 }
 $('btnBuild').onclick = () => build(true);
@@ -1437,11 +1437,34 @@ async function makeImage(opt) {
   return await new Promise(res => cv.toBlob(b => res(b), 'image/png'));
 }
 let lastBlob = null, lastUrl = null;
+// v39: 안드로이드에서 첫 이미지 만들기가 3초 가까이 걸려(글자·PNG 변환 첫 준비) 팀이 나오면 화면 뒤에서 미리 만들어 둔다.
+// 같은 팀·같은 설정이면 누르는 즉시 미리 만든 이미지를 보여 준다. 다르면 새로 만들고 버튼에 "만드는 중"을 표시한다.
+let IMGPRE = { key: '', blob: null, job: null, keyJob: '' }, IMGPRE_T = 0;
+const strHash = (t) => { t = String(t || ''); let h = 5381; for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return t.length + ':' + h.toString(36); };
+function imgKey(teams) {
+  try { const c = C(); const rs = result; const J = jointOf(c); return JSON.stringify([DB.cur, todayStr(), $('copyAvg').checked, c.name, c.opts.month || '', strHash(c.img), J ? J.clubs.map(x => [x.id, x.name, strHash(x.img)]) : null, rs && rs.jx ? rs.jx : null, (teams || curTeams || []).map(t => t.map(m => [m.id, dn(m), m.base, m.hd, m.avg, m.gender, !!m.guest, m.cr || '', m.crN || '']))]); } catch (e) { return ''; }
+}
+function imgPreSchedule() {
+  clearTimeout(IMGPRE_T); if (!curTeams) return;
+  IMGPRE_T = setTimeout(() => { if (document.visibilityState !== 'visible' || !curTeams) return; const k = imgKey(); if (!k || (IMGPRE.key === k && IMGPRE.blob) || IMGPRE.keyJob === k) return;
+    const job = makeImage().then(b => { if (IMGPRE.keyJob === k && imgKey() === k) { IMGPRE.key = k; IMGPRE.blob = b; return b; } return null; }).catch(() => null).finally(() => { if (IMGPRE.keyJob === k) { IMGPRE.job = null; IMGPRE.keyJob = ''; } });
+    IMGPRE.job = job; IMGPRE.keyJob = k; }, 700);
+}
 $('btnImage').onclick = async () => {
-  if (!curTeams) return;
-  try { lastBlob = await makeImage(); if (lastUrl) URL.revokeObjectURL(lastUrl); lastUrl = URL.createObjectURL(lastBlob); $('imgOut').src = lastUrl; $('imgModal').classList.remove('hide'); }
-  catch (e) { alert('이미지를 만들지 못했습니다: ' + (e && e.message ? e.message : e)); }
+  if (!curTeams) return; const btn = $('btnImage'); if (btn.dataset.busy) return; const k = imgKey(); const old = btn.textContent;
+  btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = '이미지 만드는 중...';
+  try {
+    let b = (IMGPRE.key === k && IMGPRE.blob) ? IMGPRE.blob : null;
+    if (!b && IMGPRE.job && IMGPRE.keyJob === k) b = await IMGPRE.job; // 미리 만드는 중이면 그것을 기다림
+    // 만드는 사이에 크루·팀·설정이 바뀌면 지금 상태로 다시 만든다(옛 이미지를 보여 주지 않음)
+    let kk = k; for (let tries = 0; ; tries++) { if (b && imgKey() === kk) break; if (tries >= 2 || !curTeams) { b = null; break; } kk = imgKey(); b = await makeImage(); }
+    if (!b) { alert('만드는 중에 팀이나 설정이 바뀌었습니다. 다시 눌러 주세요.'); return; }
+    IMGPRE.key = kk; IMGPRE.blob = b;
+    lastBlob = b; if (lastUrl) URL.revokeObjectURL(lastUrl); lastUrl = URL.createObjectURL(lastBlob); $('imgOut').src = lastUrl; $('imgModal').classList.remove('hide');
+  } catch (e) { alert('이미지를 만들지 못했습니다: ' + (e && e.message ? e.message : e)); }
+  finally { delete btn.dataset.busy; btn.disabled = false; btn.textContent = old; }
 };
+$('copyAvg').addEventListener('change', imgPreSchedule); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') imgPreSchedule(); });
 $('btnImgClose').onclick = () => $('imgModal').classList.add('hide');
 $('btnShare').onclick = async () => {
   // 안드로이드 앱(웹뷰)은 브라우저 공유(navigator.share)로 파일을 못 보낸다 → 앱 공유 기능(Capacitor Share)을 쓰는 shareFiles로 통일(v38)
@@ -2512,7 +2535,7 @@ function rpLearn() {
 
 // ===== 앱 버전 · 도움말(사용 설명서, 개발자 추가요청) =====
 // 업데이트할 때마다 아래 번호와 날짜만 올리면 홈 화면, 마이 탭, 도움말에 모두 반영됩니다(sw.js의 캐시 이름도 같은 번호로 올립니다).
-const APP_VER = 38, APP_DATE = '2026.11.09';
+const APP_VER = 39, APP_DATE = '2026.11.09';
 setTimeout(() => { try { const r = sessionStorage.getItem('btbRestored'); if (r) { sessionStorage.removeItem('btbRestored'); const [c, n] = r.split('|'); alert('복원했습니다(크루 ' + c + '곳, 기록 ' + n + '건).' + (aiCfg().p === 'none' ? '\n\nAI 판독 연결(API 키)은 백업에 들어 있지 않습니다. 다른 폰에서 AI를 연결해 쓰셨다면 마이 탭 "AI 연결 설정"에서 다시 설정해 주세요.' : '\n\nAI 판독 연결은 이 폰에 설정된 그대로 유지됩니다(백업에는 들어 있지 않음).')); } } catch (e) {} }, 800);
 const DEV_MAIL = ['tecnico0428', 'gmail.com'].join('@');
 document.querySelectorAll('.verline').forEach(e => { e.textContent = '오늘도 스트라이크 · 버전 ' + APP_VER + ' (' + APP_DATE + ')'; });
