@@ -17,7 +17,7 @@
 </head>
 <body><div id="ld">불러오는 중...</div>
 <script>
-// 오늘도 스트라이크 웹 로더(v48): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
+// 오늘도 스트라이크 웹 로더(v49): 링크 기간을 서버(구글 Apps Script, 서버 시각)에서 확인한 뒤에만 암호화된 앱(app.enc)을 풀어 연다.
 (async function () {
   const API = "https://script.google.com/macros/s/AKfycbzAQ-vHVUhWCn5_NUrLgEBeYAJtlLeV3a7quKzGQ_tMGGau3ayMdnW6oZ8lFyW9R0Y43g/exec", AK = 'btb_access_v1', OK = 'btb_owner_v1'; const ld = document.getElementById('ld');
   const show = (why, sub) => { ld.innerHTML = '<div><div style="font-size:22px;font-weight:800;margin:10px 0">오늘도 스트라이크</div><div>' + why + '</div><div style="margin-top:14px;font-size:15px;color:#5b6a6e">' + (sub || '크루 운영진에게 새 링크를 받아 주세요.<br>이 폰에 저장된 기록은 지워지지 않았습니다.') + '</div></div>'; };
@@ -32,7 +32,10 @@
     window.__BTB_EXT_URL = ext; let ownerOnly = false; try { ownerOnly = !tk && !!localStorage.getItem(OK); } catch (e) {}
     ld.innerHTML = '<div><div style="font-size:22px;font-weight:800;margin:10px 0">오늘도 스트라이크</div><div>사진 공유가 되도록 기본 브라우저로 여는 중입니다.</div><div style="margin-top:16px"><a id="extA" href="' + ext.replace(/"/g, '&quot;') + '" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#dc4527;color:#fff;text-decoration:none">기본 브라우저로 열기</a></div><div style="margin-top:12px;font-size:15px;color:#5b6a6e">안 열리면 위 버튼을 누르거나, 오른쪽 위 메뉴에서 "다른 브라우저로 열기"를 눌러 주세요.' + (ownerOnly ? '<br>주인 폰이면 기본 브라우저에서 주인 링크를 한 번 더 열어 주세요.' : '') + '</div></div>';
     if (!tried && !window.__BTB_NO_REDIRECT) { try { sessionStorage.setItem('btb_ext_tried', '1'); } catch (e) {} setTimeout(() => { location.href = ext; }, 300); } // 자동 이동은 한 번만, 안내·버튼은 항상
-    return;
+    // v49: 기본 브라우저로 안 넘어가면(카톡 버전·설정에 따라) 막히지 않게 4초 뒤 이 화면에서 그냥 연다. 사진 공유만 안 될 수 있음.
+    try { const box = ld.firstElementChild || ld; const b2 = document.createElement('div'); b2.innerHTML = '<a id="hereA" href="#" style="display:inline-block;margin-top:10px;padding:10px 16px;border-radius:12px;border:1px solid #dc4527;color:#dc4527;text-decoration:none">이 화면에서 바로 열기</a><div id="hereT" style="margin-top:6px;font-size:14px;color:#5b6a6e">4초 뒤 자동으로 열립니다(카톡 안에서는 사진 공유가 안 될 수 있어요)</div>'; box.appendChild(b2); } catch (e) {}
+    await new Promise(res => { const a = document.getElementById('hereA'); if (a) a.onclick = (e) => { e.preventDefault(); res(); }; setTimeout(() => { if (document.visibilityState === 'visible') res(); else document.addEventListener('visibilitychange', function f() { if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', f); res(); } }); }, 4000); });
+    ld.innerHTML = '<div style="margin-top:30px">불러오는 중...</div>';
   }
   if (!(window.crypto && crypto.subtle)) { show('이 브라우저에서는 열 수 없습니다.', '크롬·사파리 최신판으로 열어 주세요.'); return; }
   // v47: 주인 링크(#o=)에는 서명키가 아니라 무작위 주인 비밀값만 들어 있다. 서버가 해시를 비교해 열쇠를 준다. 옛 형식(서명키 d)은 지운다.
